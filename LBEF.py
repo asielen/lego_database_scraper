@@ -1,0 +1,202 @@
+__author__ = 'andrew.sielen'
+
+import requests
+from bs4 import BeautifulSoup
+import re
+import arrow
+
+def soupify(url):
+    """
+
+    @param url: any url
+    @return: returns the soup for that url
+    """
+    try:
+        page = requests.get(url, timeout=10).content
+    except:
+        return None
+    soup = BeautifulSoup(page)
+    return soup
+
+def is_number(s):
+    """
+
+    @param s: an int
+    @return:
+    """
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
+def only_numerics_float(s):
+    """
+
+    @param s: a string
+    @return: an int stripped of all non-numeric characters or None
+    """
+    non_decimal = re.compile(r'[^\d.]+')
+    s = float_null(non_decimal.sub('', s))
+    return s
+
+def only_numerics_int(s):
+    """
+
+    @param s: a string
+    @return: an int stripped of all non-numeric characters or None
+    """
+    non_decimal = re.compile(r'[^\d.]+')
+    s = int_null(non_decimal.sub('', s))
+    return s
+
+def int_null(s):
+    """
+
+    @param s: a string
+    @return: an int if the string can be converted else None
+    """
+    n = None
+    try:
+        n = int(float(s))
+    except:
+        return None
+    return n
+
+def float_null(s):
+    """
+
+    @param s: a string
+    @return: a float if the string can be converted else None
+    """
+    n = None
+    try:
+        n = float(s)
+    except:
+        return None
+    return n
+
+def float_zero(s):
+    """
+
+    @param s: a string
+    @return: a float if the string can be converted else 0
+    """
+    n = 0
+    try:
+        n = float(s)
+    except:
+        return 0
+    return n
+
+def zero_2_null(n):
+    """
+
+    @param n: a number
+    @return: if the number return null
+    """
+    if n == 0:
+        return None
+    else:
+        return n
+
+def in2cm(n):
+    """
+
+    @param n: number in inches
+    @return: number in centemters
+    """
+    return n*2.54
+
+### Data Scrubers ####
+def scrub_text2int(s):
+    """
+        Takes a text string and returns an appropriate integer
+        Used In:
+            Pieces
+            Minifigures/Figures
+    """
+    return only_numerics_int(s)
+
+def scrub_text2float(s):
+    """
+
+    @param s: a string
+    @return: a float built out of the string, ignoring all non-numeric characters
+    """
+    return only_numerics_float(s)
+
+def parse_html_table(table_tags):
+    """
+        Tables in html are in the following format:
+            <table> #attributes about the table are in this tag
+                <tbody>
+                    <tr>    #tr tags indicate a row
+                        <td> </td>  #td tags indicate a cell in a row
+                        <td> </td>
+                    </tr>
+                    <tr>
+                        <td> </td>
+                        <td> </td>
+                    </tr>
+                </tbody>
+            </table>
+
+        This would be a 2x2 table
+
+    @param table_tags: an html table
+    @return: a 2d list (table_array)
+    """
+
+    if table_tags is None: return None
+    table_array = []    #initiate the array
+    try:
+        table_body = table_tags.find("tbody")   #find the table body
+        line_tags = table_body.findAll("tr")  #make a list of all the rows
+    except:
+        line_tags = table_tags.findAll("tr")
+
+    for k in line_tags:
+        table_array.append([x.get_text().strip() for x in k.findAll("td")]) #add a list of cells to the table array - strip out tags and whitespace
+
+    return table_array
+
+def expand_set_num(set):
+    """
+
+    @param set: in standard format xxxx-yy
+    @return: xxxx, yy, xxxx-yy
+    """
+
+    try:
+        set_list = set.split("-")
+        set_num = set_list[0]
+        set_seq = set_list[1]
+    except:
+        set_num = set
+        set_seq = '1'
+    return set_num, set_seq, set_num+'-'+set_seq
+
+def check_in_date_range(date, start, end):
+    """
+    @param date: the date to check
+    @param start: the date to start the range
+    @param end: the date to end the range
+    @rtype : bool
+    """
+    start = arrow.get(start)
+    end = arrow.get(end)
+    date = arrow.get(date)
+
+    if date >= start and date <= end:
+        return True
+    else:
+        return False
+
+def flatten_list(l):
+    """
+    usefull for lists returned by sqlite
+    @param l: a list of lists ie [(a),(b),(c))
+    @return: [a,b,c
+    """
+    return [i for sublist in l for i in sublist]
