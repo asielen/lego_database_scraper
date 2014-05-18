@@ -1,9 +1,10 @@
+from z_junk import update_database_with_daily_info as udi
+
 __author__ = 'andrew.sielen'
 
 import pprint as pp
 from data_scrapers import bricklink_historic_prices as BHP
 from data_scrapers import brickset_set_data as BS
-import update_database_with_daily_info as udi
 from LBEF import *
 
 def get_daily(set):

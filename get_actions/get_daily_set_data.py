@@ -6,7 +6,7 @@ from data_scrapers import brickset_set_data as BS
 from database_management import add_daily_stats as ADS
 from database_management import set_info
 from LBEF import *
-import  logging
+import logging
 
 def get_all_daily_set_data(set_list):
     """
@@ -18,7 +18,7 @@ def get_all_daily_set_data(set_list):
         total = len(set_list)
         for idx, set in enumerate(set_list):
             logging.info("[ {0}/{1} {2}% ] Getting info on {3}".format(idx, total, round((idx/total)*100, 2), set))
-            print(get_daily_set_data(set))
+            get_daily_set_data(set)
 
 
 def get_daily_set_data(set_num):

@@ -32,6 +32,8 @@ def get_basestats(set_num_primary, set_num_secondary=1):
 
     soup = soupify(url)
 
+    if soup is None: return {}
+
     dic = {}
     dic = _parse_sidebar(soup)
     dic = dict(dic, **_parse_avaiable_dates(soup))

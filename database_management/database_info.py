@@ -40,7 +40,6 @@ def get_set_year_range():
     max_year = None
     con = lite.connect(database)
 
-    print(database)
     with con:
         c = con.cursor()
         c.execute("SELECT MIN(year_released) FROM sets;")

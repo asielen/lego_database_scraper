@@ -4,6 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import arrow
+import logging
 
 def soupify(url):
     """
@@ -14,8 +15,15 @@ def soupify(url):
     try:
         page = requests.get(url, timeout=10).content
     except:
-        return None
+        try:
+            page = requests.get(url, timeout=10).content
+        except:
+            logging.warning("Can't reach the url! {}".format(url))
+            return None
     soup = BeautifulSoup(page)
+    if soup is None:
+        logging.warning("Can't make the soup! {}".format(url))
+        soup = BeautifulSoup(page)
     return soup
 
 def is_number(s):
@@ -161,19 +169,22 @@ def parse_html_table(table_tags):
 
     return table_array
 
-def expand_set_num(set):
+def expand_set_num(set_id):
     """
 
-    @param set: in standard format xxxx-yy
+    @param set_id: in standard format xxxx-yy
     @return: xxxx, yy, xxxx-yy
     """
 
+    set_id = set_id.lower()
     try:
-        set_list = set.split("-")
+        if ' or ' in set_id:
+            set_id = set_id.split(' or ')[0]
+        set_list = set_id.split("-")
         set_num = set_list[0]
         set_seq = set_list[1]
     except:
-        set_num = set
+        set_num = set_id
         set_seq = '1'
     return set_num, set_seq, set_num+'-'+set_seq
 
@@ -193,6 +204,19 @@ def check_in_date_range(date, start, end):
     else:
         return False
 
+def check_in_date_rangeA(date, start, end):
+    """
+    all dates should already be in arrow format
+    @param date: the date to check
+    @param start: the date to start the range
+    @param end: the date to end the range
+    @rtype : bool
+    """
+    if date >= start and date <= end:
+        return True
+    else:
+        return False
+
 def flatten_list(l):
     """
     usefull for lists returned by sqlite
@@ -200,3 +224,11 @@ def flatten_list(l):
     @return: [a,b,c
     """
     return [i for sublist in l for i in sublist]
+
+def list_to_dict(l):
+    """
+    usefull for lists returned by sqlite
+    @param l: a list of lists ie [(a,b),(c,d),(e,f))
+    @return: {a:b,c:d,e:f}
+    """
+    return {n[0]: n[1] for n in l}

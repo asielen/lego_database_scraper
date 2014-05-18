@@ -35,7 +35,10 @@ def get_design_id(design_num):
     with con:
         c = con.cursor()
         c.execute('SELECT id FROM piece_designs WHERE design_num=?', (design_num,))
-        design_id = c.fetchone()[0]
+        design_id_raw = c.fetchone()
+        if design_id_raw is None:
+            return None
+        design_id = design_id_raw[0]
 
     return design_id
 

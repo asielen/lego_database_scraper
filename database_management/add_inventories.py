@@ -1,6 +1,7 @@
 __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
+import arrow
 import logging
 
 from database_management.database_info import database
@@ -136,7 +137,7 @@ def add_bl_inventory_to_database(set_id, set_dict):
 
         # If it isn't in the database yet, add it
         if design_id is None:
-            logging.info("Adding BL element to database: design = " + design_id)
+            logging.info("Adding BL element to database: design = " + current_design)
 
             piece_info = BLPI.get_pieceinfo(current_design)
 

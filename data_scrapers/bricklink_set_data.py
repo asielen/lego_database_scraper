@@ -10,7 +10,7 @@ pp = pprint.PrettyPrinter(indent = 4)
 
 
 #Get base stats
-def get_basestats(set_num_primary, set_num_secondary = 1, verbose=0):
+def get_basestats(set_num_primary, set_num_secondary = 1):
     """
         Return a dictionary of base stats pulled from bricklink.com
             Set name
@@ -23,8 +23,9 @@ def get_basestats(set_num_primary, set_num_secondary = 1, verbose=0):
             Figures
     """
     url = "http://www.bricklink.com/catalogItem.asp?S={0}-{1}".format(set_num_primary, set_num_secondary)
-    if verbose ==1: print(url)
+
     soup = soupify(url)
+    if soup is None: return {}
 
     #Get the set name
     parent_tags0 = soup.find("font", {"size": "+0"})

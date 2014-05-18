@@ -1,7 +1,8 @@
 __author__ = 'andrew.sielen'
 
-import navigation.menu
+from profilehooks import profile
 
+import navigation.menu
 from database_management import database_info
 from get_actions import get_sets_basestats as get_basestats
 
@@ -42,7 +43,7 @@ def update_from_file():
     with open("Sets.txt", encoding='utf-8', errors='ignore') as f:
         set_list_raw = f.readlines()
         set_list_raw = set_list_raw[3:]
-        set_list = [set.split("\t")[-2].strip() for set in set_list_raw]
+        set_list = [set.split("\t")[-2].strip().lower() for set in set_list_raw]
 
     get_basestats.get_all_basestats(set_list)
 
