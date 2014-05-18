@@ -3,4 +3,7 @@
   <data-source source="LOCAL" name="lego_sets" uuid="80da43b6-4599-4c97-a79b-e4f4356568de">
     <database-info product="" version="" jdbc-version="" driver-name="" driver-version=""/>
   </data-source>
+  <data-source source="LOCAL" name="system" uuid="12ec3313-792a-4fc5-83cb-1b3fe6ead9fb">
+    <database-info product="" version="" jdbc-version="" driver-name="" driver-version=""/>
+  </data-source>
 </component>
