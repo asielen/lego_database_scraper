@@ -50,7 +50,7 @@ def get_all_basestats(set_list, force=0):
             get_bl_inventory(set, bl_designs_in_database)
 
         # Update brickset inventories
-        logging.info("Updating brickset inventories for {} sets".format(len(bs_designs_in_database)))
+        logging.info("Updating brickset inventories for {} sets".format(len(bs_elements_in_database)))
         for idx, set in enumerate(bs_elements_in_database):
             logging.info("{0} Getting bs inventory on {1}".format(idx, set))
             get_bs_inventory(set, bs_elements_in_database)

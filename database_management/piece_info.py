@@ -16,7 +16,10 @@ def get_element_id(part_num):
     with con:
         c = con.cursor()
         c.execute('SELECT id FROM unique_pieces WHERE part_num=?', (part_num,))
-        element_id = c.fetchone()[0]
+        element_id_raw = c.fetchone()
+        if element_id_raw is None:
+            return None
+        element_id = element_id_raw[0]
 
     return element_id
 

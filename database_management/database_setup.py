@@ -2,6 +2,7 @@ __author__ = 'Andrew'
 
 import sqlite3 as lite
 import sys
+from database_management.database_info import database
 
 def initiate_database():
     con = lite.connect(database)
@@ -14,12 +15,16 @@ def initiate_database():
                     "design_alts TEXT,"
                     "weight REAL);")
 
+        c.execute("CREATE TABLE IF NOT EXISTS price_types(id INTEGER PRIMARY KEY,"
+                  "price_type TEXT);")
+
+        #need to add default values for price_types
+
         c.execute("CREATE TABLE IF NOT EXISTS unique_pieces(id INTEGER PRIMARY KEY,"
                     "part_num TEXT,"
                     "design_id INTEGER,"
                     "color_name TEXT,"
                     "FOREIGN KEY (design_id) REFERENCES piece_molds(id));")
-
 
         #Build sets table
         c.execute("CREATE TABLE IF NOT EXISTS sets(id INTEGER PRIMARY KEY,"
@@ -51,8 +56,8 @@ def initiate_database():
         #Build historic_prices table
         c.execute("CREATE TABLE IF NOT EXISTS historic_prices(id INTEGER PRIMARY KEY,"
                     "set_id INTEGER,"
-                    "record_date TEXT,"
-                    "price_type TEXT," #current_new, current_used, historic_new, historic_used
+                    "record_date INTEGER,"
+                    "price_type INTEGER," #current_new, current_used, historic_new, historic_used
                     "avg REAL,"
                     "lots REAL,"
                     "max REAL,"
@@ -60,7 +65,8 @@ def initiate_database():
                     "qty REAL,"
                     "qty_avg REAL,"
                     "piece_avg REAL,"
-                    "FOREIGN KEY (set_id) REFERENCES sets(id));")
+                    "FOREIGN KEY (set_id) REFERENCES sets(id),"
+                    "FOREIGN KEY (price_type) REFERENCES price_types(id));")
 
         #Build inventories table
         c.execute("CREATE TABLE IF NOT EXISTS bs_inventories(id INTEGER PRIMARY KEY,"
@@ -83,8 +89,10 @@ def initiate_database():
                     "want INTEGER,"
                     "own INTEGER,"
                     "rating INTEGER,"
-                    "record_date TEXT,"
+                    "record_date INTEGER,"
                     "FOREIGN KEY (set_id) REFERENCES sets(id));")
+
+        c.execute("CREATE UNIQUE INDEX price_type_idx on price_types(price_type)")
 
         c.execute("CREATE UNIQUE INDEX design_num_idx on piece_designs(design_num)")
 
