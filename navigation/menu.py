@@ -38,7 +38,7 @@ def options_menu(menu_options):
 
     print()
     for entry in options:
-        print(entry, menu_options[entry][0])
+        print(entry + ":", menu_options[entry][0])
 
     selection = input("What would you like to do? ")
 

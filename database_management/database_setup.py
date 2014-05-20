@@ -13,10 +13,16 @@ def initiate_database():
                     "design_num TEXT,"
                     "design_name TEXT,"
                     "design_alts TEXT,"
-                    "weight REAL);")
+                    "weight REAL, "
+                    "piece_type TEXT);")
 
         c.execute("CREATE TABLE IF NOT EXISTS price_types(id INTEGER PRIMARY KEY,"
                   "price_type TEXT);")
+
+        c.execute("CREATE TABLE IF NOT EXISTS bl_cataegories(id INTEGER PRIMARY KEY,"
+                  "bl_category_id INTEGER, "
+                  "category TEXT);")
+
 
         #need to add default values for price_types
 
@@ -24,7 +30,7 @@ def initiate_database():
                     "part_num TEXT,"
                     "design_id INTEGER,"
                     "color_name TEXT,"
-                    "FOREIGN KEY (design_id) REFERENCES piece_molds(id));")
+                    "FOREIGN KEY (design_id) REFERENCES piece_designs(id));")
 
         #Build sets table
         c.execute("CREATE TABLE IF NOT EXISTS sets(id INTEGER PRIMARY KEY,"

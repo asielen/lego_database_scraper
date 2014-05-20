@@ -6,6 +6,7 @@ import re
 import arrow
 import logging
 
+
 def soupify(url):
     """
 
@@ -26,6 +27,7 @@ def soupify(url):
         soup = BeautifulSoup(page)
     return soup
 
+
 def is_number(s):
     """
 
@@ -38,6 +40,7 @@ def is_number(s):
     except ValueError:
         return False
 
+
 def only_numerics_float(s):
     """
 
@@ -48,6 +51,7 @@ def only_numerics_float(s):
     s = float_null(non_decimal.sub('', s))
     return s
 
+
 def only_numerics_int(s):
     """
 
@@ -57,6 +61,7 @@ def only_numerics_int(s):
     non_decimal = re.compile(r'[^\d.]+')
     s = int_null(non_decimal.sub('', s))
     return s
+
 
 def int_null(s):
     """
@@ -71,6 +76,7 @@ def int_null(s):
         return None
     return n
 
+
 def float_null(s):
     """
 
@@ -83,6 +89,7 @@ def float_null(s):
     except:
         return None
     return n
+
 
 def float_zero(s):
     """
@@ -97,6 +104,7 @@ def float_zero(s):
         return 0
     return n
 
+
 def zero_2_null(n):
     """
 
@@ -108,13 +116,15 @@ def zero_2_null(n):
     else:
         return n
 
+
 def in2cm(n):
     """
 
     @param n: number in inches
     @return: number in centemters
     """
-    return n*2.54
+    return n * 2.54
+
 
 ### Data Scrubers ####
 def scrub_text2int(s):
@@ -126,6 +136,7 @@ def scrub_text2int(s):
     """
     return only_numerics_int(s)
 
+
 def scrub_text2float(s):
     """
 
@@ -133,6 +144,7 @@ def scrub_text2float(s):
     @return: a float built out of the string, ignoring all non-numeric characters
     """
     return only_numerics_float(s)
+
 
 def parse_html_table(table_tags):
     """
@@ -157,17 +169,19 @@ def parse_html_table(table_tags):
     """
 
     if table_tags is None: return None
-    table_array = []    #initiate the array
+    table_array = []  #initiate the array
     try:
-        table_body = table_tags.find("tbody")   #find the table body
+        table_body = table_tags.find("tbody")  #find the table body
         line_tags = table_body.findAll("tr")  #make a list of all the rows
     except:
         line_tags = table_tags.findAll("tr")
 
     for k in line_tags:
-        table_array.append([x.get_text().strip() for x in k.findAll("td")]) #add a list of cells to the table array - strip out tags and whitespace
+        table_array.append([x.get_text().strip() for x in
+                            k.findAll("td")])  #add a list of cells to the table array - strip out tags and whitespace
 
     return table_array
+
 
 def expand_set_num(set_id):
     """
@@ -186,7 +200,8 @@ def expand_set_num(set_id):
     except:
         set_num = set_id
         set_seq = '1'
-    return set_num, set_seq, set_num+'-'+set_seq
+    return set_num, set_seq, set_num + '-' + set_seq
+
 
 def check_in_date_range(date, start, end):
     """
@@ -204,6 +219,7 @@ def check_in_date_range(date, start, end):
     else:
         return False
 
+
 def check_in_date_rangeA(date, start, end):
     """
     all dates should already be in arrow format
@@ -217,6 +233,7 @@ def check_in_date_rangeA(date, start, end):
     else:
         return False
 
+
 def flatten_list(l):
     """
     usefull for lists returned by sqlite
@@ -225,6 +242,7 @@ def flatten_list(l):
     """
     return [i for sublist in l for i in sublist]
 
+
 def list_to_dict(l):
     """
     usefull for lists returned by sqlite
@@ -232,3 +250,32 @@ def list_to_dict(l):
     @return: {a:b,c:d,e:f}
     """
     return {n[0]: n[1] for n in l}
+
+
+#source http://stackoverflow.com/questions/1165352/fast-comparison-between-two-python-dictionary
+class DictDiffer(object):
+    """
+    Calculate the difference between two dictionaries as:
+    (1) items added
+    (2) items removed
+    (3) keys same in both but changed values
+    (4) keys same in both and unchanged values
+    """
+
+    def __init__(self, current_dict, past_dict):
+        self.current_dict, self.past_dict = current_dict, past_dict
+        self.set_current, self.set_past = set(current_dict.keys()), set(past_dict.keys())
+        self.intersect = self.set_current.intersection(self.set_past)
+
+    def added(self):
+        return {s: self.current_dict[s] for s in (self.set_current - self.intersect)}
+
+    def removed(self):
+        return self.set_past - self.intersect
+
+    def changed(self):
+        return {s: (self.current_dict[s], self.past_dict[s]) for s in
+                set(o for o in self.intersect if self.past_dict[o] != self.current_dict[o])}
+
+    def unchanged(self):
+        return set(o for o in self.intersect if self.past_dict[o] == self.current_dict[o])

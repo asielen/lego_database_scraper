@@ -1,6 +1,5 @@
 __author__ = 'andrew.sielen'
 
-
 from LBEF import *
 import pprint
 
@@ -29,11 +28,13 @@ def get_pieceinfo(element_number):
     piece_info = {}
     piece_info = _scrub_data(_parse_sidebar(soup))
 
-    if piece_info is None: return None
-    bl_piece_info = get_blPieceInfo(piece_info["design_num"],element_number)
+    if piece_info is None: piece_info = {'design_num': design_num, 'weight': None, 'design_name': design_name,
+                                         'piece_type': None, 'design_alts': None}
+    bl_piece_info = get_blPieceInfo(piece_info["design_num"], element_number)
     if bl_piece_info is not None:
         piece_info["design_num"] = bl_piece_info['design_num'][0]
         piece_info["weight"] = bl_piece_info['weight']
+        piece_info["piece_type"] = bl_piece_info['piece_type']
         if bl_piece_info['name'] != "":
             piece_info["design_name"] = bl_piece_info['name']
         if len(bl_piece_info['design_num']) == 2:
@@ -43,6 +44,7 @@ def get_pieceinfo(element_number):
     else:
         piece_info["weight"] = 0
         piece_info["design_alts"] = ""
+        piece_info["piece_type"] = None
 
     return piece_info
 
@@ -66,6 +68,7 @@ def _parse_sidebar(soup):
 
     return dic
 
+
 def _scrub_data(dic):
     """
         Takes code raw from the scrape and cleans it up using the rules in [BrickSet Data Scrub Specs]
@@ -85,12 +88,13 @@ def _scrub_data(dic):
         scrubbed_dic['color_name'] = dic['Colour']
     return scrubbed_dic
 
-def get_blPieceInfo(design_num,element_num):
+
+def get_blPieceInfo(design_num, element_num):
     """
         Returns the piece weight from bricklink
     """
 
-    soup = _search_piece(design_num,element_num)
+    soup = _search_piece(design_num, element_num)
     if soup is None:
         return None
 
@@ -102,34 +106,36 @@ def get_blPieceInfo(design_num,element_num):
     if parent_tags1 is None:
         return None
     child_tags0 = parent_tags1.findAll("td")
-    weight_tag = child_tags0[3].get_text().split(":")[1] #Pull the weight from the tag that contains the weight. EX: <td width="20%"><font color="#666666">Weight (in grams):</font><br>0.45</td>
+    weight_tag = child_tags0[3].get_text().split(":")[
+        1]  #Pull the weight from the tag that contains the weight. EX: <td width="20%"><font color="#666666">Weight (in grams):</font><br>0.45</td>
     weight = float_zero(weight_tag)
 
     #Find Name
-    name_tag = soup.find("font", {"face":"Geneva,Arial,Helvetica"})
+    name_tag = soup.find("font", {"face": "Geneva,Arial,Helvetica"})
     name = name_tag.get_text()
 
 
     #Find Alternate Design IDs
 
-    parent_tags2 = soup.find("td",{"align":"RIGHT"})
+    parent_tags2 = soup.find("td", {"align": "RIGHT"})
     if parent_tags2 is None:
-        return {'weight': weight, 'design_num': [design_num], 'name': name}
+        return {'weight': weight, 'design_num': [design_num], 'name': name, 'piece_type': 'element'}
     else:
         design_ids = []
-        parent_tags3 = parent_tags2.find("td",{"align":"CENTER"}) #Find the alternative design id
+        parent_tags3 = parent_tags2.find("td", {"align": "CENTER"})  #Find the alternative design id
         if parent_tags3 is None:
-            return {'weight': weight, 'design_num': [design_num], 'name': name}
-        parent_tags4 = soup.find("font",{"face":"Arial"}) #Find the main design id
+            return {'weight': weight, 'design_num': [design_num], 'name': name, 'piece_type': 'element'}
+        parent_tags4 = soup.find("font", {"face": "Arial"})  #Find the main design id
         design_id_text = parent_tags3.get_text()
         design_id_tags0 = design_id_text.split(":")[1]
 
         main_design_id = parent_tags4.get_text().split(":")[-1].strip()
 
-        design_ids.append(main_design_id)   # Add the main id
+        design_ids.append(main_design_id)  # Add the main id
         design_ids.append(design_id_tags0)  # Add the alternative Ids
 
-        return {'weight': weight, 'design_num': design_ids, 'name': name}
+        return {'weight': weight, 'design_num': design_ids, 'name': name, 'piece_type': 'element'}
+
 
 def _search_piece(design_num, element_num):
     soup = None
@@ -168,6 +174,7 @@ def main():
     pprint.pprint(get_pieceinfo(set))
     #pprint.pprint(get_pieceinfo_bl(set))
     main()
+
 
 if __name__ == "__main__":
     main()

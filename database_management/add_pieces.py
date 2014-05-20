@@ -6,6 +6,7 @@ from database_management.set_info import database
 from database_management.piece_info import get_design_id
 from database_management.piece_info import get_element_id
 
+
 def add_design_to_database(piece_dic):
     """
     Adds a design to the database
@@ -19,10 +20,16 @@ def add_design_to_database(piece_dic):
         c = con.cursor()
 
         c.execute('INSERT OR IGNORE INTO piece_designs(design_num) VALUES (?)', (piece_dic['design_num'], ))
-        c.execute('UPDATE piece_designs SET design_name=?, weight=?, design_alts=? WHERE design_num=?;',
-                  (piece_dic['design_name'], piece_dic['weight'], piece_dic['design_alts'], piece_dic['design_num']))
+        c.execute('UPDATE piece_designs SET design_name=?, weight=?, design_alts=?, piece_type=? WHERE design_num=?;',
+                  (piece_dic['design_name'], piece_dic['weight'], piece_dic['design_alts'], piece_dic['piece_type'],
+                   piece_dic['design_num']))
 
-    return get_design_id(piece_dic['design_num'])
+    design_id = get_design_id(piece_dic['design_num'])
+
+    if piece_dic['design_alts'] is not '' and piece_dic['design_alts'] is not None and design_id is not None:
+        parse_design_alts(design_id, piece_dic['design_alts'])
+
+    return design_id
 
 
 def add_element_to_database(design_id, element_dic):
@@ -42,3 +49,14 @@ def add_element_to_database(design_id, element_dic):
                   (design_id, element_dic['color_name'], element_dic['part_num']))
 
     return get_element_id(element_dic['part_num'])
+
+
+def parse_design_alts(design_id, design_alts):
+    """
+    Parse a design alts list and add it to the element database
+    @param design_alts:
+    @return:
+    """
+    design_list = [a.strip() for a in design_alts.split(',')]
+    for design in design_list:
+        add_element_to_database(design_id, {'color_name': 'ALT_ID', 'part_num': design})

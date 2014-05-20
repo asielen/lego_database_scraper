@@ -1,20 +1,10 @@
 __author__ = 'andrew.sielen'
 
 import logging
-import arrow
 
 import navigation.menu as menu
+import system_setup as sys
 
-def get_week_for_log():
-    """
-    @return: a text string "YYYYMMDD-WKN.log
-    """
-    today = arrow.now()
-    return today.format('YYYY')+"-WK"+str(today.isocalendar()[1])+".log"
-
-def setup_logging():
-    logging.basicConfig(filename=str(get_week_for_log()), level=logging.WARNING)
-    logging.basicConfig(format='%(asctime)s : %(message)s')
 
 def main():
     """
@@ -22,7 +12,7 @@ def main():
     @return:
     """
 
-    setup_logging()
+    sys.setup_logging()
     logging.critical("Test Warning")
     options = {}
 
@@ -38,16 +28,5 @@ def main():
         if result is 'kill':
             exit()
 
-
-import sys
-
-root = logging.getLogger()
-root.setLevel(logging.DEBUG)
-
-ch = logging.StreamHandler(sys.stdout)
-ch.setLevel(logging.INFO)
-formatter = logging.Formatter('%(message)s')
-ch.setFormatter(formatter)
-root.addHandler(ch)
 
 main()

@@ -5,7 +5,7 @@
       <excludeFolder url="file://$MODULE_DIR$/Env" />
       <excludeFolder url="file://$MODULE_DIR$/m_Env" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.4.0 virtualenv at C:\Users\Andrew\LScraper" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.4.0 virtualenv at ~/lego_scraper" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyDocumentationSettings">
