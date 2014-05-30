@@ -1,7 +1,9 @@
 __author__ = 'andrew.sielen'
 
-from LBEF import *
 import pprint
+
+from LBEF import *
+
 
 # http://www.bricklink.com/catalogItem.asp?P=4733
 # http://www.bricklink.com/cataloglist.asp?&searchNo=Y&q=30063&catLike=W&catType=P <- Piece lookup

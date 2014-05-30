@@ -1,8 +1,9 @@
 __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
-import arrow
 import logging
+
+import arrow
 
 from database_management.database_info import database
 from database_management.set_info import get_set_id
@@ -10,9 +11,8 @@ from database_management.piece_info import get_element_id
 from database_management.piece_info import get_design_id
 from database_management.add_pieces import add_element_to_database
 from database_management.add_pieces import add_design_to_database
-
-from data_scrapers import bricklink_piece_info as BLPI
-from data_scrapers import brickset_piece_info as BSPI
+from scrapers import bricklink_piece_info as BLPI
+from scrapers import brickset_piece_info as BSPI
 
 
 def add_bs_set_pieces_to_database(set_num, brickset_pieces):
@@ -79,13 +79,12 @@ def add_bs_inventory_to_database(set_id, set_dict):
 
             piece_id = add_element_to_database(design_id, piece_dic)
 
-        with con:   # Add the element to the inventory table
+        with con:  # Add the element to the inventory table
             c = con.cursor()
             c.execute('INSERT INTO bs_inventories(set_id, piece_id, quantity) VALUES (?,?,?)',
                       (set_id, piece_id, e_set[1]))
 
-
-    with con:   # Update the last date
+    with con:  # Update the last date
         c = con.cursor()
         c.execute('UPDATE sets SET last_inv_updated_bs=? WHERE id=?',
                   (arrow.now('US/Pacific').format('YYYY-MM-DD'), set_id))
@@ -147,12 +146,12 @@ def add_bl_inventory_to_database(set_id, set_dict):
 
             design_id = add_design_to_database(piece_info)
 
-
         with con:
             c = con.cursor()
-            c.execute('INSERT INTO bl_inventories(set_id, piece_id, quantity) VALUES (?,?,?)', (set_id, design_id, current_quantity))
+            c.execute('INSERT INTO bl_inventories(set_id, piece_id, quantity) VALUES (?,?,?)',
+                      (set_id, design_id, current_quantity))
 
-    with con:    # Update the last date
+    with con:  # Update the last date
         c = con.cursor()
         c.execute('UPDATE sets SET last_inv_updated_bl=? WHERE id=?',
                   (arrow.now('US/Pacific').format('YYYY-MM-DD'), set_id))

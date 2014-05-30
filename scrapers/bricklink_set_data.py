@@ -1,16 +1,18 @@
 __author__ = 'andrew.sielen'
 
-from LBEF import *
 import pprint
+
+from LBEF import *
+
 
 # http://www.bricklink.com/catalogItem.asp?P=[piece number] <- gives you weight
 
 
-pp = pprint.PrettyPrinter(indent = 4)
+pp = pprint.PrettyPrinter(indent=4)
 
 
-#Get base stats
-def get_basestats(set_num_primary, set_num_secondary = 1):
+# Get base stats
+def get_basestats(set_num_primary, set_num_secondary=1):
     """
         Return a dictionary of base stats pulled from bricklink.com
             Set name
@@ -69,7 +71,7 @@ def get_basestats(set_num_primary, set_num_secondary = 1):
 
     #Get the base stats
     parent_tags2 = soup.find("tr", {"align": "CENTER", "valign": "TOP"})
-    parent_tags2.contents = parent_tags2.contents[1:-1] #Remove the first and last elements because they are strings
+    parent_tags2.contents = parent_tags2.contents[1:-1]  #Remove the first and last elements because they are strings
 
     dic = {"set_name": set_name, "pieces": piece_count, "figures": figures_count}
     for i in parent_tags2:
@@ -93,6 +95,7 @@ def _parse_dimensions(s):
     if s == '?':
         return None
     return tuple([float_null(s) for s in str.split(s, u'\xa0x\xa0')])
+
 
 def _scrub_base_data(dic):
     """
@@ -118,17 +121,17 @@ def _scrub_base_data(dic):
     """
     scrubbed_dic = {}
     if 'set_name' in dic:
-        if dic['set_name']=='': return {}
+        if dic['set_name'] == '': return {}
         scrubbed_dic['set_name'] = dic['set_name']
     if 'Item No:' in dic:
-        if dic['Item No:']=='': return {}
+        if dic['Item No:'] == '': return {}
         scrubbed_dic['set_num'] = dic['Item No:']
     if 'pieces' in dic:
         scrubbed_dic['pieces'] = dic['pieces']
     if 'Box Size (in cm):' in dic:
         temp_dim_tup = _scrub_dimensions(dic['Box Size (in cm):'])
         if temp_dim_tup[0] or temp_dim_tup[1]:
-            scrubbed_dic['dimensions'],scrubbed_dic['volume'] = temp_dim_tup
+            scrubbed_dic['dimensions'], scrubbed_dic['volume'] = temp_dim_tup
     if "figures" in dic:
         scrubbed_dic['figures'] = dic['figures']
     if 'Weight (in grams):' in dic:
@@ -138,23 +141,24 @@ def _scrub_base_data(dic):
 
     return scrubbed_dic
 
+
 def _scrub_dimensions(tup):
     """
         Takes a tuple in the form (35.4, 19.0, 5.7) and returns the tuple and the volume
     """
     if tup == (None,) or not tup:
-        return (None,None)
+        return (None, None)
     elif len(tup) == 2:
-       return tup, tup[0]*tup[1]
+        return tup, tup[0] * tup[1]
     else:
-        return tup, tup[0]*tup[1]*tup[2]
-
+        return tup, tup[0] * tup[1] * tup[2]
 
 
 def main():
     SET = input("What is the set number?: ")
     pp.pprint(get_basestats(SET))
     main()
+
 
 if __name__ == "__main__":
     main()

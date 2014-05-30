@@ -1,13 +1,15 @@
 __author__ = 'andrew.sielen'
 
-from LBEF import *
 import pprint
-from data_scrapers import brickset_piece_info as BPI
+
+from LBEF import *
+from scrapers import brickset_piece_info as BPI
+
 
 
 # http://brickset.com/inventories/21010-1 <-Set piece lookip
 
-#Get pieces stats
+# Get pieces stats
 def get_setpieces(set_num_primary, set_num_secondary=1):
     """
         Return a dictionary of pieces from Brickset.com

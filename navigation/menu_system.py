@@ -2,11 +2,17 @@ __author__ = 'andrew.sielen'
 
 import navigation.menu
 
+from database_management.setup_database import initiate_database_system
+from apis.bricklink_api_update_database import update_pieces
+
+
 def main():
     options = {}
     options['1'] = "Backup Database", backup_database
     options['2'] = "Database Stat Report", run_databaseReport
     options['3'] = "Dump all set data", run_dumpSets
+    options['7'] = "Initiate New Database", init_new_database
+    options['8'] = "Insert parts", insert_parts
     options['9'] = "Back", navigation.menu.back
 
     while True:
@@ -23,3 +29,15 @@ def run_databaseReport():
 
 def run_dumpSets():
     print("Dump Sets")
+
+
+def init_new_database():
+    """
+    Creates the new database lego_eval.sqlite and populates it with basic info
+    @return:
+    """
+    initiate_database_system()
+
+
+def insert_parts():
+    update_pieces()

@@ -1,12 +1,14 @@
 __author__ = 'andrew.sielen'
 
 import pprint as pp
-from data_scrapers import bricklink_historic_prices as BHP
-from data_scrapers import brickset_set_data as BS
+import logging
+
+from scrapers import bricklink_historic_prices as BHP
+from scrapers import brickset_set_data as BS
 from database_management import add_daily_stats as ADS
 from database_management import set_info
 from LBEF import *
-import logging
+
 
 def get_all_daily_set_data(set_list):
     """
@@ -17,7 +19,7 @@ def get_all_daily_set_data(set_list):
     if set_list is not None:
         total = len(set_list)
         for idx, set in enumerate(set_list):
-            logging.info("[ {0}/{1} {2}% ] Getting info on {3}".format(idx, total, round((idx/total)*100, 2), set))
+            logging.info("[ {0}/{1} {2}% ] Getting info on {3}".format(idx, total, round((idx / total) * 100, 2), set))
             get_daily_set_data(set)
 
 

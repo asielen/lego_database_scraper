@@ -1,10 +1,11 @@
 __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
-import pprint as pp
+
 import arrow
-from data_scrapers import brickset_piece_info as BSPI
-from data_scrapers import bricklink_piece_info as BLPI
+
+from scrapers import brickset_piece_info as BSPI
+from scrapers import bricklink_piece_info as BLPI
 import LBEF
 
 
@@ -84,7 +85,6 @@ def add_set2database(set, verbose=0):
                    set['set_name']))
 
 
-
 def add_BSsetPieces2Database(set_num, brickset_pieces, verbose=0):
     """
         set_num is the fill set number: 1234-2
@@ -116,7 +116,7 @@ def add_BSinv2database(dic, set_id):
     """
     con = lite.connect('lego_sets.sqlite')
 
-    #Need to remove all elements for the set from before REMOVE WHERE?
+    # Need to remove all elements for the set from before REMOVE WHERE?
     with con:
         c = con.cursor()
         c.execute('DELETE FROM bs_inventories WHERE set_id=?', (set_id,))
@@ -132,14 +132,14 @@ def add_BSinv2database(dic, set_id):
                 # if getting the piece id is successful that means tha the piece
                 #  exists in both piece tables
                 c = con.cursor()
-                piece_id =get_element_id(current_element, c)
+                piece_id = get_element_id(current_element, c)
 
             if piece_id is None:
                 with con:
                     c = con.cursor()
                     piece_dic = BSPI.get_pieceinfo(current_element)
                     if piece_dic is None:
-                        raise AssertionError #if it is in a brickset inventory, it should be on the bs page
+                        raise AssertionError  #if it is in a brickset inventory, it should be on the bs page
                     print("Adding element " + piece_dic['design_num'] + " to the database")
 
                     design_id = get_design_id(piece_dic['design_num'], c)
@@ -155,7 +155,8 @@ def add_BSinv2database(dic, set_id):
 
             with con:
                 c = con.cursor()
-                c.execute('INSERT INTO bs_inventories(set_id, piece_id, quantity) VALUES (?,?,?)', (set_id, piece_id, i[1]))
+                c.execute('INSERT INTO bs_inventories(set_id, piece_id, quantity) VALUES (?,?,?)',
+                          (set_id, piece_id, i[1]))
 
     with con:
         c = con.cursor()
@@ -169,7 +170,8 @@ def add_BSinv2database(dic, set_id):
         if calc_weight == 0: calc_weight = None
         c.execute('UPDATE sets SET piece_weight_bs=? WHERE id=?;', (calc_weight, set_id))
 
-        c.execute('UPDATE sets SET last_inv_updated_bs=? WHERE id=?', (arrow.now('US/Pacific').format('YYYY-MM-DD'),set_id))
+        c.execute('UPDATE sets SET last_inv_updated_bs=? WHERE id=?',
+                  (arrow.now('US/Pacific').format('YYYY-MM-DD'), set_id))
 
 
 def add_BLsetPieces2Database(set_num, bricklink_pieces, verbose=0):
@@ -178,14 +180,14 @@ def add_BLsetPieces2Database(set_num, bricklink_pieces, verbose=0):
         bricklink_pieces is a list of all the pieces in a set
     """
     if verbose == 1:
-        print("Adding Pieces to DB: "+str(set_num))
+        print("Adding Pieces to DB: " + str(set_num))
     if bricklink_pieces is None:
         return None
     con = lite.connect('lego_sets.sqlite')
     set_id = None
     with con:
         c = con.cursor()
-        set_id = get_set_id(set_num,c)
+        set_id = get_set_id(set_num, c)
 
     if set_id is not None:
         add_BLinv2database(bricklink_pieces, set_id)
@@ -199,13 +201,14 @@ def add_BLsetPieces2Database(set_num, bricklink_pieces, verbose=0):
 
     pass
 
+
 def add_BLinv2database(piece_dic, set_id):
     """
          adds the inventory to the brickset database
     """
     con = lite.connect('lego_sets.sqlite')
 
-    #Need to remove all elements for the set from before REMOVE WHERE?
+    # Need to remove all elements for the set from before REMOVE WHERE?
     with con:
         c = con.cursor()
         c.execute('DELETE FROM bl_inventories WHERE set_id=?', (set_id,))
@@ -237,7 +240,8 @@ def add_BLinv2database(piece_dic, set_id):
 
             with con:
                 c = con.cursor()
-                c.execute('INSERT INTO bl_inventories(set_id, piece_id, quantity) VALUES (?,?,?)', (set_id, design_id, current_quantity))
+                c.execute('INSERT INTO bl_inventories(set_id, piece_id, quantity) VALUES (?,?,?)',
+                          (set_id, design_id, current_quantity))
 
     with con:
         c = con.cursor()
@@ -250,7 +254,8 @@ def add_BLinv2database(piece_dic, set_id):
         if calc_weight == 0: calc_weight = None
         c.execute('UPDATE sets SET piece_weight_bl=? WHERE id=?', (calc_weight, set_id))
 
-        c.execute('UPDATE sets SET last_inv_updated_bl=? WHERE id=?', (arrow.now('US/Pacific').format('YYYY-MM-DD'), set_id))
+        c.execute('UPDATE sets SET last_inv_updated_bl=? WHERE id=?',
+                  (arrow.now('US/Pacific').format('YYYY-MM-DD'), set_id))
 
 
 def add_pieceDesign2Database(piece_dic, cursor):
@@ -299,14 +304,14 @@ def _chk_last_updated_today(set_num):
             c.execute("SELECT last_updated FROM sets WHERE set_num=?", (set_num,))
             last_updated = c.fetchone()[0]
             if last_updated is None:
-                    return False
+                return False
             last_updated = arrow.get(last_updated)
 
-            return LBEF.check_in_date_range(last_updated, last_updated.replace(days=-15), last_updated.replace(days=+15))
+            return LBEF.check_in_date_range(last_updated, last_updated.replace(days=-15),
+                                            last_updated.replace(days=+15))
         except:
             return False
     return False
-
 
 
 def _chk_last_inv_updated_today(set_num):
@@ -323,7 +328,8 @@ def _chk_last_inv_updated_today(set_num):
                 return False
             last_updated = arrow.get(last_updated)
 
-            return LBEF.check_in_date_range(last_updated, last_updated.replace(days=-15), last_updated.replace(days=+15))
+            return LBEF.check_in_date_range(last_updated, last_updated.replace(days=-15),
+                                            last_updated.replace(days=+15))
         except:
             return False
     return False

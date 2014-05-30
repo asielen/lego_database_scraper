@@ -1,12 +1,14 @@
 __author__ = 'andrew.sielen'
 
-from LBEF import *
 import pprint as pp
+
+from LBEF import *
+
 
 
 # http://www.bricklink.com/catalogPG.asp?S=[piece number] <- gives you weight
 
-def get_all_prices(set_num_primary, set_num_secondary = 1):
+def get_all_prices(set_num_primary, set_num_secondary=1):
     price_dict = {}
     piece_dict = {}
     piece_dict.update(get_pieceout_new(set_num_primary, set_num_secondary))
@@ -19,27 +21,31 @@ def get_all_prices(set_num_primary, set_num_secondary = 1):
 
     return price_dict
 
+
 def add_pieceInfo2PriceInfo(piece_dict, price_dict):
     if 'pieced_new' in piece_dict:
         if 'avg_historic_sales' in piece_dict['pieced_new']:
             price_dict['historic_new']['piece_avg'] = piece_dict['pieced_new']['avg_historic_sales']
-        else: price_dict['historic_new']['piece_avg'] = None
+        else:
+            price_dict['historic_new']['piece_avg'] = None
         if 'current_sales' in piece_dict['pieced_new']:
             price_dict['current_new']['piece_avg'] = piece_dict['pieced_new']['current_sales']
-        else: price_dict['current_new']['piece_avg'] = None
+        else:
+            price_dict['current_new']['piece_avg'] = None
     if 'pieced_used' in piece_dict:
         if 'avg_historic_sales' in piece_dict['pieced_used']:
             price_dict['historic_used']['piece_avg'] = piece_dict['pieced_used']['avg_historic_sales']
-        else: price_dict['historic_used']['piece_avg'] = None
+        else:
+            price_dict['historic_used']['piece_avg'] = None
         if 'current_sales' in piece_dict['pieced_used']:
             price_dict['current_used']['piece_avg'] = piece_dict['pieced_used']['current_sales']
-        else: price_dict['current_used']['piece_avg'] = None
+        else:
+            price_dict['current_used']['piece_avg'] = None
 
     return price_dict
 
 
-
-def get_pieceout_new(set_num_primary, set_num_secondary = 1):
+def get_pieceout_new(set_num_primary, set_num_secondary=1):
     """
         Return a dictionary of the price of a pieced out new set at the time this is run
     """
@@ -48,10 +54,10 @@ def get_pieceout_new(set_num_primary, set_num_secondary = 1):
 
     soup = soupify(url)
     dic = _parse_priceout(soup)
-    return {'pieced_new':dic}
+    return {'pieced_new': dic}
 
 
-def get_pieceout_used(set_num_primary, set_num_secondary = 1):
+def get_pieceout_used(set_num_primary, set_num_secondary=1):
     """
         Return a dictionary of the price of a pieced out new set at the time this is run
     """
@@ -59,11 +65,11 @@ def get_pieceout_used(set_num_primary, set_num_secondary = 1):
         set_num_primary, set_num_secondary)
     soup = soupify(url)
     dic = _parse_priceout(soup)
-    return {'pieced_used':dic}
+    return {'pieced_used': dic}
 
 
-#Get current market prices
-def get_set_prices(set_num_primary, set_num_secondary = 1):
+# Get current market prices
+def get_set_prices(set_num_primary, set_num_secondary=1):
     """
         From set number, open the bricklink page and split it into current and _parse_historic_prices
         Return: Dictionary {Historic:{},Current:{}}
@@ -72,7 +78,7 @@ def get_set_prices(set_num_primary, set_num_secondary = 1):
                                                                                                       set_num_secondary)
     soup = soupify(url)
 
-    parent_tags = soup.find("tr", {"bgcolor": "#C0C0C0"}) # Relies on only that secion having that color
+    parent_tags = soup.find("tr", {"bgcolor": "#C0C0C0"})  # Relies on only that secion having that color
 
     if not parent_tags:
         return {"historic_new": {}, "historic_used": {}, "current_new": {}, "current_used": {}}
@@ -85,7 +91,6 @@ def get_set_prices(set_num_primary, set_num_secondary = 1):
 
     return {"historic_new": historic_prices["new"], "historic_used": historic_prices["used"],
             "current_new": current_prices["new"], "current_used": current_prices["used"]}
-
 
 
 #Get new and used piece out data
@@ -101,7 +106,7 @@ def _parse_priceout(soup):
     historic_price = _parse_pieceout_price_block(children_tags0[0])
     current_price = _parse_pieceout_price_block(children_tags0[1])
 
-    return dict(historic_price, **current_price) #this combines two dictionaries into one
+    return dict(historic_price, **current_price)  #this combines two dictionaries into one
 
 
 def _parse_pieceout_price_block(parent_tags):
@@ -113,9 +118,6 @@ def _parse_pieceout_price_block(parent_tags):
     children_tags1 = children_tags0.findAll("font")
 
     return {children_tags1[0].string.strip(): zero_2_null(only_numerics_float(children_tags1[1].string.strip()))}
-
-
-
 
 
 def _parse_current_prices(parent_tags_list):
@@ -239,6 +241,7 @@ def _scrub_price_data(dic):
 
     return scrubbed_dic
 
+
 def _scrub_pieced_price(dic):
     scrubbed_dic = {}
     if 'Average of last 6 months Sales:' in dic:
@@ -246,6 +249,7 @@ def _scrub_pieced_price(dic):
     if 'Current Items For Sale Average:' in dic:
         scrubbed_dic['current_sales'] = dic['Current Items For Sale Average:']
     return scrubbed_dic
+
 
 def _scrub_pieced_info(dic):
     scrubbed_dic = {}
@@ -259,8 +263,8 @@ def _scrub_pieced_info(dic):
         scrubbed_dic['pieced_used'] = None
     return scrubbed_dic
 
-def _scrub_price(dic):
 
+def _scrub_price(dic):
     """
      Converts:                'current_new': {   'Avg Price:': 29.25,
                                    'Max Price:': 60.0,
@@ -309,12 +313,11 @@ def _scrub_price(dic):
     return scrubbed_dic
 
 
-
-
 def main():
     SET = input("What is the set number?: ")
     pp.pprint(get_all_prices(SET))
     main()
+
 
 if __name__ == "__main__":
     main()

@@ -6,10 +6,10 @@ import pprint as pp
 import arrow
 from LBEF import expand_set_num
 
-from data_scrapers import brickset_set_data as BS
-from data_scrapers import bricklink_set_data as BL
-from data_scrapers import brickset_inventory as BSP
-from data_scrapers import bricklink_inventory as BLP
+from scrapers import brickset_set_data as BS
+from scrapers import bricklink_set_data as BL
+from scrapers import brickset_inventory as BSP
+from scrapers import bricklink_inventory as BLP
 
 
 def get_basestats(set, force=0, verbose=0):
@@ -20,7 +20,7 @@ def get_basestats(set, force=0, verbose=0):
     scrubbed_dic = {}
     if ud._chk_last_updated_today(set) == False and force == 0:
         if verbose == 1:
-            print("Getting Base Stats: "+str(set))
+            print("Getting Base Stats: " + str(set))
         brickset_stats = BS.get_basestats(set_num, set_seq)
         bricklink_stats = BL.get_basestats(set_num, set_seq)
 
@@ -123,7 +123,7 @@ def get_basestats(set, force=0, verbose=0):
         ud.add_set2database(scrubbed_dic, verbose)
     else:
         if verbose == 1:
-            print("Base Stats in for today: "+str(set))
+            print("Base Stats in for today: " + str(set))
     return None
 
 
@@ -131,7 +131,7 @@ def get_pieces(set, force=0, verbose=0):
     set_num, set_seq, set = expand_set_num(set)
     if ud._chk_last_inv_updated_today(set) == False and force == 0:
         if verbose == 1:
-            print("Getting Pieces: "+str(set))
+            print("Getting Pieces: " + str(set))
         brickset_pieces = BSP.get_setpieces(set_num, set_seq)
         ud.add_BSsetPieces2Database(set, brickset_pieces, verbose)
 
@@ -140,7 +140,7 @@ def get_pieces(set, force=0, verbose=0):
 
     else:
         if verbose == 1:
-            print("Pieces in for today: "+str(set))
+            print("Pieces in for today: " + str(set))
     return None
 
 

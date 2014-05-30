@@ -1,14 +1,16 @@
 __author__ = 'andrew.sielen'
 
-from LBEF import *
-import arrow
 import pprint
+
+from LBEF import *
+
 
 # http://brickset.com/inventories/[set-num]-[set-seq] <- THe set inventory
 # http://brickset.com/parts/[piece number] <-Gives you element number, element name, design number, color,
 
 
-pp = pprint.PrettyPrinter(indent = 4)
+pp = pprint.PrettyPrinter(indent=4)
+
 
 def get_basestats(set_num_primary, set_num_secondary=1):
     """
@@ -40,8 +42,9 @@ def get_basestats(set_num_primary, set_num_secondary=1):
 
     return scrub_data(dic)
 
-#### Get Daily Data #####
-def get_daily_data(set_num_primary, set_num_secondary = 1):
+
+# ### Get Daily Data #####
+def get_daily_data(set_num_primary, set_num_secondary=1):
     """
         Returns a dictionary with the following data
             avilability dates
@@ -85,6 +88,7 @@ def _parse_sidebar(soup):
 
     return dic
 
+
 def _parse_set_dimensions(d_string):
     """
         Takes a beautiul soup object contents and returns the dimensions in the (,,) format
@@ -95,11 +99,12 @@ def _parse_set_dimensions(d_string):
     """
     if 'cm' in d_string:
         #if 'cm' is in the second element of the list, use those numbers
-        cm = str.split(d_string,"cm")[0]
+        cm = str.split(d_string, "cm")[0]
         return tuple([zero_2_null(only_numerics_float(s)) for s in str.split(cm, ' x ')])
     else:
         #if no cm dims in the string
         return (None, None, None)
+
 
 # def _parse_set_name(soup):
 #     """
@@ -110,12 +115,13 @@ def _parse_set_dimensions(d_string):
 #         return ""
 #     return parent_tags0.string.strip()
 
-def get_bs_want_own(set_num_primary, set_num_secondary = 1):
+def get_bs_want_own(set_num_primary, set_num_secondary=1):
     url = "http://brickset.com/sets/{0}-{1}".format(set_num_primary, set_num_secondary)
 
     soup = soupify(url)
 
     return _parse_want_own(soup)
+
 
 def _parse_want_own(soup):
     """
@@ -139,15 +145,14 @@ def _parse_want_own(soup):
     return dic
 
 
-
-
 ##### Get Dates #####
-def get_bs_avaiable_dates(set_num_primary, set_num_secondary = 1):
+def get_bs_avaiable_dates(set_num_primary, set_num_secondary=1):
     url = "http://brickset.com/sets/{0}-{1}".format(set_num_primary, set_num_secondary)
 
     soup = soupify(url)
 
     return _parse_avaiable_dates(soup)
+
 
 def _parse_avaiable_dates(soup):
     """
@@ -162,12 +167,13 @@ def _parse_avaiable_dates(soup):
     parent_tags1 = parent_tags0[1]
     if parent_tags1.contents == ['\n']:
         return {}
-    children_tagsA = parent_tags1.findAll("dt") #locations
-    children_tagsB = parent_tags1.findAll("dd") #prices
-    for i in range(0,len(children_tagsA)):
+    children_tagsA = parent_tags1.findAll("dt")  #locations
+    children_tagsB = parent_tags1.findAll("dd")  #prices
+    for i in range(0, len(children_tagsA)):
         if len(children_tagsB[i].contents):
             dates_dic[children_tagsA[i].get_text()] = _parse_available_dates_string(children_tagsB[i].contents[0])
     return dates_dic
+
 
 def _parse_available_dates_string(s):
     """
@@ -175,12 +181,13 @@ def _parse_available_dates_string(s):
             and returns ('2011-11-11','2012-11-18')
     """
     dates_list = [s.strip().split(' ') for s in s.split("-")]
-    if len(dates_list) < 2: return ("","")
-    if dates_list == [[""],[""]]: return ("","")
+    if len(dates_list) < 2: return ("", "")
+    if dates_list == [[""], [""]]: return ("", "")
     dates_list_strings = (_parse_available_dates_make_string(dates_list[0]),
                           _parse_available_dates_make_string(dates_list[1]))
 
     return dates_list_strings
+
 
 def _parse_available_dates_make_string(l):
     """
@@ -188,31 +195,32 @@ def _parse_available_dates_make_string(l):
             #and returns 2012-11-10'
             and returns the unix timestamp
     """
-    months = {'Jan':'01','Feb':'02','Mar':'03','Apr':'04','May':'05','Jun':'06',
-              'Jul':'07','Aug':'08','Sep':'09','Oct':'10','Nov':'11','Dec':'12'}
+    months = {'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
+              'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'}
     if len(l) < 2: return ""
     if l[1] not in months: return ""
-    date_string = "20"+l[2]+"-"+months[l[1]]+"-"+l[0]
+    date_string = "20" + l[2] + "-" + months[l[1]] + "-" + l[0]
     return date_string
+
 
 ##### Get Dates #####
 
 ##### Get Rating #####
-def get_bs_rating(set_num_primary, set_num_secondary = 1):
+def get_bs_rating(set_num_primary, set_num_secondary=1):
     url = "http://brickset.com/sets/{0}-{1}".format(set_num_primary, set_num_secondary)
 
     soup = soupify(url)
 
     return _parse_rating(soup)
 
+
 def _parse_rating(soup):
     """
         Finds the rating on the site and returns it in the format {'bs_rating':n}
     """
     parent_tag = soup.find("div", {"class": "rating"})
-    if parent_tag is None: return {'bs_score' : None}
-    return {'bs_score':float(parent_tag.attrs['title'])}
-
+    if parent_tag is None: return {'bs_score': None}
+    return {'bs_score': float(parent_tag.attrs['title'])}
 
 
 def scrub_data(dic):
@@ -260,7 +268,7 @@ def scrub_data(dic):
     scrubbed_dic = {}
 
     if 'Name' in dic:
-        if dic['Name']=='': return {}
+        if dic['Name'] == '': return {}
         scrubbed_dic['set_num'] = dic['Set number']
         scrubbed_dic['set_name'] = dic['Name']
     if 'Age range' in dic:
@@ -272,7 +280,7 @@ def scrub_data(dic):
     if 'Minifigs' in dic:
         scrubbed_dic['figures'] = scrub_text2int(dic['Minifigs'])
     if 'Dimensions' in dic:
-        scrubbed_dic['dimensions'],scrubbed_dic['volume'] = bs_scrub_dimensions(dic['Dimensions'])
+        scrubbed_dic['dimensions'], scrubbed_dic['volume'] = bs_scrub_dimensions(dic['Dimensions'])
     if 'Pieces' in dic:
         scrubbed_dic['pieces'] = scrub_text2int(dic['Pieces'])
     if 'Price per piece' in dic:
@@ -300,6 +308,7 @@ def scrub_data(dic):
         scrubbed_dic['bs_score'] = dic['bs_score']
 
     return scrubbed_dic
+
 
 def scrub_daily_data(dic):
     """
@@ -368,6 +377,7 @@ def scrub_daily_data(dic):
 
     return scrubbed_dic
 
+
 #These are functions that are unique to brickset data, they don't need to be in the generic scrub file
 def bs_scrub_price(s):
     """
@@ -384,6 +394,7 @@ def bs_scrub_price(s):
             #searches for the dollar sign or c for cents
             price_dic['us'] = zero_2_null(only_numerics_float(p))
     return price_dic
+
 
 # def bs_scrub_set_name(s):
 #     """
@@ -406,13 +417,15 @@ def bs_scrub_age_range(s):
         ages_list = (ages_list[0], None)
     return ages_list
 
+
 def bs_scrub_dimensions(t):
     """
         Needs to return tuple of dimensions + volume (l * w * h)
     """
-    volume = t[0]*t[1]*t[2]
+    volume = t[0] * t[1] * t[2]
     if volume == 0: return [(None, None, None), None]
     return [t, volume]
+
 
 def bs_scrub_weight(s):
     """
@@ -420,9 +433,10 @@ def bs_scrub_weight(s):
             and returns 400.0
     """
     weight = s.split('Kg')[0]
-    weight = only_numerics_float(weight)*1000 #Kg to grams conversion
+    weight = only_numerics_float(weight) * 1000  #Kg to grams conversion
     if weight == 0: return None
     return weight
+
 
 def bs_scrub_year(s):
     """
@@ -431,13 +445,12 @@ def bs_scrub_year(s):
     return zero_2_null(only_numerics_int(s))
 
 
-
-
 def main():
     set = input("What is the set num? ")
     pp.pprint(get_basestats(set))
     pp.pprint(get_daily_data(set))
     main()
+
 
 if __name__ == "__main__":
     main()

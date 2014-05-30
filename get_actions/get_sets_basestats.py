@@ -1,20 +1,19 @@
 __author__ = 'andrew.sielen'
 
-import arrow
 import logging
+
+import arrow
 from profilehooks import profile
 
 from LBEF import expand_set_num
-import LBEF
-
 from database_management import set_info
 from database_management import add_set
 from database_management import add_inventories
+from scrapers import brickset_set_data as BS
+from scrapers import bricklink_set_data as BL
+from scrapers import brickset_inventory as BSP
+from scrapers import bricklink_inventory as BLP
 
-from data_scrapers import brickset_set_data as BS
-from data_scrapers import bricklink_set_data as BL
-from data_scrapers import brickset_inventory as BSP
-from data_scrapers import bricklink_inventory as BLP
 
 @profile
 def get_all_basestats(set_list, force=0):
@@ -59,8 +58,10 @@ def get_all_basestats(set_list, force=0):
 def get_and_filter_sets_by_year(set_list):
     return set_info.filter_list_on_dates(set_list, set_info.get_all_set_years())
 
+
 def get_and_filter_sets_blinv_by_year(set_list):
     return set_info.filter_list_on_dates(set_list, set_info.get_all_bl_update_years())
+
 
 def get_and_filter_sets_bsinv_by_year(set_list):
     return set_info.filter_list_on_dates(set_list, set_info.get_all_bs_update_years())
@@ -99,10 +100,12 @@ def get_basestats(set):
 
     if 'set_num' in brickset_stats:
         if brickset_stats['set_num'] == '': return None
-        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = expand_set_num(brickset_stats['set_num'])
+        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = expand_set_num(
+            brickset_stats['set_num'])
     elif 'set_num' in bricklink_stats:
         if bricklink_stats['set_num'] == '': return None
-        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = expand_set_num(bricklink_stats['set_num'])
+        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = expand_set_num(
+            bricklink_stats['set_num'])
     else:
         return None
 
@@ -186,6 +189,7 @@ def get_basestats(set):
     scrubbed_dic['last_update'] = arrow.now('US/Pacific').format('YYYY-MM-DD')
 
     add_set.add_set_to_database(scrubbed_dic)
+
 
 def get_bl_inventory(set, bl_designs_in_database):
     """

@@ -1,31 +1,30 @@
 __author__ = 'Andrew'
 
-import requests
+import logging
+
+import navigation.menu as menu
+from apis import api_methods as api
+import system_setup as sys
+import LBEF
+
 
 KEY = 'LmtbQqIRtP'
+url = 'http://rebrickable.com/api'
 
 
-def get_colors():
-    """
-
-    @param set_num:
-    @return:
-    """
-    payload = {'key': KEY,  'format': 'json'}
-    return requests.get('http://rebrickable.com/api/get_colors', params=payload, verify=False)
-
-def get_set_info(set_id):
+def pull_set_info(set_num):
     """
     key - API Key
-    set_id - The Set ID to look up (e.g. 8043-1)
+    set - The Set num to look up (e.g. 8043-1)
     format - How to display output data. Valid values: xml, json, csv, tsv
     @param set_num:
     @return:
     """
-    payload = {'key': KEY, 'set_id': str(set_id),  'format': 'json'}
-    return requests.get('http://rebrickable.com/api/get_set', params=payload, verify=False)
+    parameters = {'key': KEY, 'set_id': set_num, 'format': 'csv'}
+    return api.read_csv_from_url(url + '/get_set', params=parameters)
 
-def get_set_inventory(set_num):
+
+def pull_set_inventory(set_num):
     """
     key - API Key
     set - The Set ID to look up (e.g. 8258-1)
@@ -33,10 +32,11 @@ def get_set_inventory(set_num):
     @param set_num:
     @return:
     """
-    payload = {'key': KEY, 'set': str(set_num), 'format': 'json'}
-    return requests.get('http://rebrickable.com/api/get_set_parts', params=payload, verify=False)
+    parameters = {'key': KEY, 'set': set_num, 'format': 'csv'}
+    return api.read_csv_from_url(url + '/get_set_parts', params=parameters)
 
-def get_piece_info(part_id):
+
+def pull_piece_info(part_id):
     """
     key - API Key
     part_id - The Part ID to look up (e.g. 3001)
@@ -44,7 +44,68 @@ def get_piece_info(part_id):
     inc_ext - Optional flag (1 or 0) to include external Part IDs (may be a lot of data for some parts due to LEGO element ids)
     format - How to display output data. Valid values: xml, json
     @param piece:
+    @return: in json format for some stupid reason (a dictionary)
+    """
+    parameters = {'key': KEY, 'part_id': part_id, 'inc_ext': '1', 'format': 'json'}
+    return api.read_json_from_url(url + '/get_part', params=parameters)
+
+
+def pull_colors():
+    """
+    This doesn't use the API because it instead pulls ALL colors from this table: http://rebrickable.com/colors
+        The api only returns the main id
+    @return: ['',rebrickable ID, Name, rgb hex, num parts, num sets, start year, start end, lego name, ldraw color, bricklink color, peeron color]
+    note rebrickable ID is essentially the same as the ldraw id
+    """
+    url = 'http://rebrickable.com/colors'
+    soup = LBEF.soupify(url)
+    table = soup.find('table', {'class': 'table'})
+    return LBEF.parse_html_table(table)
+
+
+def main_menu():
+    """
+    Main launch menu
     @return:
     """
-    payload = {'key': KEY, 'part_id': part_id, 'inc_ext': 1, format': 'json'}
-    return requests.get('http://rebrickable.com/api/get_part', params=payload, verify=False)
+    sys.setup_logging()
+    logging.info("RUNNING: Rebrickable API testing")
+    options = {}
+
+    options['1'] = "Pull Set Info", menu_pull_set_info
+    options['2'] = "Pull Set Inventory", menu_pull_set_inventory
+    options['3'] = "Pull Piece Info", menu_pull_piece_info
+    options['4'] = "SYS Pull Colors", menu_pull_colors
+    options['9'] = "Quit", menu.quit
+
+    while True:
+        result = menu.options_menu(options)
+        if result is 'kill':
+            exit()
+
+
+def menu_pull_set_info():
+    set_num = input("What set num? ")
+    csvfile = pull_set_info(set_num)
+    api.print4(csvfile)
+
+
+def menu_pull_set_inventory():
+    set_num = input("What set num? ")
+    csvfile = pull_set_inventory(set_num)
+    api.print4(csvfile)
+
+
+def menu_pull_piece_info():
+    piece_num = input("What piece num? ")
+    csvfile = pull_piece_info(piece_num)
+    print(csvfile.text)  # a dictionary that will need to be parsed
+
+
+def menu_pull_colors():
+    csvfile = pull_colors()
+    api.print4(csvfile)
+
+
+if __name__ == "__main__":
+    main_menu()

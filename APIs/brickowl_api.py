@@ -1,94 +1,153 @@
 __author__ = 'Andrew'
 
-import requests
+import logging
+
+import navigation.menu as menu
+from apis import api_methods as api
+import system_setup as sys
+
 
 KEY = '12da35f38a061ef52efc56eba9267ed7c9a8f3d4b5c54c396729378788819a0b'
+url = 'https://api.brickowl.com/v1/catalog'
 
 
-
-
-print(r.text)
-
-def get_conditions_list():
+def pull_catalog_list(type=None):
     """
 
     @return:
     """
-    payload = {'key': KEY}
-    r = requests.get('https://api.brickowl.com/v1/catalog/condition_list', params=payload, verify=False)
+    parameters = {'key': KEY, 'type': type}
+    return api.read_json_from_url(url + '/list', params=parameters)
 
-def get_data_type_list():
+
+def pull_catalog_item_info(boid):
     """
 
     @return:
     """
-    payload = {'key': KEY}
-    r = requests.get('https://api.brickowl.com/v1/catalog/data_type_list', params=payload, verify=False)
+    parameters = {'key': KEY, 'boid': boid}
+    return api.read_json_from_url(url + '/lookup', params=parameters)
 
-def get_color_list():
+
+def pull_search_ID(lookup_id, type='Set', id_type=None):
     """
-
+    type: Set, Part, Minifigure, Gear, Sticker, Packaging
     @return:
     """
-    payload = {'key': KEY}
-    r = requests.get('https://api.brickowl.com/v1/catalog/color_list', params=payload, verify=False)
+    parameters = {'key': KEY, 'id': lookup_id, 'type': type, 'id_type': id_type}
+    return api.read_json_from_url(url + '/id_lookup', params=parameters)
 
 
-def get_set_inventory(boid):
+def pull_bulk(csvlist):
     """
+    @param csvlist: comma seperated string of BOIDs (max 100)
+    @return:
+    """
+    parameters = {'key': KEY, 'boids': csvlist}
+    return api.read_json_from_url(url + '/bulk_lookup', params=parameters)
 
+
+def pull_set_inventory(boid):
+    """
     @param boid:
     @return:
     """
-    payload = {'key': KEY, 'boid': str(boid)}
-    r = requests.get('https://api.brickowl.com/v1/catalog/inventory', params=payload, verify=False)
+    parameters = {'key': KEY, 'boid': boid}
+    return api.read_json_from_url(url + '/inventory', params=parameters)
 
 
-def search_brickowl(query):
+def pull_colors():
     """
-    query - Your search term. To browse use the term 'All'.
-    page (Optional) - Page number, usually 1 - 50
-    missing_data (Optional) - Missing data filter. You can get the possible values from this query http://www.brickowl.com/search/catalog?query=All&show_missing=1 on the left
     @return:
     """
-    payload = {'key': KEY, 'boid': str(boid)}
-    r = requests.get('https://api.brickowl.com/v1/catalog/search', params=payload, verify=False)
+    parameters = {'key': KEY}
+    return api.read_json_from_url(url + '/color_list', params=parameters)
 
-def lookup_boids(boids):
+
+def pull_data_types():
     """
-    boids - A comma separated list of boids. Maximum amount: 100
-    @param boids:
     @return:
     """
-    payload = {'key': KEY, 'boid': str(boid)}
-    r = requests.get('https://api.brickowl.com/v1/catalog/bulk_lookup', params=payload, verify=False)
+    parameters = {'key': KEY}
+    return api.read_json_from_url(url + '/data_type_list', params=parameters)
 
 
-def lookup_boid(boid):
+def pull_conditions():
     """
-    boid - BOID
-    @param boid:
     @return:
     """
-    payload = {'key': KEY, 'boid': str(boid)}
-    r = requests.get('https://api.brickowl.com/v1/catalog/lookup', params=payload, verify=False)
+    parameters = {'key': KEY}
+    return api.read_json_from_url(url + '/condition_list', params=parameters)
 
-def lookup_boid_id(set_num):
+
+def main_menu():
     """
-    id - ID
-    type - Filter by item type. Set, Part, Minifigure, Gear, Sticker, Packaging
-    id_type (Optional) - Filter by ID type.
-    @param set_num:
+    Main launch menu
     @return:
     """
-    payload = {'key': KEY, 'id': str(set_num), 'type': }
-    r = requests.get('https://api.brickowl.com/v1/catalog/id_lookup', params=payload, verify=False)
+    sys.setup_logging()
+    logging.info("RUNNING: Brickowl API testing")
+    options = {}
 
-def get_catalog_list():
-    """
-    type (Optional) - Filter by item type. Set, Part, Minifigure, Gear, Sticker, Packaging
-    brand (Optional) - Filter by brand
-    @return:
-    """
-    payload = {'key': KEY}
-    r = requests.get('https://api.brickowl.com/v1/catalog/list', params=payload, verify=False)
+    options['1'] = "Pull Catalog List", menu_pull_catalog_list
+    options['2'] = "Pull Item Info", menu_pull_catalog_item_info
+    options['3'] = "Search Item Ids", menu_pull_search_ID
+    options['4'] = "Pull Bulk Item list", menu_pull_bulk
+    options['5'] = "Pull Set Inventory", menu_pull_set_inventory
+    options['6'] = "SYS Pull Colors", menu_pull_colors
+    options['7'] = "SYS Pull Data Types", menu_pull_data_types
+    options['8'] = "SYS Pull Conditions", menu_pull_conditions
+    options['9'] = "Quit", menu.quit
+
+    while True:
+        result = menu.options_menu(options)
+        if result is 'kill':
+            exit()
+
+
+def menu_pull_catalog_list():
+    jsonfile = pull_catalog_list()
+    print(jsonfile)
+
+
+def menu_pull_catalog_item_info():
+    set_num = input("What set num? ")
+    jsonfile = pull_catalog_item_info(set_num)
+    print(jsonfile)
+
+
+def menu_pull_search_ID():
+    item_id = input("What item num? ")
+    jsonfile = pull_search_ID(item_id)
+    print(jsonfile)
+
+
+def menu_pull_bulk():
+    str = "10197-1, 3924-1, 12234-1"
+    jsonfile = pull_bulk(str)
+    print(jsonfile)
+
+
+def menu_pull_set_inventory():
+    set_num = input("What set num? ")
+    jsonfile = pull_set_inventory(set_num)
+    print(jsonfile)
+
+
+def menu_pull_colors():
+    jsonfile = pull_colors()
+    print(jsonfile)
+
+
+def menu_pull_data_types():
+    jsonfile = pull_data_types()
+    print(jsonfile)
+
+
+def menu_pull_conditions():
+    jsonfile = pull_conditions()
+    print(jsonfile)
+
+
+if __name__ == "__main__":
+    main_menu()

@@ -1,14 +1,8 @@
 __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
-import arrow
 
 from database_management.database_info import database
-from database_management.set_info import get_set_id
-
-from data_scrapers import brickset_piece_info as BSPI
-from data_scrapers import bricklink_piece_info as BLPI
-import LBEF
 
 
 def add_set_to_database(set):

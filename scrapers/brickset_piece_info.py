@@ -1,13 +1,15 @@
 __author__ = 'andrew.sielen'
 
-from LBEF import *
 import pprint
+
+from LBEF import *
+
 
 # http://brickset.com/parts/473326 <-Piece lookup
 # http://www.bricklink.com/catalogItem.asp?P=4733
 # http://www.bricklink.com/cataloglist.asp?&searchNo=Y&q=30063&catLike=W&catType=P <- Piece lookup
 
-#Get pieces stats
+# Get pieces stats
 def get_pieceinfo(element_number):
     """
         Return a dictionary of pieces from Brickset.com

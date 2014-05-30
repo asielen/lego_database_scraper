@@ -2,15 +2,17 @@ __author__ = 'Andrew'
 
 import csv
 import sqlite3 as lite
-import LBEF
-from database_management.database_info import database
 import logging
-import arrow
-from profilehooks import profile
 import pprint as pp
 
-from data_scrapers import bricklink_piece_info as BLPI
+import arrow
+from profilehooks import profile
+
+import LBEF
+from database_management.database_info import database
+from scrapers import bricklink_piece_info as BLPI
 from database_management.add_pieces import add_design_to_database
+
 
 REBRICKABLE_COLORS = 'colors.csv'
 REBRICKABLE_PIECES = 'pieces.csv'
@@ -58,7 +60,7 @@ def check_pieces():
 
     diff = LBEF.DictDiffer(pieces_list, database_pieces)
 
-    #update piece names
+    # update piece names
     changed_list = dict(diff.changed())
     with con:
         c = con.cursor()
@@ -84,7 +86,7 @@ def check_pieces():
     pp.pprint(len(missing_pieces))
 
 
-########
+# #######
 
 
 @profile
