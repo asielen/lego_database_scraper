@@ -1,10 +1,11 @@
 __author__ = 'andrew.sielen'
 
+import re
+import logging
+
 import requests
 from bs4 import BeautifulSoup
-import re
 import arrow
-import logging
 
 
 def soupify(url):
@@ -126,7 +127,7 @@ def in2cm(n):
     return n * 2.54
 
 
-### Data Scrubers ####
+# ## Data Scrubers ####
 def scrub_text2int(s):
     """
         Takes a text string and returns an appropriate integer
@@ -250,6 +251,19 @@ def list_to_dict(l):
     @return: {a:b,c:d,e:f}
     """
     return {n[0]: n[1] for n in l}
+
+
+def input_set_num(type=0):
+    """
+    @param type: 0 or 1
+    @return: if type == 1 xxxx, y, xxxx-y
+    @return: else return xxxx-y
+    """
+    set_num = input("What set num? ")
+    if type == 1:
+        return expand_set_num(set_num)
+    else:
+        return expand_set_num(set_num)[2]
 
 
 #source http://stackoverflow.com/questions/1165352/fast-comparison-between-two-python-dictionary

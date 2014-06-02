@@ -4,6 +4,8 @@ import pprint
 
 from LBEF import *
 
+# Todo: It looks like this will still be needed, there doesn't seem to be an easy way to get this data as a one off,
+# all of this should be included in the master piece file (except the alternative models)
 
 # http://www.bricklink.com/catalogItem.asp?P=4733
 # http://www.bricklink.com/cataloglist.asp?&searchNo=Y&q=30063&catLike=W&catType=P <- Piece lookup

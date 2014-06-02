@@ -1,6 +1,7 @@
 __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
+
 from database_management.database_info import database
 
 
@@ -22,6 +23,7 @@ def get_element_id(part_num):
         element_id = element_id_raw[0]
 
     return element_id
+
 
 def get_design_id(design_num):
     """
@@ -45,6 +47,7 @@ def get_design_id(design_num):
 
     return design_id
 
+
 def get_sets_per_design():
     """
 
@@ -63,6 +66,7 @@ def get_sets_per_design():
 
     return designs
 
+
 def get_years_available(design_num):
     """
 
@@ -74,13 +78,15 @@ def get_years_available(design_num):
     con = lite.connect(database)
     with con:
         c = con.cursor()
-        c.execute("SELECT MIN(sets.year_released) AS first_year, MAX(sets.year_released) AS last_year FROM piece_designs "
-                  "JOIN bl_inventories ON piece_designs.id = bl_inventories.piece_id "
-                  "JOIN sets ON bl_inventories.set_id = sets.id "
-                  "WHERE piece_designs.design_num=?;", (design_num,))
+        c.execute(
+            "SELECT MIN(sets.year_released) AS first_year, MAX(sets.year_released) AS last_year FROM piece_designs "
+            "JOIN bl_inventories ON piece_designs.id = bl_inventories.piece_id "
+            "JOIN sets ON bl_inventories.set_id = sets.id "
+            "WHERE piece_designs.design_num=?;", (design_num,))
         years = c.fetchall()
 
     return years
+
 
 def get_avg_price_per_design(design_num):
     """
@@ -92,7 +98,7 @@ def get_avg_price_per_design(design_num):
     """
     avg_price = []
 
-    design_id = get_design_id(design_num) #this saves us from having to do an extra join
+    design_id = get_design_id(design_num)  # this saves us from having to do an extra join
 
     con = lite.connect(database)
     with con:

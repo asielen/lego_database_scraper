@@ -1,4 +1,5 @@
 __author__ = 'andrew.sielen'
+# TODO: Is this needed?
 
 import pprint as pp
 
@@ -8,9 +9,11 @@ from LBEF import *
 
 # http://www.bricklink.com/catalogItemInv.asp?S=1068-1&v=0&bt=2 <-Set piece lookip
 
+# TODO: This is no longer needed, replaced by bricklink_api.pull_set_inventory
 # Get pieces stats
 def get_setpieces(set_num_primary, set_num_secondary=1, verbose=0):
     """
+
         Return a dictionary of pieces from Bricklink.com
         {design_num: qty,design_num: qty,design_num: qty}
     """

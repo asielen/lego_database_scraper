@@ -19,7 +19,7 @@ def initiate_database():
 
 
 
-        #### Build pieces table
+        # ### Build pieces table
         con.execute("CREATE TABLE IF NOT EXISTS parts(id INTEGER PRIMARY KEY,"
                     "lego_id TEXT,"
                     "bricklink_id TEXT,"
@@ -27,7 +27,8 @@ def initiate_database():
                     "brickowl_id TEXT,"
                     "design_name TEXT,"
                     "weight REAL, "
-                    "bl_category INTEGER);")
+                    "bl_category INTEGER,"
+                    "bl_type TEXT);")  #P for part, M for minifig
         con.execute("CREATE UNIQUE INDEX IF NOT EXISTS bl_num_idx ON parts(bricklink_id)")
         con.execute("CREATE UNIQUE INDEX IF NOT EXISTS lego_num_idx ON parts(lego_id)")
         con.execute("CREATE UNIQUE INDEX IF NOT EXISTS re_num_idx ON parts(rebrickable_id)")

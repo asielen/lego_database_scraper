@@ -4,7 +4,7 @@ import pprint as pp
 
 from LBEF import *
 
-
+# Todo: This is still needed, no easy API for this data
 
 # http://www.bricklink.com/catalogPG.asp?S=[piece number] <- gives you weight
 

@@ -1,12 +1,11 @@
 __author__ = 'andrew.sielen'
 
 import pprint as pp
-import logging
 
 from scrapers import bricklink_historic_prices as BHP
 from scrapers import brickset_set_data as BS
 from database_management import add_daily_stats as ADS
-from database_management import set_info
+from database_management import set_info_old
 from LBEF import *
 
 
@@ -32,7 +31,7 @@ def get_daily_set_data(set_num):
     if set_num is None:
         return None
 
-    if set_info.check_last_updated_daily_stats(set_num) == False:
+    if set_info_old.check_last_updated_daily_stats(set_num) == False:
         set_num, set_seq, set_num = expand_set_num(set_num)
 
         price_dict = BHP.get_all_prices(set_num, set_seq)

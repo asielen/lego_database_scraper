@@ -6,7 +6,7 @@ import arrow
 from profilehooks import profile
 
 from LBEF import expand_set_num
-from database_management import set_info
+from database_management import set_info_old
 from database_management import add_set
 from database_management import add_inventories
 from scrapers import brickset_set_data as BS
@@ -19,7 +19,7 @@ from scrapers import bricklink_inventory as BLP
 def get_all_basestats(set_list, force=0):
     """
 
-    @param set_list: a list of set_nums acquired either though sql or a set.txt file
+    @param set_list: a list of set_nums acquired either though sql or a text file
     @return:
     """
 
@@ -40,9 +40,9 @@ def get_all_basestats(set_list, force=0):
         # Update basestats
         for idx, set in enumerate(filtered_set_list):
             logging.info("[ {0}/{1} {2}% ] Getting info on {3}".format(idx, total, round((idx / total) * 100, 2), set))
-            get_basestats(set)
+            add_set.add_set_to_database(get_basestats(set))
 
-        # Update bricklinnk inventories
+        # Update bricklink inventories
         logging.info("Updating bricklink inventories for {} sets".format(len(bl_designs_in_database)))
         for idx, set in enumerate(bl_designs_in_database):
             logging.info("{0} Getting bl inventory on {1}".format(idx, set))
@@ -56,35 +56,31 @@ def get_all_basestats(set_list, force=0):
 
 
 def get_and_filter_sets_by_year(set_list):
-    return set_info.filter_list_on_dates(set_list, set_info.get_all_set_years())
+    return set_info_old.filter_list_on_dates(set_list, set_info_old.get_all_set_years())
 
 
 def get_and_filter_sets_blinv_by_year(set_list):
-    return set_info.filter_list_on_dates(set_list, set_info.get_all_bl_update_years())
+    return set_info_old.filter_list_on_dates(set_list, set_info_old.get_all_bl_update_years())
 
 
 def get_and_filter_sets_bsinv_by_year(set_list):
-    return set_info.filter_list_on_dates(set_list, set_info.get_all_bs_update_years())
+    return set_info_old.filter_list_on_dates(set_list, set_info_old.get_all_bs_update_years())
 
 
-@profile
-def get_basestats(set):
+def get_basestats(set, type=0):
     """
 
     @param set: set num in standard format xxxx-x
-    @param force: if force is 1, it will update even if it doesn't need to be updated
-    @return:
+    @return: dictionary of set information
     """
 
     if set is None:
-        logging.warning("Trying to update a set but there is no set to update")
+        logging.warning("Trying to update a set but there is none to update")
         return None
 
     set_num, set_seq, set = expand_set_num(set)
 
     scrubbed_dic = {}
-
-    logging.info("Getting base stats for: set {}".format(set))
 
     brickset_stats = BS.get_basestats(set_num, set_seq)
     bricklink_stats = BL.get_basestats(set_num, set_seq)
@@ -188,7 +184,30 @@ def get_basestats(set):
 
     scrubbed_dic['last_update'] = arrow.now('US/Pacific').format('YYYY-MM-DD')
 
-    add_set.add_set_to_database(scrubbed_dic)
+    if type == 1:  # Return a list instead of a dict
+        return [scrubbed_dic['set_name'],
+                scrubbed_dic['set_num'],
+                scrubbed_dic['item_num'],
+                scrubbed_dic['item_seq'],
+                scrubbed_dic['theme'],
+                scrubbed_dic['subtheme'],
+                scrubbed_dic['piece_count'],
+                scrubbed_dic['figures'],
+                scrubbed_dic['set_weight'],
+                scrubbed_dic['year_released'],
+                scrubbed_dic['date_released_us'],
+                scrubbed_dic['date_ended_us'],
+                scrubbed_dic['date_released_uk'],
+                scrubbed_dic['date_ended_uk'],
+                scrubbed_dic['original_price_us'],
+                scrubbed_dic['original_price_uk'],
+                scrubbed_dic['age_low'],
+                scrubbed_dic['age_high'],
+                scrubbed_dic['box_size'],
+                scrubbed_dic['box_volume'],
+                scrubbed_dic['last_update']]
+
+    return scrubbed_dic
 
 
 def get_bl_inventory(set, bl_designs_in_database):

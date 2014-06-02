@@ -6,9 +6,9 @@ import logging
 import arrow
 
 from database_management.database_info import database
-from database_management.set_info import get_set_id
-from database_management.piece_info import get_element_id
-from database_management.piece_info import get_design_id
+from database_management.set_info_old import get_set_id
+from database_management.piece_info_old import get_element_id
+from database_management.piece_info_old import get_design_id
 from database_management.add_pieces import add_element_to_database
 from database_management.add_pieces import add_design_to_database
 from scrapers import bricklink_piece_info as BLPI

@@ -1,13 +1,15 @@
 __author__ = 'andrew.sielen'
 
-import LBEF
-import arrow
 import sqlite3 as lite
 
+import arrow
+
+import LBEF
 from database_management.database_info import database
 from system.calculate_inflation import get_inflation_rate
 
-## Basic Funtions
+
+# # Basic Funtions
 def get_set_id(set_num):
     """
     @param set_num:
@@ -44,6 +46,7 @@ def get_all_set_years():
 
     return {t[0]: t[1] for t in last_updated}  #convert from list of lists to a dictionary
 
+
 def get_all_bl_update_years():
     """
 
@@ -60,6 +63,7 @@ def get_all_bl_update_years():
 
     return {t[0]: t[1] for t in last_updated}  #convert from list of lists to a dictionary
 
+
 def get_all_bs_update_years():
     """
 
@@ -75,6 +79,7 @@ def get_all_bs_update_years():
         return {}
 
     return {t[0]: t[1] for t in last_updated}  #convert from list of lists to a dictionary
+
 
 def filter_list_on_dates(sets, year_sets, date_range=180):
     """
@@ -96,7 +101,6 @@ def filter_list_on_dates(sets, year_sets, date_range=180):
         result.append(s)
 
     return result
-
 
 
 def check_last_updated_daily_stats(set_num):
@@ -132,7 +136,7 @@ def get_set_price(set_num, year=None):
     if set_id is None: return None
 
     con = lite.connect(database)
-    year = int(arrow.now().format("YYYY"))-2
+    year = int(arrow.now().format("YYYY")) - 2
     with con:
         c = con.cursor()
         c.execute("SELECT original_price_us FROM sets WHERE id=?;", (set_id,))
@@ -153,6 +157,7 @@ def get_set_price(set_num, year=None):
     else:
         return price
 
+
 ##More Advanced Calculations
 def get_piece_count(set_num, type=''):
     """
@@ -166,7 +171,6 @@ def get_piece_count(set_num, type=''):
     #Get the set ID.
     set_id = get_set_id(set_num)
     if set_id is None: return None
-
 
     con = lite.connect(database)
 
@@ -196,6 +200,7 @@ def get_piece_count(set_num, type=''):
             count = c.fetchone()[0]
 
     return count
+
 
 def get_unique_piece_count(set_num, type=''):
     """
@@ -230,6 +235,7 @@ def get_unique_piece_count(set_num, type=''):
             count = c.fetchone()[0]
 
     return count
+
 
 def get_set_weight(set_num, type=''):
     """
@@ -272,7 +278,6 @@ def get_set_weight(set_num, type=''):
             weight = c.fetchone()[0]
 
     return weight
-
 
 
 def main():

@@ -2,9 +2,9 @@ __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
 
-from database_management.set_info import database
-from database_management.piece_info import get_design_id
-from database_management.piece_info import get_element_id
+from database_management.set_info_old import database
+from database_management.piece_info_old import get_design_id
+from database_management.piece_info_old import get_element_id
 
 
 def add_design_to_database(piece_dic):

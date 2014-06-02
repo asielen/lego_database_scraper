@@ -93,7 +93,9 @@ def menu_pull_set_info():
 def menu_pull_set_inventory():
     set_num = input("What set num? ")
     csvfile = pull_set_inventory(set_num)
-    api.print4(csvfile)
+    # api.print4(csvfile)
+    for c in csvfile:
+        print(c)
 
 
 def menu_pull_piece_info():

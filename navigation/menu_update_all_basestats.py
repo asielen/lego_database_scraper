@@ -1,16 +1,15 @@
 __author__ = 'andrew.sielen'
 
-from profilehooks import profile
-
 import navigation.menu
 from database_management import database_info
 from get_actions import get_sets_basestats as get_basestats
+from apis.bricklink_api import pull_set_catalog
+
 
 def main():
     options = {}
     options['1'] = "Update In Database", update_in_database
-    options['2'] = "Update from file", update_from_file
-    options['3'] = "Update Scrape", update_from_scrape
+    options['2'] = "Update from API", update_from_api
     options['9'] = "Back", navigation.menu.back
 
     while True:
@@ -35,19 +34,29 @@ def update_in_database():
         get_basestats.get_all_basestats(set_list)
 
 
-def update_from_file():
+def update_from_api():
     """
-    Takes a standard Sets.txt file from bricklink and parses it and updates based on it
+    Update the database from an api call to bricklink and parses it and updates based on it
+    ['Category ID', 'Category Name', 'Number', 'Name', 'Year Released', 'Weight (in Grams)', 'Dimensions']
     @return:
     """
-    with open("Sets.txt", encoding='utf-8', errors='ignore') as f:
-        set_list_raw = f.readlines()
-        set_list_raw = set_list_raw[3:]
-        set_list = [set.split("\t")[-2].strip().lower() for set in set_list_raw]
+    set_list_raw = pull_set_catalog()
+    set_list = [s[2] for s in set_list_raw]
 
-    get_basestats.get_all_basestats(set_list)
+    get_basestats.get_basestats(set_list)
 
 
+# def update_from_file():
+# """
+#     Takes a standard Sets.txt file from bricklink and parses it and updates based on it
+#     @return:
+#     """
+#     with open("Sets.txt", encoding='utf-8', errors='ignore') as f:
+#         set_list_raw = f.readlines()
+#         set_list_raw = set_list_raw[3:]
+#         set_list = [set.split("\t")[-2].strip().lower() for set in set_list_raw]
+#
+#     get_basestats.get_all_basestats(set_list)
 
-def update_from_scrape():
-    pass
+
+
