@@ -1,7 +1,7 @@
 __author__ = 'andrew.sielen'
 
-import re
-import logging
+import re  # Regular expressions
+import logging  # logging
 
 import requests
 from bs4 import BeautifulSoup
@@ -170,16 +170,16 @@ def parse_html_table(table_tags):
     """
 
     if table_tags is None: return None
-    table_array = []  #initiate the array
+    table_array = []  # initiate the array
     try:
-        table_body = table_tags.find("tbody")  #find the table body
-        line_tags = table_body.findAll("tr")  #make a list of all the rows
+        table_body = table_tags.find("tbody")  # find the table body
+        line_tags = table_body.findAll("tr")  # make a list of all the rows
     except:
         line_tags = table_tags.findAll("tr")
 
     for k in line_tags:
         table_array.append([x.get_text().strip() for x in
-                            k.findAll("td")])  #add a list of cells to the table array - strip out tags and whitespace
+                            k.findAll("td")])  # add a list of cells to the table array - strip out tags and whitespace
 
     return table_array
 
@@ -239,7 +239,7 @@ def flatten_list(l):
     """
     usefull for lists returned by sqlite
     @param l: a list of lists ie [(a),(b),(c))
-    @return: [a,b,c
+    @return: [a,b,c]
     """
     return [i for sublist in l for i in sublist]
 
@@ -266,7 +266,7 @@ def input_set_num(type=0):
         return expand_set_num(set_num)[2]
 
 
-#source http://stackoverflow.com/questions/1165352/fast-comparison-between-two-python-dictionary
+# source http://stackoverflow.com/questions/1165352/fast-comparison-between-two-python-dictionary
 class DictDiffer(object):
     """
     Calculate the difference between two dictionaries as:

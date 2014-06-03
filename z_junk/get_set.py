@@ -9,7 +9,6 @@ from LBEF import expand_set_num
 from scrapers import brickset_set_data as BS
 from scrapers import bricklink_set_data as BL
 from scrapers import brickset_inventory as BSP
-from scrapers import bricklink_inventory as BLP
 
 
 def get_basestats(set, force=0, verbose=0):

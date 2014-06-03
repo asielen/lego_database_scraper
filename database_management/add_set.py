@@ -5,11 +5,10 @@ import sqlite3 as lite
 from database_management.database_info import database
 
 
-def add_set_to_database(set):
+def add_set_to_database_from_dict(set):
     """
 
-    @param set:
-    @param verbose:
+    @param set: a set dictionary, typically created by get_basestats()
     @return:
 
      Takes a set with all the appropriate fields and adds it to the database

@@ -1,21 +1,20 @@
-# TODO: Need to update piece column and unique coloumn
+# TODO: Need to update piece column and unique column
 # TODO: Need to update color columns with names and ids from other sources (currently only brick owl
 # TODO: Need to double check all of the database
 #
 # TODO: Add return specs for all api calls
-
-
 
 import logging
 
 from navigation import menu
 import apis.api_methods as api
 import system_setup as sys
+import LBEF
 
 
 # itemType =
 # S : set
-#   P : parts
+# P : parts
 #   M : minifig
 #   B : books
 #
@@ -29,7 +28,8 @@ def pull_set_catalog():
     """
     Access bricklink.com and download the csv of all the sets
     viewType=0&itemType=S&selYear=Y&selWeight=Y&selDim=Y&itemTypeInv=S&itemNo=&downloadType=T
-    @return:
+    @return: ['Category ID', 'Category Name', 'Number', 'Name', 'Year Released', 'Weight (in Grams)', 'Dimensions']
+    3 rows of heading
     """
     parameters = {'a': 'a',
                   'itemType': 'S',
@@ -46,8 +46,8 @@ def pull_part_catalog():
     """
     Access bricklink.com and download the csv of its part catalog
     # http://www.bricklink.com/catalogDownload.asp?viewType=0&itemType=P&selYear=Y&selWeight=Y&selDim=Y&itemTypeInv=S&itemNo=&downloadType=T
-    @param set_num:
-    @return:
+    @return: ['Category ID', 'Category Name', 'Number', 'Name', 'Weight (in Grams)']
+    3 header rows
     """
     parameters = {'a': 'a',
                   'itemType': 'P',
@@ -64,8 +64,8 @@ def pull_minifig_catalog():
     """
     Access bricklink.com and download the csv of its minifig catalog
     # http://www.bricklink.com/catalogDownload.asp?viewType=0&itemType=M&selYear=Y&selWeight=Y&selDim=Y&itemTypeInv=S&itemNo=&downloadType=T
-    @param set_num:
-    @return:
+    @return: ['Category ID', 'Category Name', 'Number', 'Name', 'Weight (in Grams)']
+    3 header rows
     """
     parameters = {'a': 'a',
                   'itemType': 'M',
@@ -302,7 +302,7 @@ def menu_pull_part_color_codes():
 
 
 def menu_pull_set_inventory():
-    set_num = input("What set num? ")
+    set_num = LBEF.input_set_num()
     csvfile = pull_set_inventory(set_num)
     api.print4(csvfile)
 
