@@ -11,6 +11,38 @@ import LBEF
 KEY = 'LmtbQqIRtP'
 url = 'http://rebrickable.com/api'
 
+# These methods rely on the monthly data-dump, they are faster but less accurate
+def pull_all_colors():
+    """
+    USE pull_colors instead. It has more detail
+    This is from a datadump on http://rebrickable.com/downloads
+    It pulls all colors in rebrickable terms
+    @return:
+    """
+    # url = "http://rebrickable.com/files/colors.csv.gz"
+    # return api.read_gzip_csv_from_url(url)
+    return pull_colors()
+
+
+def pull_all_pieces():
+    """
+    This is from a datadump on http://rebrickable.com/downloads
+    It pulls all piece types in the database
+    @return:
+    """
+    url = "http://rebrickable.com/files/pieces.csv.gz"
+    return api.read_gzip_csv_from_url(url)
+
+
+def pull_all_set_parts():
+    """
+    This is from a datadump on http://rebrickable.com/downloads
+    It pulls all the inventories in the database, need to pull all pieces first
+    @return:
+    """
+    url = "http://rebrickable.com/files/set_pieces.csv.gz"
+    return api.read_gzip_csv_from_url(url)
+
 
 def pull_set_info(set_num):
     """
@@ -53,7 +85,7 @@ def pull_piece_info(part_id):
 def pull_colors():
     """
     This doesn't use the API because it instead pulls ALL colors from this table: http://rebrickable.com/colors
-        The api only returns the main id
+        The api only returns the _main id
     @return: ['',rebrickable ID, Name, rgb hex, num parts, num sets, start year, start end, lego name, ldraw color, bricklink color, peeron color]
     note rebrickable ID is essentially the same as the ldraw id
     """
@@ -75,13 +107,25 @@ def main_menu():
     options['1'] = "Pull Set Info", menu_pull_set_info
     options['2'] = "Pull Set Inventory", menu_pull_set_inventory
     options['3'] = "Pull Piece Info", menu_pull_piece_info
-    options['4'] = "SYS Pull Colors", menu_pull_colors
+    options['4'] = "Pull all Pieces", menu_pull_all_pieces
+    options['5'] = "Pull all set Parts", menu_pull_all_set_parts
+    options['6'] = "SYS Pull Colors", menu_pull_colors
     options['9'] = "Quit", menu.quit
 
     while True:
         result = menu.options_menu(options)
         if result is 'kill':
             exit()
+
+
+def menu_pull_all_pieces():
+    csvfile = pull_all_pieces()
+    api.print4(csvfile)
+
+
+def menu_pull_all_set_parts():
+    csvfile = pull_all_set_parts()
+    api.print4(csvfile)
 
 
 def menu_pull_set_info():
@@ -101,7 +145,7 @@ def menu_pull_set_inventory():
 def menu_pull_piece_info():
     piece_num = input("What piece num? ")
     csvfile = pull_piece_info(piece_num)
-    print(csvfile.text)  # a dictionary that will need to be parsed
+    print(csvfile)  # a dictionary that will need to be parsed
 
 
 def menu_pull_colors():

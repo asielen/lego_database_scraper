@@ -1,8 +1,9 @@
+from apis.bricklink_api import bricklink_historic_prices_scrape as BHP
+
 __author__ = 'andrew.sielen'
 
 import pprint as pp
 
-from scrapers import bricklink_historic_prices as BHP
 from scrapers import brickset_set_data as BS
 from database_management import add_daily_stats as ADS
 from database_management import set_info_old

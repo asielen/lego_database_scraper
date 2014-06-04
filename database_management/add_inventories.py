@@ -1,3 +1,5 @@
+from apis.bricklink_api import bricklink_piece_info_scrape as BLPI
+
 __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
@@ -11,7 +13,6 @@ from database_management.piece_info_old import get_element_id
 from database_management.piece_info_old import get_design_id
 from database_management.add_pieces import add_element_to_database
 from database_management.add_pieces import add_design_to_database
-from scrapers import bricklink_piece_info as BLPI
 from scrapers import brickset_piece_info as BSPI
 
 

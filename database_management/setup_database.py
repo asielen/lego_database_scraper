@@ -2,8 +2,8 @@ __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
 
-import apis.bricklink_api_update_database as blapi
-import apis.rebrickable_api_update_database as reapi
+import apis.bricklink_api.bricklink_update_database as blapi
+import apis.rebrickable_api.rebrickable_update_database as reapi
 from database_management.create_database import initiate_database
 from database_management.database import database
 
@@ -39,7 +39,7 @@ def insert_price_types():
 
 
 def insert_bl_categories():
-    blapi.update_categories()
+    blapi.init_categories()
 
 
 def insert_colors():

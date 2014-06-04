@@ -1,0 +1,135 @@
+Database Design:
+
+% Text
+$ Real
+# Int
+
+
+Primitives:
+    * parts
+        % bricklink_id
+        % brickowl_id
+        % design_name
+        $ weight
+        # bl_category
+        % bl_type
+    * colors
+        # bl_color_id
+        # re_color_id
+        # bo_color_id
+        % color_name
+        % hex_value
+        % bl_color_type
+        # bl_category
+    * price_types
+        % price_type
+    * bl_categories
+        # bl_category_id
+        % bl_category_name
+    * sets
+        % set_num
+        % bo_set_num
+        % item_num
+        % item_seq
+        % set_name
+        % theme
+        % subtheme
+        # piece_count
+        # figures
+        $ set_weight
+        # year_released
+        # date_released_us
+        # date_ended_us
+        # date_released_uk
+        # date_ended_uk
+        # age_low
+        # age_high
+        % box_size
+        $ box_volume
+        # last_updated
+        # last_inv_updated_bo
+        # last_inv_updated_bl
+        # last_inv_updated_re
+        # last_price_updated
+
+Secondary:
+    * part_color_codes
+        # part_id (parts(id))
+        # color_id (color(id))
+        % element_color_code
+        % bs_color_code
+    * bl_inventories
+        # set_id (sets(id))
+        # priece_id (parts(id))
+        # color_id (colors(id))
+        # quantity
+    * bo_inventories
+        # set_id (sets(id))
+        # priece_id (parts(id))
+        # color_id (colors(id))
+        # quantity
+    * re_inventories
+        # set_id (sets(id))
+        # priece_id (parts(id))
+        # color_id (colors(id))
+        # quantity
+
+Daily:
+    * bs_ratings
+        # set_id (sets(id))
+        # want
+        # own
+        # rating
+        # record_date
+    * historic_prices
+        # set_id (sets(id))
+        # record_date
+        # price_type (price_types(is))
+        $ avg
+        $ lots
+        $ max
+        $ min
+        $ qty
+        $ qty_avg
+        $ piece_avg
+
+--------------
+Methods:
+
+Primitive: {these initiate the database from nothing}
+    * init_colors()
+        @ Download colors
+    * init_parts()
+        @ Download parts from Bricklink
+        @ Download parts from Rebrickable
+    * init_price_types()
+        @ Internal, no need to download
+    * init_bl_categories()
+        @ Download categories from Bricklink
+
+Secondary: {initiate the database, rely on primitives but can still be downloaded in bulk}
+    * init_part_color_codes()
+        @ Download from Bricklink and add to the database
+    * init_sets()
+        @ Download sets from Bricklink
+        @ Download sets from Rebrickable
+    * init_re_inventories()
+        @ Download from Rebrickable Api and add to the database
+
+Automated: {run over all sets to update info}
+    * add_bl_inventory(set_num)
+        @ Api call
+
+Basic: {once the database is initlaized, these are used to update one at a time}
+    * add_set(set_num)
+        @ Scrape data from Bricklink & Brickset
+    * add_part(part_num)
+        @ Scrape data from Bricklink & Brickset
+
+
+
+Daily: {Daily raitings and prices}
+    * get_historic_prices(set_num)
+        @ Scrape from Bricklink
+    * get_daily_rating(set_num)
+        @ Scrape from Brickset

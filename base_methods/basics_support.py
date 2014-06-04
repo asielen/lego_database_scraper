@@ -1,103 +1,13 @@
+from apis.bricklink_api import bricklink_set_data_scrape as BL
+
 __author__ = 'andrew.sielen'
 
 import logging
-
 import arrow
 
-from LBEF import expand_set_num
-from database_management import set_info_old
-from database_management import add_inventories
-from database_management.add_set import add_set_to_database_from_dict
+import LBEF
+from base_methods.basics import get_bl_inventory
 from scrapers import brickset_set_data as BS
-from scrapers import bricklink_set_data as BL
-from scrapers import brickset_inventory as BSP
-from scrapers import brickset_piece_info as BPI
-from apis import bricklink_api_update_database as Blapi
-
-
-def add_set_to_database(set_num):
-    """
-    Takes a set num, pulls all the base stats for it and then adds it to the database
-    @param set_num: in the format xxxx-xx
-    @return:
-    """
-    add_set_to_database_from_dict(get_basestats(set_num))
-
-
-def add_piece_to_database(bl_id="", bo_id=""):
-    """
-
-    @param bl_id:
-    @return:
-    """
-    if bl_id == "" and bo_id == "":
-        return None
-    if bl_id != "":
-        add_design_to_database(BPI.get_blPieceInfo(bl_id))
-
-
-def add_bl_inventory_to_database():
-    pass
-
-
-def add_bs_inventory_to_database():
-    pass
-
-
-def add_bo_inventory_to_database():
-    pass
-
-
-# TODO: Rewrite this to use multiprocess
-def get_all_basestats(set_list, force=0):
-    """
-
-    @param set_list: a list of set_nums acquired either though sql or a text file
-    @return:
-    """
-
-    if set_list is not None:
-        if force == 0:
-            filtered_set_list = _get_and_filter_sets_by_year(set_list)
-            total = len(filtered_set_list)
-        else:
-            filtered_set_list = set_list
-            total = len(set_list)
-
-        bl_designs_in_database = _get_and_filter_sets_blinv_by_year(set_list)
-        bs_elements_in_database = _get_and_filter_sets_bsinv_by_year(set_list)
-
-        finished = len(set_list) - total
-        logging.info("Starting at {}% of total list –– [ {} / {} ]".format(round((finished / len(set_list)) * 100, 2),
-                                                                           finished, len(set_list)))
-        # Update basestats
-        for idx, set in enumerate(filtered_set_list):
-            logging.info("[ {0}/{1} {2}% ] Getting info on {3}".format(idx, total, round((idx / total) * 100, 2), set))
-            basics.add_set_to_database(set)
-
-        # Update bricklink inventories
-        logging.info("Updating bricklink inventories for {} sets".format(len(bl_designs_in_database)))
-        for idx, set in enumerate(bl_designs_in_database):
-            logging.info("{0} Getting bl inventory on {1}".format(idx, set))
-            get_bl_inventory(set, bl_designs_in_database)
-
-        # Update brickset inventories
-        logging.info("Updating brickset inventories for {} sets".format(len(bs_elements_in_database)))
-        for idx, set in enumerate(bs_elements_in_database):
-            logging.info("{0} Getting bs inventory on {1}".format(idx, set))
-            get_bs_inventory(set, bs_elements_in_database)
-
-
-def _get_and_filter_sets_by_year(set_list):
-    return set_info_old.filter_list_on_dates(set_list, set_info_old.get_all_set_years())
-
-
-def _get_and_filter_sets_blinv_by_year(set_list):
-    return set_info_old.filter_list_on_dates(set_list, set_info_old.get_all_bl_update_years())
-
-
-def _get_and_filter_sets_bsinv_by_year(set_list):
-    return set_info_old.filter_list_on_dates(set_list, set_info_old.get_all_bs_update_years())
 
 
 def get_basestats(set, type=0):
@@ -111,7 +21,7 @@ def get_basestats(set, type=0):
         logging.warning("Trying to update a set but there is none to update")
         return None
 
-    set_num, set_seq, set = expand_set_num(set)
+    set_num, set_seq, set = LBEF.expand_set_num(set)
 
     scrubbed_dic = {}
 
@@ -243,42 +153,126 @@ def get_basestats(set, type=0):
     return scrubbed_dic
 
 
-def get_bl_inventory(set, bl_designs_in_database):
+def get_all_basestats(set_list, force=0):
     """
 
-    @param set: in standard format xxxx–x
-    @param bl_designs_in_database: list of pieces
-    @param force:
+    @param set_list: a list of set_nums acquired either though sql or a text file
     @return:
     """
-    set_num, set_seq, set = expand_set_num(set)
+    # TODO: Rewrite this to use multiprocess
+    if set_list is not None:
+        if force == 0:
+            filtered_set_list = _get_and_filter_sets_by_year(set_list)
+            total = len(filtered_set_list)
+        else:
+            filtered_set_list = set_list
+            total = len(set_list)
 
-    logging.info("Updating bricklink inventory for set {}".format(set))
-    Blapi.add_set_inventory(set)
+        bl_designs_in_database = _get_and_filter_sets_blinv_by_year(set_list)
+        bs_elements_in_database = _get_and_filter_sets_bsinv_by_year(set_list)
+
+        finished = len(set_list) - total
+        logging.info("Starting at {}% of total list –– [ {} / {} ]".format(round((finished / len(set_list)) * 100, 2),
+                                                                           finished, len(set_list)))
+        # Update basestats
+        for idx, set in enumerate(filtered_set_list):
+            logging.info("[ {0}/{1} {2}% ] Getting info on {3}".format(idx, total, round((idx / total) * 100, 2), set))
+            basics.add_set_to_database(set)
+
+        # Update bricklink inventories
+        logging.info("Updating bricklink inventories for {} sets".format(len(bl_designs_in_database)))
+        for idx, set in enumerate(bl_designs_in_database):
+            logging.info("{0} Getting bl inventory on {1}".format(idx, set))
+            get_bl_inventory(set, bl_designs_in_database)
+
+        # Update brickset inventories
+        logging.info("Updating brickset inventories for {} sets".format(len(bs_elements_in_database)))
+        for idx, set in enumerate(bs_elements_in_database):
+            logging.info("{0} Getting bs inventory on {1}".format(idx, set))
+            get_bs_inventory(set, bs_elements_in_database)
 
 
-def get_bs_inventory(set, bs_elements_in_database):
+def _get_and_filter_sets_by_year(set_list):
+    return filter_list_on_dates(set_list, get_all_set_years())
+
+
+def _get_and_filter_sets_blinv_by_year(set_list):
+    return filter_list_on_dates(set_list, get_all_bl_update_years())
+
+
+def _get_and_filter_sets_bsinv_by_year(set_list):
+    return filter_list_on_dates(set_list, get_all_bs_update_years())
+
+
+def filter_list_on_dates(sets, year_sets, date_range=180):
     """
 
-    @param set:
-    @param bs_elements_in_database:
-    @param force:
-    @return:
+    @param sets: list of setnums [xxx–xx,yyy–y,zzz–z]
+    @param year_set: dict of a list of sets with last updated dates {xxx–x:2014-05-12}
+    @param date_range: the number of days on either side of the date
+    @return: a list of sets that need to be updated
     """
-    set_num, set_seq, set = expand_set_num(set)
+    result = []
 
-    logging.info("Updating brickset inventory for set {}".format(set))
-    brickset_pieces = BSP.get_setpieces(set_num, set_seq)
-    if brickset_pieces is not None:
-        add_inventories.add_bs_set_pieces_to_database(set, brickset_pieces)
+    today = arrow.now()
+    past = today.replace(days=-date_range)
+
+    for s in sets:
+        if s in year_sets:
+            if LBEF.check_in_date_rangeA(arrow.get(year_sets[s]), past, today):
+                continue
+        result.append(s)
+
+    return result
 
 
-def main():
-    set = input("What is the set num? ")
-    print(get_basestats(set))
-    print(get_pieces(set))
-    main()
+# These three functions return lists of sets that need to be updated
+def get_all_set_years():
+    """
+
+    @return: a dictionary of all the sets in the database with the last date they were updated
+    """
+    con = lite.connect(database)
+    with con:
+        c = con.cursor()
+        c.execute("SELECT set_num, last_updated FROM sets;")
+        last_updated = c.fetchall()
+
+    if last_updated is None:
+        return {}
+
+    return {t[0]: t[1] for t in last_updated}  # convert from list of lists to a dictionary
 
 
-if __name__ == "__main__":
-    main()
+def get_all_bl_update_years():
+    """
+
+    @return: a list of all the sets in the database that need to be updated with bricklink inventory
+    """
+    con = lite.connect(database)
+    with con:
+        c = con.cursor()
+        c.execute("SELECT set_num, last_inv_updated_bl FROM sets;")
+        last_updated = c.fetchall()
+
+    if last_updated is None:
+        return {}
+
+    return {t[0]: t[1] for t in last_updated}  # convert from list of lists to a dictionary
+
+
+def get_all_bs_update_years():
+    """
+
+    @return: a list of all the sets in the database that need to be updated with brickset inventory
+    """
+    con = lite.connect(database)
+    with con:
+        c = con.cursor()
+        c.execute("SELECT set_num, last_inv_updated_bs FROM sets;")
+        last_updated = c.fetchall()
+
+    if last_updated is None:
+        return {}
+
+    return {t[0]: t[1] for t in last_updated}  # convert from list of lists to a dictionary

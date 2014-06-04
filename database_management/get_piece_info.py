@@ -5,30 +5,13 @@ import sqlite3 as lite
 from database_management.database import database
 
 
-def get_bl_piece_id(part_num):
-    """
-    @param part_num: the number used by bricklink for pieces
-    @return: the primary key for a piece in the database
-    """
-    con = lite.connect(database)
 
-    element_id = None
-
-    with con:
-        c = con.cursor()
-        c.execute('SELECT id FROM parts WHERE bricklink_id=?', (part_num,))
-        element_id_raw = c.fetchone()
-        if element_id_raw is None:
-            return None
-        element_id = element_id_raw[0]
-
-    return element_id
 
 
 #
 # def get_element_id(part_num):
 # """
-#     @param part_num: the number used by brickset for pieces
+# @param part_num: the number used by brickset for pieces
 #     @return: the primary key for a piece in the database
 #     """
 #     con = lite.connect(database)

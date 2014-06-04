@@ -1,12 +1,16 @@
 __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
-import LBEF
 import os.path
+
+import LBEF
+
+
+# Todo: Make this all work with the new database structure
 
 database = os.path.abspath('lego_sets.sqlite')
 
-#### General Database information
+# ### General Database information
 def get_sets_between_years(start_year, end_year=None):
     """
 
@@ -31,6 +35,7 @@ def get_sets_between_years(start_year, end_year=None):
 
     return sets
 
+
 def get_set_year_range():
     """
     @return: A tuple with the first and last years in the database
@@ -50,6 +55,7 @@ def get_set_year_range():
 
     return min_year, max_year
 
+
 def get_sets_by_year():
     """
 
@@ -65,6 +71,7 @@ def get_sets_by_year():
 
     return years
 
+
 def get_sets_by_theme():
     """
 
@@ -79,6 +86,7 @@ def get_sets_by_theme():
         themes = c.fetchall()
 
     return themes
+
 
 def get_number_of_sets():
     """

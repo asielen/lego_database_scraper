@@ -1,3 +1,5 @@
+from base_methods.basics_support import get_basestats
+
 __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
@@ -7,7 +9,6 @@ import arrow
 
 from database_management import set_info_old
 from database_management.database_info import database
-from get_actions import basics as GSB
 from z_junk import get_daily
 
 
@@ -23,7 +24,7 @@ def add_daily_set_data_to_database(set_num, prices, ratings):
     set_id = set_info_old.get_set_id(set_num)
 
     if set_id is None:  # TODO: This isn't needed with new set_id lookup
-        GSB.get_basestats(set_num)
+        get_basestats(set_num)
         set_id = set_info_old.get_set_id(set_num)
         if set_id is None:
             logging.warning("Cannot get daily data because set [{}] is not loading".format(set_num))

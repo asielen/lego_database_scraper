@@ -21,17 +21,14 @@ def initiate_database():
 
         # ### Build pieces table
         con.execute("CREATE TABLE IF NOT EXISTS parts(id INTEGER PRIMARY KEY,"
-                    "lego_id TEXT,"
                     "bricklink_id TEXT,"
-                    "rebrickable_id TEXT,"
                     "brickowl_id TEXT,"
                     "design_name TEXT,"
                     "weight REAL, "
                     "bl_category INTEGER,"
-                    "bl_type TEXT);")  #P for part, M for minifig
+                    "bl_type TEXT);")  # P for part, M for minifig
         con.execute("CREATE UNIQUE INDEX IF NOT EXISTS bl_num_idx ON parts(bricklink_id)")
-        con.execute("CREATE UNIQUE INDEX IF NOT EXISTS lego_num_idx ON parts(lego_id)")
-        con.execute("CREATE UNIQUE INDEX IF NOT EXISTS re_num_idx ON parts(rebrickable_id)")
+        con.execute("CREATE UNIQUE INDEX IF NOT EXISTS bo_num_idx ON parts(brickowl_id)")
 
         con.execute("CREATE TABLE IF NOT EXISTS colors(id INTEGER PRIMARY KEY,"
                     "bl_color_id INTEGER,"
@@ -48,13 +45,13 @@ def initiate_database():
                     "color_id INTEGER, "
                     "element_color_code TEXT,"
                     "bs_color_code TEXT,"
-                    "FOREIGN KEY (part_id) REFERENCES piece_designs(id),"
+                    "FOREIGN KEY (part_id) REFERENCES parts(id),"
                     "FOREIGN KEY (color_id) REFERENCES colors(id));")
         con.execute("CREATE UNIQUE INDEX IF NOT EXISTS part_num_idx ON part_color_codes(element_color_code)")
 
 
 
-        #### Build sets table
+        # ### Build sets table
         con.execute("CREATE TABLE IF NOT EXISTS sets(id INTEGER PRIMARY KEY,"
                     "set_num TEXT,"
                     "bo_set_num TEXT,"
@@ -77,8 +74,8 @@ def initiate_database():
                     "age_high INTEGER,"
                     "box_size TEXT,"
                     "box_volume REAL,"
-                    "last_updated TEXT,"
-                    "last_inv_updated_bs INTEGER,"
+                    "last_updated INTEGER,"
+                    "last_inv_updated_bo INTEGER,"
                     "last_inv_updated_bl INTEGER,"
                     "last_inv_updated_re INTEGER,"
                     "last_price_updated INTEGER);")
@@ -88,12 +85,14 @@ def initiate_database():
 
 
         #### Build inventories table
-        con.execute("CREATE TABLE IF NOT EXISTS bs_inventories(id INTEGER PRIMARY KEY,"
+        con.execute("CREATE TABLE IF NOT EXISTS re_inventories(id INTEGER PRIMARY KEY,"
                     "set_id INTEGER,"
                     "piece_id INTEGER,"
+                    "color_id INTEGER,"
                     "quantity INTEGER,"
                     "FOREIGN KEY (set_id) REFERENCES sets(id),"
-                    "FOREIGN KEY (piece_id) REFERENCES unique_pieces(id));")
+                    "FOREIGN KEY (piece_id) REFERENCES parts(id)"
+                    "FOREIGN KEY (color_id) REFERENCES colors(id));")
 
         con.execute("CREATE TABLE IF NOT EXISTS bl_inventories(id INTEGER PRIMARY KEY,"
                     "set_id INTEGER,"
@@ -101,7 +100,7 @@ def initiate_database():
                     "color_id INTEGER,"
                     "quantity INTEGER,"
                     "FOREIGN KEY (set_id) REFERENCES sets(id),"
-                    "FOREIGN KEY (piece_id) REFERENCES unique_pieces(id), "
+                    "FOREIGN KEY (piece_id) REFERENCES parts(id), "
                     "FOREIGN KEY (color_id) REFERENCES colors(id));")
 
         con.execute("CREATE TABLE IF NOT EXISTS bo_inventories(id INTEGER PRIMARY KEY,"
@@ -110,7 +109,7 @@ def initiate_database():
                     "color_id INTEGER,"
                     "quantity INTEGER,"
                     "FOREIGN KEY (set_id) REFERENCES sets(id),"
-                    "FOREIGN KEY (piece_id) REFERENCES unique_pieces(id), "
+                    "FOREIGN KEY (piece_id) REFERENCES parts(id), "
                     "FOREIGN KEY (color_id) REFERENCES colors(id));")
 
 

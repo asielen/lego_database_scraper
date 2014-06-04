@@ -3,7 +3,7 @@ __author__ = 'andrew.sielen'
 import navigation.menu
 
 from database_management.setup_database import initiate_database_system
-from apis.bricklink_api_update_database import update_pieces
+from apis.bricklink_api.bricklink_update_database import init_parts
 
 
 def main():
@@ -21,11 +21,14 @@ def main():
             break
     print("Run System")
 
+
 def backup_database():
     print("Backup Database")
 
+
 def run_databaseReport():
     print("Database Report")
+
 
 def run_dumpSets():
     print("Dump Sets")
@@ -40,4 +43,4 @@ def init_new_database():
 
 
 def insert_parts():
-    update_pieces()
+    init_parts()

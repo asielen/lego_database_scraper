@@ -1,9 +1,9 @@
+from apis.bricklink_api import bricklink_historic_prices_scrape as BHP
 from z_junk import update_database_with_daily_info as udi
 
 __author__ = 'andrew.sielen'
 
 import pprint as pp
-from scrapers import bricklink_historic_prices as BHP
 from scrapers import brickset_set_data as BS
 from LBEF import *
 

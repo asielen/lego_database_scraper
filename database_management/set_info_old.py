@@ -4,7 +4,6 @@ import sqlite3 as lite
 
 import arrow
 
-import LBEF
 from database_management.database_info import database
 from system.calculate_inflation import get_inflation_rate
 
@@ -44,7 +43,7 @@ def get_all_set_years():
     if last_updated is None:
         return {}
 
-    return {t[0]: t[1] for t in last_updated}  #convert from list of lists to a dictionary
+    return {t[0]: t[1] for t in last_updated}  # convert from list of lists to a dictionary
 
 
 def get_all_bl_update_years():
@@ -61,7 +60,7 @@ def get_all_bl_update_years():
     if last_updated is None:
         return {}
 
-    return {t[0]: t[1] for t in last_updated}  #convert from list of lists to a dictionary
+    return {t[0]: t[1] for t in last_updated}  # convert from list of lists to a dictionary
 
 
 def get_all_bs_update_years():
@@ -78,29 +77,7 @@ def get_all_bs_update_years():
     if last_updated is None:
         return {}
 
-    return {t[0]: t[1] for t in last_updated}  #convert from list of lists to a dictionary
-
-
-def filter_list_on_dates(sets, year_sets, date_range=180):
-    """
-
-    @param sets: list of setnums [xxx–xx,yyy–y,zzz–z]
-    @param year_set: dict of a list of sets with last updated dates {xxx–x:2014-05-12}
-    @param date_range: the number of days on either side of the date
-    @return: a list of sets that need to be updated
-    """
-    result = []
-
-    today = arrow.now()
-    past = today.replace(days=-date_range)
-
-    for s in sets:
-        if s in year_sets:
-            if LBEF.check_in_date_rangeA(arrow.get(year_sets[s]), past, today):
-                continue
-        result.append(s)
-
-    return result
+    return {t[0]: t[1] for t in last_updated}  # convert from list of lists to a dictionary
 
 
 def check_last_updated_daily_stats(set_num):
@@ -124,7 +101,7 @@ def check_last_updated_daily_stats(set_num):
     return False
 
 
-## Basic information
+# # Basic information
 def get_set_price(set_num, year=None):
     """
 

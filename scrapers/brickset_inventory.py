@@ -39,7 +39,7 @@ def get_setpieces_details(set_num_primary, set_num_secondary=1):
 def _parse_pieces(soup):
     if soup is None:
         return None
-    parent_tags0 = soup.find("section", {"class": "main"})
+    parent_tags0 = soup.find("section", {"class": "_main"})
     if parent_tags0 is None:
         return None
     parent_table0 = parent_tags0.find("table", {"class": "neattable"})

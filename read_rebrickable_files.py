@@ -1,3 +1,5 @@
+from apis.bricklink_api import bricklink_piece_info_scrape as BLPI
+
 __author__ = 'Andrew'
 
 import csv
@@ -10,7 +12,6 @@ from profilehooks import profile
 
 import LBEF
 from database_management.database_info import database
-from scrapers import bricklink_piece_info as BLPI
 from database_management.add_pieces import add_design_to_database
 
 
@@ -67,9 +68,9 @@ def check_pieces():
         for rec in changed_list:
             print(changed_list[rec][0], rec)
             c.execute("UPDATE piece_designs SET design_name=? WHERE design_num=?", (changed_list[rec][0], rec))
-            #database_pieces = LBEF.list_to_dict(c.fetchall())
+            # database_pieces = LBEF.list_to_dict(c.fetchall())
 
-    #add missing pieces
+    # add missing pieces
     missing_pieces = diff.added()
 
     for piece in missing_pieces:

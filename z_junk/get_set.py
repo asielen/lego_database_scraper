@@ -1,3 +1,4 @@
+from apis.bricklink_api import bricklink_set_data_scrape as BL
 from z_junk import update_database as ud
 
 __author__ = 'andrew.sielen'
@@ -7,7 +8,6 @@ import arrow
 from LBEF import expand_set_num
 
 from scrapers import brickset_set_data as BS
-from scrapers import bricklink_set_data as BL
 from scrapers import brickset_inventory as BSP
 
 

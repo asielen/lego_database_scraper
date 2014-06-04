@@ -1,3 +1,5 @@
+from base_methods.info import get_set_id
+
 __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
@@ -7,82 +9,6 @@ import arrow
 import LBEF
 from database_management.database import database
 from system.calculate_inflation import get_inflation_rate
-from get_actions import basics
-
-
-# # Basic Funtions
-def get_set_id(set_num, add=False):
-    """
-    @param set_num:
-    @param add: if True, Add the set if it is missing in the databse
-    @return: the id column num of the set in the database
-    """
-    print(database)
-    con = lite.connect(database)
-    with con:
-        c = con.cursor()
-        c.execute('SELECT id FROM sets WHERE set_num=?', (set_num,))
-        set_id_raw = c.fetchone()
-    if set_id_raw is None:
-        if add == True:
-            basics.add_set_to_database(set_num)
-            return get_set_id(set_num)
-        else:
-            return None
-    else:
-        return set_id_raw[0]
-
-
-# These three functions return lists of sets that need to be updated
-def get_all_set_years():
-    """
-
-    @return: a dictionary of all the sets in the database with the last date they were updated
-    """
-    con = lite.connect(database)
-    with con:
-        c = con.cursor()
-        c.execute("SELECT set_num, last_updated FROM sets;")
-        last_updated = c.fetchall()
-
-    if last_updated is None:
-        return {}
-
-    return {t[0]: t[1] for t in last_updated}  # convert from list of lists to a dictionary
-
-
-def get_all_bl_update_years():
-    """
-
-    @return: a list of all the sets in the database that need to be updated with bricklink inventory
-    """
-    con = lite.connect(database)
-    with con:
-        c = con.cursor()
-        c.execute("SELECT set_num, last_inv_updated_bl FROM sets;")
-        last_updated = c.fetchall()
-
-    if last_updated is None:
-        return {}
-
-    return {t[0]: t[1] for t in last_updated}  # convert from list of lists to a dictionary
-
-
-def get_all_bs_update_years():
-    """
-
-    @return: a list of all the sets in the database that need to be updated with brickset inventory
-    """
-    con = lite.connect(database)
-    with con:
-        c = con.cursor()
-        c.execute("SELECT set_num, last_inv_updated_bs FROM sets;")
-        last_updated = c.fetchall()
-
-    if last_updated is None:
-        return {}
-
-    return {t[0]: t[1] for t in last_updated}  # convert from list of lists to a dictionary
 
 
 def filter_list_on_dates(sets, year_sets, date_range=180):
@@ -129,7 +55,7 @@ def check_last_updated_daily_stats(set_num):
 
 
 # # Basic information
-#TODO: Make sure this works with the new database structure
+# TODO: Make sure this works with the new database structure
 def get_set_price(set_num, year=None):
     """
 

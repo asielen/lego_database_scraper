@@ -1,3 +1,5 @@
+from apis.bricklink_api import bricklink_piece_info_scrape as BLPI
+
 __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
@@ -5,7 +7,6 @@ import sqlite3 as lite
 import arrow
 
 from scrapers import brickset_piece_info as BSPI
-from scrapers import bricklink_piece_info as BLPI
 import LBEF
 
 
@@ -130,7 +131,7 @@ def add_BSinv2database(dic, set_id):
 
             with con:
                 # if getting the piece id is successful that means tha the piece
-                #  exists in both piece tables
+                # exists in both piece tables
                 c = con.cursor()
                 piece_id = get_element_id(current_element, c)
 
@@ -139,7 +140,7 @@ def add_BSinv2database(dic, set_id):
                     c = con.cursor()
                     piece_dic = BSPI.get_pieceinfo(current_element)
                     if piece_dic is None:
-                        raise AssertionError  #if it is in a brickset inventory, it should be on the bs page
+                        raise AssertionError  # if it is in a brickset inventory, it should be on the bs page
                     print("Adding element " + piece_dic['design_num'] + " to the database")
 
                     design_id = get_design_id(piece_dic['design_num'], c)
@@ -221,7 +222,7 @@ def add_BLinv2database(piece_dic, set_id):
             design_id = None
             with con:
                 # if getting the piece id is successful that means tha the piece
-                #  exists in both piece tables
+                # exists in both piece tables
                 c = con.cursor()
                 design_id = get_design_id(current_design, c)
 

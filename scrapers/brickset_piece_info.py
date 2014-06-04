@@ -127,13 +127,13 @@ def get_blPieceInfo(design_num, element_num):
         parent_tags3 = parent_tags2.find("td", {"align": "CENTER"})  #Find the alternative design id
         if parent_tags3 is None:
             return {'weight': weight, 'design_num': [design_num], 'name': name, 'piece_type': 'element'}
-        parent_tags4 = soup.find("font", {"face": "Arial"})  #Find the main design id
+        parent_tags4 = soup.find("font", {"face": "Arial"})  # Find the _main design id
         design_id_text = parent_tags3.get_text()
         design_id_tags0 = design_id_text.split(":")[1]
 
         main_design_id = parent_tags4.get_text().split(":")[-1].strip()
 
-        design_ids.append(main_design_id)  # Add the main id
+        design_ids.append(main_design_id)  # Add the _main id
         design_ids.append(design_id_tags0)  # Add the alternative Ids
 
         return {'weight': weight, 'design_num': design_ids, 'name': name, 'piece_type': 'element'}

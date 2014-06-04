@@ -6,21 +6,23 @@
 
 import logging
 
+import LBEF
+
 from navigation import menu
 import apis.api_methods as api
 import system_setup as sys
-import LBEF
 
-
+# parameter info
 # itemType =
 # S : set
 # P : parts
-#   M : minifig
+# M : minifig
 #   B : books
 #
 # downloadType =
 #   T : tabs
 #   X : XML (seems to default to this)
+
 url = "http://www.bricklink.com/catalogDownload.asp"
 
 

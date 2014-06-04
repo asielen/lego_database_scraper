@@ -1,8 +1,9 @@
+from base_methods.basics_support import get_basestats, get_all_basestats
+
 __author__ = 'andrew.sielen'
 
 import navigation.menu
 from database_management import database_info
-from get_actions import basics as get_basestats
 from apis.bricklink_api import pull_set_catalog
 
 
@@ -31,7 +32,7 @@ def update_in_database():
     if proceed == "y" or proceed == "Y":
         set_list = database_info.get_sets_between_years(start_year, end_year)
 
-        get_basestats.get_all_basestats(set_list)
+        get_all_basestats(set_list)
 
 
 def update_from_api():
@@ -43,20 +44,20 @@ def update_from_api():
     set_list_raw = pull_set_catalog()
     set_list = [s[2] for s in set_list_raw]
 
-    get_basestats.get_basestats(set_list)
+    get_basestats(set_list)
 
 
 # def update_from_file():
 # """
 # Takes a standard Sets.txt file from bricklink and parses it and updates based on it
-#     @return:
+# @return:
 #     """
 #     with open("Sets.txt", encoding='utf-8', errors='ignore') as f:
 #         set_list_raw = f.readlines()
 #         set_list_raw = set_list_raw[3:]
 #         set_list = [set.split("\t")[-2].strip().lower() for set in set_list_raw]
 #
-#     get_basestats.get_all_basestats(set_list)
+#     basics.get_all_basestats(set_list)
 
 
 
