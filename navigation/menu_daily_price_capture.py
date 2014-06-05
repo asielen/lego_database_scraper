@@ -1,8 +1,7 @@
 from base_methods import daily_data
+from database.info import database_info
 
 __author__ = 'andrew.sielen'
-
-from database_management import database_info
 
 
 def main():

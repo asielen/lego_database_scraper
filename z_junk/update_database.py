@@ -1,4 +1,5 @@
-from apis.bricklink_api import bricklink_piece_info_scrape as BLPI
+from api.bricklink_api import bricklink_piece_info_scrape as BLPI
+from api.brickset_api import brickset_piece_info as BSPI
 
 __author__ = 'andrew.sielen'
 
@@ -6,7 +7,6 @@ import sqlite3 as lite
 
 import arrow
 
-from scrapers import brickset_piece_info as BSPI
 import LBEF
 
 

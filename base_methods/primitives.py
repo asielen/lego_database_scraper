@@ -4,7 +4,7 @@ __author__ = 'andrew.sielen'
 #
 # Primitive: {these initiate the database from nothing}
 # * init_colors()
-#         @ Download colors
+# @ Download colors
 #     * init_parts()
 #         @ Download parts from Bricklink
 #         @ Download parts from Rebrickable
@@ -15,9 +15,9 @@ __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
 
-import apis.bricklink_api.bricklink_update_database as blapi
-import apis.rebrickable_api.rebrickable_update_database as reapi
-from database_management.database import database
+import api.bricklink_api.bricklink_update_database as blapi
+import api.rebrickable_api.rebrickable_update_database as reapi
+from database.database import database
 
 
 def init_colors():

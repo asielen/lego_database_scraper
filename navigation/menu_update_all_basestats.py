@@ -1,10 +1,11 @@
-from base_methods.basics_support import get_basestats, get_all_basestats
-
 __author__ = 'andrew.sielen'
 
 import navigation.menu
-from database_management import database_info
-from apis.bricklink_api import pull_set_catalog
+from api.bricklink_api import pull_set_catalog
+import api
+
+from base_methods.basics_support import get_all_basestats
+from database.info import database_info
 
 
 def main():
@@ -44,14 +45,14 @@ def update_from_api():
     set_list_raw = pull_set_catalog()
     set_list = [s[2] for s in set_list_raw]
 
-    get_basestats(set_list)
+    api.get_basestats(set_list)
 
 
 # def update_from_file():
 # """
 # Takes a standard Sets.txt file from bricklink and parses it and updates based on it
 # @return:
-#     """
+# """
 #     with open("Sets.txt", encoding='utf-8', errors='ignore') as f:
 #         set_list_raw = f.readlines()
 #         set_list_raw = set_list_raw[3:]

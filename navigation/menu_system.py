@@ -2,8 +2,8 @@ __author__ = 'andrew.sielen'
 
 import navigation.menu
 
-from database_management.setup_database import initiate_database_system
-from apis.bricklink_api.bricklink_update_database import init_parts
+from database.setup_database import initiate_database_system
+from api.bricklink_api.bricklink_update_database import init_parts
 
 
 def main():

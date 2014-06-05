@@ -2,7 +2,7 @@ __author__ = 'andrew.sielen'
 
 # Automated: {run over all sets to update info}
 # * add_bl_inventory(set_num)
-#         @ Api call
+# @ Api call
 #
 # Basic: {once the database is initlaized, these are used to update one at a time}
 #     * add_set(set_num)
@@ -10,12 +10,14 @@ __author__ = 'andrew.sielen'
 #     * add_part(part_num)
 #         @ Scrape data from Bricklink & Brickset
 
+# external
 import logging
 
+# other modules
 import LBEF
-from base_methods.basics_support import get_basestats
-from database_management.add_set import add_set_to_database_from_dict
-import apis.bricklink_api as blapi
+
+import api.bricklink_api as blapi
+import api
 
 
 def add_set_to_database(set_num):
@@ -24,7 +26,7 @@ def add_set_to_database(set_num):
     @param set_num: in the format xxxx-xx
     @return:
     """
-    add_set_to_database_from_dict(get_basestats(set_num))
+    api.add_set_to_database(set_num)
 
 
 def add_piece_to_database(bl_id="", bo_id=""):
@@ -37,33 +39,38 @@ def add_piece_to_database(bl_id="", bo_id=""):
         return None
     if bl_id != "":
         blapi.add_part_to_database(bl_id)
+    elif bo_id != "":
+        pass
+        # TODO brick owl data
 
 
-def get_bl_inventory(set, bl_designs_in_database):
+def add_bl_inventory_to_database(set):
     """
 
     @param set: in standard format xxxx–x
-    @param bl_designs_in_database: list of pieces
     @param force:
     @return:
     """
     set_num, set_seq, set = LBEF.expand_set_num(set)
 
     logging.info("Updating bricklink inventory for set {}".format(set))
-    blapi.add_set_database(set)
+    blapi.add_set_inventory_to_database(set)
 
 
-def get_bs_inventory(set, bs_elements_in_database):
-    """
+def get_re_inventory(set):
+    pass
 
-    @param set:
-    @param bs_elements_in_database:
-    @param force:
-    @return:
-    """
-    set_num, set_seq, set = expand_set_num(set)
-
-    logging.info("Updating brickset inventory for set {}".format(set))
-    brickset_pieces = BSP.get_setpieces(set_num, set_seq)
-    if brickset_pieces is not None:
-        add_inventories.add_bs_set_pieces_to_database(set, brickset_pieces)
+    # def get_bs_inventory(set, bs_elements_in_database):
+    #     """
+    #
+    #     @param set:
+    #     @param bs_elements_in_database:
+    #     @param force:
+    #     @return:
+    #     """
+    #     set_num, set_seq, set = expand_set_num(set)
+    #
+    #     logging.info("Updating brickset inventory for set {}".format(set))
+    #     brickset_pieces = BSP.get_setpieces(set_num, set_seq)
+    #     if brickset_pieces is not None:
+    #         add_inventories.add_bs_set_pieces_to_database(set, brickset_pieces)

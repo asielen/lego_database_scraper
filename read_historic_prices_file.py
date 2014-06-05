@@ -2,14 +2,17 @@ __author__ = 'Andrew'
 
 import csv
 import sqlite3 as lite
-import LBEF
-from database_management.database_info import database
 import logging
+
 import arrow
 from profilehooks import profile
-import pprint as pp
+
+import LBEF
+from database.info.database_info import database
+
 
 BYOND_EVAL_FILE = 'Eval_Data.csv'
+
 
 @profile
 def open_csv_file():
@@ -33,7 +36,6 @@ def open_csv_file():
 
             price_rows_to_process.extend(current_price_row)
             raiting_rows_to_process.append(current_raiting_row)
-
 
             current_price_row = []
             current_raiting_row = ()
@@ -70,15 +72,14 @@ def get_rows(row, set_id_dict):
 
 
 def scrub_row(set_id, date, row):
-
     price_types = {'current_new': 1, 'current_used': 2, 'historic_new': 3, 'historic_used': 4}
     price_list = [(set_id, date, price_types['current_new'], LBEF.float_null(row[12]), LBEF.float_null(row[11]),
                    LBEF.float_null(row[10]), LBEF.float_null(row[13]), LBEF.float_null(row[3])),
-        (set_id, date, price_types['current_used'], LBEF.float_null(row[20]), LBEF.float_null(row[19]),
+                  (set_id, date, price_types['current_used'], LBEF.float_null(row[20]), LBEF.float_null(row[19]),
                    LBEF.float_null(row[18]), LBEF.float_null(row[21]), LBEF.float_null(row[5])),
-        (set_id, date, price_types['historic_new'], LBEF.float_null(row[8]), LBEF.float_null(row[7]),
+                  (set_id, date, price_types['historic_new'], LBEF.float_null(row[8]), LBEF.float_null(row[7]),
                    LBEF.float_null(row[6]), LBEF.float_null(row[9]), LBEF.float_null(row[2])),
-        (set_id, date, price_types['historic_used'], LBEF.float_null(row[16]), LBEF.float_null(row[15]),
+                  (set_id, date, price_types['historic_used'], LBEF.float_null(row[16]), LBEF.float_null(row[15]),
                    LBEF.float_null(row[14]), LBEF.float_null(row[17]), LBEF.float_null(row[4]))]
 
     raiting_list = (set_id, LBEF.int_null(row[1]), LBEF.int_null(row[0]), date)
@@ -86,7 +87,7 @@ def scrub_row(set_id, date, row):
     return price_list, raiting_list
 
     # price_dict = {'current_new': dict(set_id=None, date=None, avg=None, max=None, min=None, qty_avg=None, tot=None, qty=None, price_avg=None),
-    #               'current_used': dict(set_id=None, date=None, avg=None, max=None, min=None, qty_avg=None, tot=None, qty=None, price_avg=None),
+    # 'current_used': dict(set_id=None, date=None, avg=None, max=None, min=None, qty_avg=None, tot=None, qty=None, price_avg=None),
     #               'historic_new': dict(set_id=None, date=None, avg=None, max=None, min=None, qty_avg=None, tot=None, qty=None, price_avg=None),
     #               'historic_used': dict(set_id=None, date=None, avg=None, max=None, min=None, qty_avg=None, tot=None, qty=None, price_avg=None)}
     #
@@ -122,6 +123,7 @@ def scrub_row(set_id, date, row):
     #
     # return price_dict, raiting_dict
 
+
 def add_daily_prices_to_database(prices):
     """
     (set_id, record_date, price_types[price], prices[price]['avg'], prices[price]['max'], prices[price]['min'], prices[price]['qty_avg'], prices[price]['piece_avg'])
@@ -136,16 +138,18 @@ def add_daily_prices_to_database(prices):
         c = con.cursor()
 
         for price in prices:
-            c.executemany('INSERT OR IGNORE INTO historic_prices(set_id, record_date, price_type, avg, max, min, qty_avg, piece_avg)'
-                      ' VALUES (?, ?, ?, ?, ?, ?, ?, ?)',prices)
+            c.executemany(
+                'INSERT OR IGNORE INTO historic_prices(set_id, record_date, price_type, avg, max, min, qty_avg, piece_avg)'
+                ' VALUES (?, ?, ?, ?, ?, ?, ?, ?)', prices)
+
 
 def add_daily_ratings_to_database(raitings):
-
     con = lite.connect(database)
     with con:
         c = con.cursor()
         c.executemany('INSERT OR IGNORE INTO bs_ratings(set_id, want, own, record_date)'
                       ' VALUES (?, ?, ?, ?)', raitings)
+
 
 def parse_date(s):
     return arrow.get(s[:4] + "-" + s[4:6] + "-" + s[6:]).timestamp

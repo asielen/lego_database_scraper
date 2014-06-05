@@ -2,7 +2,7 @@ __author__ = 'Andrew'
 
 import sqlite3 as lite
 
-from database_management.database_info import database
+from database.info.database_info import database
 
 
 def initiate_database():
@@ -25,7 +25,7 @@ def initiate_database():
                   "category TEXT);")
 
 
-        #need to add default values for price_types
+        # need to add default values for price_types
 
         c.execute("CREATE TABLE IF NOT EXISTS unique_pieces(id INTEGER PRIMARY KEY,"
                   "part_num TEXT,"

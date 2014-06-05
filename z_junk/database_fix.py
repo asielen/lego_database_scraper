@@ -1,9 +1,10 @@
 __author__ = 'Andrew'
 
-from database_management.database_info import database
+import sqlite3 as lite
+
+from database.info.database_info import database
 import LBEF
 
-import sqlite3 as lite
 
 def main():
     con = lite.connect(database)
@@ -16,10 +17,11 @@ def main():
 
         for set in set_processed:
             set_a, set_b, set_t = LBEF.expand_set_num(set[1])
-            c.execute("UPDATE sets SET set_num=?, item_num=?, item_seq=? WHERE id=?;", (set_t, set_a, set_b,  set[0]))
+            c.execute("UPDATE sets SET set_num=?, item_num=?, item_seq=? WHERE id=?;", (set_t, set_a, set_b, set[0]))
         c.execute("SELECT id, set_num FROM sets;")
         sets_raw = c.fetchall()
         print(sets_raw)
+
 
 if __name__ == "__main__":
     main()
