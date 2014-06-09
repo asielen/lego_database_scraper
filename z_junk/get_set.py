@@ -1,12 +1,11 @@
-from api.bricklink_api import bricklink_set_data_scrape as BL
-from api.brickset_api import brickset_inventory as BSP
+from data.brickset.brickset_api import brickset_inventory as BSP
 from z_junk import update_database as ud
 
 __author__ = 'andrew.sielen'
 
 import pprint as pp
 import arrow
-from LBEF import expand_set_num
+from system.base_methods.LBEF import expand_set_num
 
 
 def get_basestats(set, force=0, verbose=0):

@@ -1,5 +1,5 @@
-from base_methods import daily_data
 from database.info import database_info
+from public_api import daily_data
 
 __author__ = 'andrew.sielen'
 

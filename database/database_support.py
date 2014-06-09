@@ -42,12 +42,16 @@ def run_batch_sql(sql_text, list):
         c.executemany(sql_text, list)
 
 
-def run_sql(sql_text, one=False):
+def run_sql(sql_text, insert_list=None, one=False):
     con = lite.connect(database)
 
+    result = None
     with con:
         c = con.cursor()
-        c.execute(sql_text)
+        if insert_list is not None:
+            c.execute(sql_text, tuple(insert_list))
+        else:
+            c.execute(sql_text)
         if one:
             result = c.fetchone()
         else:

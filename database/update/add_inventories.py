@@ -1,4 +1,4 @@
-from api.brickset_api import brickset_piece_info as BSPI
+from data.update_database.add_parts_database import add_part_to_database
 
 __author__ = 'andrew.sielen'
 
@@ -12,8 +12,7 @@ from database.set_info_old import get_set_id
 from database.piece_info_old import get_element_id
 from database.piece_info_old import get_design_id
 from database.update.add_pieces import add_element_to_database
-from database.update.add_pieces import add_design_to_database
-import api.bricklink_api as blapi
+import data.bricklink.bricklink_api as blapi
 
 
 def add_bs_set_pieces_to_database(set_num, brickset_pieces):
@@ -73,7 +72,7 @@ def add_bs_inventory_to_database(set_id, set_dict):
 
             if design_id is None:
                 logging.info("Adding BS design to database: design = " + piece_dic['design_num'])
-                design_id = add_design_to_database(piece_dic)
+                design_id = add_part_to_database(piece_dic)
                 if design_id is None:
                     logging.warning("BS design id cannot be found: design = " + piece_dic['design_num'])
                     return None

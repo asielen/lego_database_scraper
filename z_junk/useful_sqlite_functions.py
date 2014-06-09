@@ -1,8 +1,10 @@
+from system.base_methods import LBEF
+
 __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
 import arrow
-import LBEF
+
 
 def compare_dateRange(column, set_num, checkDate, interval=5, inclusive=1):
     """
@@ -28,6 +30,6 @@ def compare_dateRange(column, set_num, checkDate, interval=5, inclusive=1):
             last_updated = arrow.get(last_updated)
 
             return LBEF.check_in_date_range(last_updated, last_updated.replace(days=-interval),
-                                                        last_updated.replace(days=+interval))
+                                            last_updated.replace(days=+interval))
     except:
         return False

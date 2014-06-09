@@ -13,9 +13,11 @@ def get_bl_piece_id(part_num):
 
     element_id = None
     con = lite.connect(db.database)
+
     with con:
-        con.execute('SELECT id FROM parts WHERE bricklink_id=?', (part_num,))
-        element_id_raw = con.fetchone()
+        c = con.cursor()
+        c.execute('SELECT id FROM parts WHERE bricklink_id=?', (part_num,))
+        element_id_raw = c.fetchone()
         if element_id_raw is None:
             return None
         element_id = element_id_raw[0]
@@ -23,28 +25,7 @@ def get_bl_piece_id(part_num):
     return element_id
 
 
-#
-# def get_element_id(part_num):
-# """
-# @param part_num: the number used by brickset for pieces
-# @return: the primary key for a piece in the database
-#     """
-#     con = lite.connect(database)
-#
-#     element_id = None
-#
-#     with con:
-#         c = con.cursor()
-#         c.execute('SELECT id FROM unique_pieces WHERE part_num=?', (part_num,))
-#         element_id_raw = c.fetchone()
-#         if element_id_raw is None:
-#             return None
-#         element_id = element_id_raw[0]
-#
-#     return element_id
-#
-
-#TODO: Make sure this works with the new database structure
+# TODO: Make sure this works with the new database structure
 def get_sets_per_design():
     """
 

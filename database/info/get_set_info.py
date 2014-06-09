@@ -1,10 +1,11 @@
+from system.base_methods import LBEF
+
 __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
 
 import arrow
 
-import LBEF
 from system.calculate_inflation import get_inflation_rate
 from database import database
 
@@ -116,7 +117,7 @@ def get_piece_count(set_num, type=''):
     @param type: '' or bricklink or brickset
     @return: the number of pieces
     """
-    #Get the set ID.
+    # Get the set ID.
     set_id = get_set_id(set_num)
     if set_id is None: return None
 
@@ -150,7 +151,7 @@ def get_piece_count(set_num, type=''):
     return count
 
 
-#TODO: Make sure this works with the new database structure
+# TODO: Make sure this works with the new database structure
 def get_unique_piece_count(set_num, type=''):
     """
     Returns the unique piece count of a set by calculating it based on inventory

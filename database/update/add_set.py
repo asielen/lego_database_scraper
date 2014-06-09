@@ -12,7 +12,7 @@ def add_set_to_database_from_dict(set):
     @return:
 
      Takes a set with all the appropriate fields and adds it to the database
-                INT id
+                INT idz
                 TXT set_num
                 TXT item_num
                 TXT item_seq

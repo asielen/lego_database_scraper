@@ -6,9 +6,8 @@ import logging
 import arrow
 
 from database import set_info_old
-
 from database.info.database_info import database
-import api
+import public_api
 from z_junk import get_daily
 
 
@@ -24,7 +23,7 @@ def add_daily_set_data_to_database(set_num, prices, ratings):
     set_id = set_info_old.get_set_id(set_num)
 
     if set_id is None:  # TODO: This isn't needed with new set_id lookup
-        api.get_basestats(set_num)
+        public_api.get_basestats(set_num)
         set_id = set_info_old.get_set_id(set_num)
         if set_id is None:
             logging.warning("Cannot get daily data because set [{}] is not loading".format(set_num))

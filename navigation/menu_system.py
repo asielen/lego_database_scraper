@@ -2,8 +2,7 @@ __author__ = 'andrew.sielen'
 
 import navigation.menu
 
-from database.setup_database import initiate_database_system
-from api.bricklink_api.bricklink_update_database import init_parts
+from data.bricklink.bricklink_api.bricklink_update_database import init_parts
 
 
 def main():
@@ -39,7 +38,7 @@ def init_new_database():
     Creates the new database lego_eval.sqlite and populates it with basic info
     @return:
     """
-    initiate_database_system()
+    pass
 
 
 def insert_parts():

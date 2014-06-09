@@ -1,8 +1,9 @@
 __author__ = 'andrew.sielen'
 
 import logging
-import arrow
 import sys
+
+import arrow
 
 
 def get_week_for_log():

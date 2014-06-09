@@ -9,6 +9,7 @@ Primitives:
     * parts
         % bricklink_id
         % brickowl_id
+        % rebrickable_id
         % design_name
         $ weight
         # bl_category

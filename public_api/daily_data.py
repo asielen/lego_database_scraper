@@ -1,5 +1,4 @@
-from api.bricklink_api import bricklink_historic_prices_scrape as BHP
-from api.brickset_api import brickset_set_data as BS
+from data.brickset.brickset_api import brickset_set_data as BS
 from database.update import add_daily_stats as ADS
 
 __author__ = 'andrew.sielen'
@@ -7,7 +6,7 @@ __author__ = 'andrew.sielen'
 import pprint as pp
 
 from database import set_info_old
-from LBEF import *
+from system.base_methods.LBEF import *
 
 
 def get_all_daily_set_data(set_list):

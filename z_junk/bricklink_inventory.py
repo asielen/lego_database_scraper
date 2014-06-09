@@ -3,7 +3,7 @@ __author__ = 'andrew.sielen'
 
 import pprint as pp
 
-from LBEF import *
+from system.base_methods.LBEF import *
 
 
 

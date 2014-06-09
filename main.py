@@ -1,9 +1,10 @@
+from system import system_setup as sys
+
 __author__ = 'andrew.sielen'
 
 import logging
 
 import navigation.menu as menu
-import system_setup as sys
 import navigation.menu_daily_price_capture as DPC
 import navigation.menu_update_all_basestats as UAB
 import navigation.menu_update_set as US

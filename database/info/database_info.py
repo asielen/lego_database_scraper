@@ -1,10 +1,11 @@
+from system.base_methods import LBEF
+
 __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
 import os.path
 
-import LBEF
-
+import database as db
 
 
 # Todo: Make this all work with the new database structure
@@ -92,7 +93,7 @@ def get_sets_by_theme():
 def get_number_of_sets():
     """
 
-    @return: The number of sets in the databse
+    @return: The number of sets in the database
     """
     set_num = 0
 
@@ -105,3 +106,60 @@ def get_number_of_sets():
     return set_num
 
 
+def get_bl_category_id(category_num):
+    """
+    @param category_num: the category num used by bricklink
+    @return: the primary key for a category in the database
+    """
+
+    element_id = None
+    con = lite.connect(db.database)
+    with con:
+        c = con.cursor()
+        c.execute('SELECT id FROM bl_categories WHERE bl_category_id=?', (category_num,))
+        element_id_raw = c.fetchone()
+        if element_id_raw is None:
+            return None
+        element_id = element_id_raw[0]
+
+    return element_id
+
+
+def read_bl_categories():
+    """
+
+    @return: a list in this format [category_id, id]
+    """
+    return LBEF.list_to_dict(db.run_sql('SELECT bl_category_id, id FROM bl_categories'))
+
+
+def read_bl_colors():
+    """
+
+    @return: a list in this format {color_id, id}
+    """
+    return LBEF.list_to_dict(db.run_sql('SELECT bl_color_id, id FROM colors'))
+
+
+def read_bl_colors_name():
+    """
+
+    @return: a list in this format {color_id, id}
+    """
+    return LBEF.list_to_dict(db.run_sql('SELECT color_name, id FROM colors'))
+
+
+def read_bl_sets():
+    """
+
+    @return: a list in this format [set_num, id]
+    """
+    return LBEF.list_to_dict(db.run_sql('SELECT set_num, id FROM sets'))
+
+
+def read_bl_parts():
+    """
+
+    @return: a dict in this format {part_num: id, }
+    """
+    return LBEF.list_to_dict(db.run_sql('SELECT bricklink_id, id FROM parts'))

@@ -1,9 +1,10 @@
+from system.base_methods import LBEF
+
 __author__ = 'Andrew'
 
 import csv
 import sqlite3 as lite
 
-import LBEF
 from database.info.database_info import database
 
 

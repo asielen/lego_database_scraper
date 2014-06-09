@@ -1,15 +1,14 @@
+from system.base_methods import LBEF
+
 __author__ = 'andrew.sielen'
 
 # external
 import logging
-
 import arrow
 
 
-#other module
-import LBEF
-
-from base_methods.basics import add_bl_inventory_to_database
+# other module
+from public_api.basics import add_bl_inventory_to_database
 
 
 def get_all_basestats(set_list, force=0):

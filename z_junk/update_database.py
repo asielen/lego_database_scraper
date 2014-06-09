@@ -1,13 +1,10 @@
-from api.bricklink_api import bricklink_piece_info_scrape as BLPI
-from api.brickset_api import brickset_piece_info as BSPI
+from system.base_methods import LBEF
 
 __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
 
 import arrow
-
-import LBEF
 
 
 def add_set2database(set, verbose=0):
@@ -230,9 +227,9 @@ def add_BLinv2database(piece_dic, set_id):
                 with con:
                     print("Adding element " + current_design + " to the database")
 
-                    piece_info = BLPI.get_pieceinfo(current_design)
+                    piece_info = BLPI.get_bl_piece_info(current_design)
                     if piece_info is None:
-                        piece_info = BLPI.get_pieceinfo(current_design)
+                        piece_info = BLPI.get_bl_piece_info(current_design)
                     if piece_info is None: return None
                     design_id = add_pieceDesign2Database(piece_info, c)
 

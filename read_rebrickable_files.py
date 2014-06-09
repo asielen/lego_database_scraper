@@ -1,3 +1,6 @@
+from data.update_database.add_parts_database import add_part_to_database
+from system.base_methods import LBEF
+
 __author__ = 'Andrew'
 
 import csv
@@ -8,10 +11,7 @@ import pprint as pp
 import arrow
 from profilehooks import profile
 
-import LBEF
 from database.info.database_info import database
-from database.update.add_pieces import add_design_to_database
-from api.bricklink_api import bricklink_piece_info_scrape as BLPI
 
 
 REBRICKABLE_COLORS = 'colors.csv'
@@ -75,13 +75,13 @@ def check_pieces():
     for piece in missing_pieces:
         print("Adding blapi element to database: design = " + piece)
 
-        piece_info = BLPI.get_pieceinfo(piece, missing_pieces[piece])
+        piece_info = BLPI.get_bl_piece_info(piece, missing_pieces[piece])
 
         if piece_info is None:
             print("blapi design info cannot be found: design = " + piece)
             continue
 
-        add_design_to_database(piece_info)
+        add_part_to_database(piece_info)
 
     pp.pprint(len(missing_pieces))
 

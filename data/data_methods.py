@@ -1,15 +1,54 @@
+from data.brickset.brickset_api import brickset_set_data as BS
+
 __author__ = 'andrew.sielen'
 
 import logging
 
 import arrow
 
-import LBEF
-import api.bricklink_api as blapi
-from api.brickset_api import brickset_set_data as BS
+from system.base_methods import LBEF
+import data.bricklink.bricklink_data_scrape as blapi
 
 
-def get_basestats(set, type=0):
+def get_piece_info(bl_id=None, bo_id=None, re_id=None, lego_id=None, type=1):
+    """
+    Returns a list or a dict ready to be added to the database
+    @param bl_id:
+    @param bo_id:
+    @param re_id:
+    @param type:
+    @return:
+    """
+
+    piece_info = {'lego_id': lego_id, 'bricklink_id': bl_id, 'brickowl_id': bo_id, 'rebrickable_id': re_id,
+                  'design_name': None,
+                  'weight': None, "bl_category": None, "bl_type": None}
+    bl_piece_info = None
+    if bl_id is not None:
+        bl_piece_info = blapi.get_bl_piece_info(bl_id)
+    elif re_id is not None:
+        bl_piece_info = blapi.get_bl_piece_info(re_id)
+
+    if bl_piece_info is not None:
+        piece_info['bricklink_id'] = bl_piece_info['design_num']
+        piece_info['design_name'] = bl_piece_info['design_name']
+        piece_info['weight'] = bl_piece_info['weight']
+        piece_info['bl_category'] = bl_piece_info['piece_category']
+        piece_info['bl_type'] = bl_piece_info['piece_type']
+
+    if type == 1:
+        return [piece_info['lego_id'],
+                piece_info['bricklink_id'],
+                piece_info['brickowl_id'],
+                piece_info['rebrickable_id'],
+                piece_info['design_name'],
+                piece_info['weight'],
+                piece_info['bl_type'],
+                piece_info["bl_category"]]
+    return piece_info
+
+
+def get_basestats(set, type=1):
     """
     Gets base set info from a combination of bricklink and brickset data
     @param set: set num in standard format xxxx-x
@@ -151,3 +190,14 @@ def get_basestats(set, type=0):
                 scrubbed_dic['last_update']]
 
     return scrubbed_dic
+
+
+if __name__ == "__main__":
+    def main():
+        SET = input("What is the set number?: ")
+        print(get_basestats(SET))
+        main()
+
+
+    if __name__ == "__main__":
+        main()

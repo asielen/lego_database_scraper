@@ -1,12 +1,20 @@
-__author__ = 'Andrew'
+__author__ = 'andrew.sielen'
 
 import sqlite3 as lite
 
-from database.database import database
+import database.database as db
 
 
-def initiate_database():
-    con = lite.connect(database)
+def create_database():
+    """
+    Simply creates the framework of the database
+    @return:
+    """
+    _initiate_database()
+
+
+def _initiate_database():
+    con = lite.connect(db.database)
     with con:
         # ### Brick Link Info Tables
         con.execute("CREATE TABLE IF NOT EXISTS bl_categories(id INTEGER PRIMARY KEY,"
@@ -21,17 +29,26 @@ def initiate_database():
 
         # ### Build pieces table
         con.execute("CREATE TABLE IF NOT EXISTS parts(id INTEGER PRIMARY KEY,"
+                    "lego_id TEXT,"  # probably not known for most, or at least it could be the same as the bl_id
                     "bricklink_id TEXT,"
                     "brickowl_id TEXT,"
+                    "rebrickable_id TEXT,"
                     "design_name TEXT,"
                     "weight REAL, "
                     "bl_category INTEGER,"
-                    "bl_type TEXT);")  # P for part, M for minifig
+                    "bl_type TEXT);")  # P for part, M for minifig - may implement others
         con.execute("CREATE UNIQUE INDEX IF NOT EXISTS bl_num_idx ON parts(bricklink_id)")
         con.execute("CREATE UNIQUE INDEX IF NOT EXISTS bo_num_idx ON parts(brickowl_id)")
 
+        # For alternate part ids
+        con.execute("CREATE TABLE IF NOT EXISTS part_alternates(id INTEGER PRIMARY KEY,"
+                    "part_id INTEGER,"
+                    "alternate_id TEXT,"
+                    "FOREIGN KEY (part_id) REFERENCES parts(id));")
+        con.execute("CREATE UNIQUE INDEX IF NOT EXISTS alt_id_idx ON part_alternates(alternate_id)")
+
         con.execute("CREATE TABLE IF NOT EXISTS colors(id INTEGER PRIMARY KEY,"
-                    "bl_color_id INTEGER,"
+                    "bl_color_id INTEGER, "
                     "re_color_id INTEGER, "
                     "bo_color_id INTEGER, "
                     "color_name TEXT, "
@@ -114,7 +131,7 @@ def initiate_database():
 
 
 
-        #Build historic_prices table
+        # Build historic_prices table
         con.execute("CREATE TABLE IF NOT EXISTS historic_prices(id INTEGER PRIMARY KEY,"
                     "set_id INTEGER,"
                     "record_date INTEGER,"
