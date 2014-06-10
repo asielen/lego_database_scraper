@@ -5,10 +5,9 @@ import sqlite3 as lite
 
 from navigation import menu
 import data.bricklink.bricklink_api as blapi
-import data.rebrickable.rebrickable_api as reapi
+import data.update_database as update
 import database.database as db
 import system as sys
-
 
 
 
@@ -17,7 +16,7 @@ import system as sys
 # * init_colors()
 # @ Download colors
 # * init_parts()
-#         @ Download parts from Bricklink
+# @ Download parts from Bricklink
 #         @ Download parts from Rebrickable
 #     * init_price_types()
 #         @ Internal, no need to download
@@ -30,7 +29,7 @@ def init_colors():
     Download and add colors to the database
     @return:
     """
-    reapi.update_colors()
+    update.update_colors()
 
 
 def init_parts():
@@ -40,7 +39,7 @@ def init_parts():
     """
     blapi.init_parts()
     blapi.init_minifigs()
-    reapi.update_parts()
+    # reapi.update_parts() This has to go after part color codes
 
 
 def init_price_types():

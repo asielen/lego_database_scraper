@@ -1,5 +1,3 @@
-from data.brickset.brickset_api import brickset_set_data as BS
-
 __author__ = 'andrew.sielen'
 
 import logging
@@ -7,7 +5,147 @@ import logging
 import arrow
 
 from system.base_methods import LBEF
-import data.bricklink.bricklink_data_scrape as blapi
+from data.bricklink import bricklink_data_scrape as blds
+from data.bricklink.bricklink_api import bricklink_api as blapi
+from data.brickset.brickset_api import brickset_set_data as BS
+from data.rebrickable import rebrickable_api as reapi
+from data.peeron.peeron_api import peeron_api as perapi
+
+
+def get_colors():
+    """
+    combine data from peeron and rebrickable to create the colors table
+    @return:
+    """
+    logging.debug("Get all colors from rebrickable and peeron")
+
+    rebrickable_colors = _filter_rebrickable_colors(
+        reapi.pull_colors())  # bl_color: [rebrickable ID, Name, hex, [ldraw color], [bricklink color]]
+    peeron_colors = _filter_peeron_colors(
+        perapi.pull_colors())  # [bl_name, bl_id, ldraw_id, ldraw_hex, lego_id, lego_name]
+    bricklink_colors = LBEF.list_to_dict(_filter_bl_colors(blapi.pull_colors()))
+
+    processed_colors = []
+
+    for color in peeron_colors:
+        if color[1] is None: continue  # If there is no bl_id
+        bl_id = str(color[1])
+        bricklink_colors.pop(bl_id, None)
+        re_color = [None]
+        if str(color[1]) in rebrickable_colors:
+            re_color = rebrickable_colors[str(bl_id)][0]
+        # [bl_id, re_id, bo_id, ldraw_id, lego_id, bl_name, lego_name, hex]
+        processed_colors.append([color[1], re_color[0], None, color[2], color[4], color[0], color[5], color[3]])
+
+    # Add missing rebrickable colors
+    missed_colors = rebrickable_colors['None']
+    for color in missed_colors:  # If it couldn't match the color
+        ldraw_id = color[3]
+        peeron_id = None
+        added = 0
+        for p_color in processed_colors:
+            if ldraw_id == p_color[3]:
+                p_color[1] = color[0]
+                added = 1
+        if added == 0:  # if we couldn't find it and update it
+            processed_colors.append([color[4], color[0], None, color[3], None, color[1], None, color[2].strip("#")])
+
+    # Add missing bricklink colors
+    for color in bricklink_colors:
+        processed_colors.append([int(color), None, None, None, None, bricklink_colors[color], None, None])
+    return processed_colors
+
+
+def _filter_bl_colors(colors):
+    """
+    From:
+    # [bl_id, color_name, rgb, type, parts, in sets, wanted, for sale, year from, year to]
+    To
+    # [bl_id, bl_name]
+    @return:
+    """
+    processed_colors = []
+    for c in colors:
+        # Convert the text to ints
+        processed_colors.append(c[:2])
+    processed_colors = processed_colors[2:]
+    return processed_colors
+
+
+def _filter_peeron_colors(colors):
+    """
+    From:
+    # [peeron_name, parts, bl_name, bl_id, ldraw_id, ldraw_hex, lego_id, lego_name, rgb, cmyk, pantone, notes]
+    To
+    # [bl_name, bl_id, ldraw_id, ldraw_hex, lego_id, lego_name]
+    @return:
+    """
+    processed_colors = []
+    for c in colors:
+        # Convert the text to ints
+        c[3] = LBEF.int_null(c[3])
+        c[4] = LBEF.int_null(c[4])
+        c[6] = LBEF.int_null(c[6])
+        processed_colors.append(c[2:-4])
+    return processed_colors
+
+
+def _filter_rebrickable_colors(colors):
+    """
+    From
+    # ['',rebrickable ID, Name, rgb hex, num parts, num sets, start year, start end, lego name, {ldraw color}, {bricklink color}, peeron color]
+    To
+    # [rebrickable ID, Name, hex, [ldraw color], [bricklink color]]
+    @return:
+    """
+    processed_colors = {}
+    colors = colors[1:]  # Remove the header
+    colors_to_remove = []
+    for c in colors:
+        if c[1] == "ID":
+            colors_to_remove.append(c)
+            continue
+        ldraw_ids = _process_clist(c[9])
+        c[9] = ldraw_ids
+        bl_ids = _process_clist(c[10])
+        c[10] = bl_ids
+
+        if len(bl_ids) > 1:
+            for id in bl_ids:
+                temp_c = c[:]
+                temp_c[10] = [id]
+                colors.append(temp_c)
+            colors_to_remove.append(c)
+        elif len(ldraw_ids) > 1:
+            for id in ldraw_ids:
+                temp_c = c[:]
+                temp_c[9] = [id]
+                colors.append(temp_c)
+            colors_to_remove.append(c)
+        else:
+            continue
+    for c in colors_to_remove:
+        colors.remove(c)
+    for c in colors:
+        if str(c[10][0]) not in processed_colors:
+            processed_colors[str(c[10][0])] = []
+        processed_colors[str(c[10][0])].append([LBEF.int_null(c[1]), c[2], c[3], c[9][0], c[10][0]])
+
+    return processed_colors
+
+
+def _process_clist(clist):
+    """
+    Take a list like '{12,3,4}'
+    and return [12,3,4]
+    @param clist:
+    @return:
+    """
+    if isinstance(clist, list): return clist
+    clist = clist.strip("{}")
+    clist = clist.split(',')
+    clist = [LBEF.int_null(c) for c in clist]
+    return clist
 
 
 def get_piece_info(bl_id=None, bo_id=None, re_id=None, lego_id=None, type=1):
@@ -24,10 +162,12 @@ def get_piece_info(bl_id=None, bo_id=None, re_id=None, lego_id=None, type=1):
                   'design_name': None,
                   'weight': None, "bl_category": None, "bl_type": None}
     bl_piece_info = None
+    design_alts = None
     if bl_id is not None:
-        bl_piece_info = blapi.get_bl_piece_info(bl_id)
+        bl_piece_info, design_alts = blds.get_bl_piece_info(bl_id)
     elif re_id is not None:
-        bl_piece_info = blapi.get_bl_piece_info(re_id)
+        # Todo: this should actually call the re api and then try to find the bricklink code by searching bricklink
+        bl_piece_info = blds.get_bl_piece_info(re_id)
 
     if bl_piece_info is not None:
         piece_info['bricklink_id'] = bl_piece_info['design_num']
@@ -44,8 +184,8 @@ def get_piece_info(bl_id=None, bo_id=None, re_id=None, lego_id=None, type=1):
                 piece_info['design_name'],
                 piece_info['weight'],
                 piece_info['bl_type'],
-                piece_info["bl_category"]]
-    return piece_info
+                piece_info["bl_category"]], design_alts
+    return piece_info, design_alts
 
 
 def get_basestats(set, type=1):
@@ -65,7 +205,7 @@ def get_basestats(set, type=1):
     scrubbed_dic = {}
 
     brickset_stats = BS.get_basestats(set_num, set_seq)
-    bricklink_stats = blapi.get_basestats(set_num, set_seq)
+    bricklink_stats = blds.get_basestats(set_num, set_seq)
 
     if 'set_name' in brickset_stats:
         if brickset_stats['set_name'] == '': return None
@@ -194,9 +334,7 @@ def get_basestats(set, type=1):
 
 if __name__ == "__main__":
     def main():
-        SET = input("What is the set number?: ")
-        print(get_basestats(SET))
-        main()
+        LBEF.print4(get_colors(), 200)
 
 
     if __name__ == "__main__":

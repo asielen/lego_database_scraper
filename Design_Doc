@@ -18,10 +18,11 @@ Primitives:
         # bl_color_id
         # re_color_id
         # bo_color_id
-        % color_name
+        # ldraw_color_id
+        # lego_color_id
+        % bl_color_name
+        % lego_color_name
         % hex_value
-        % bl_color_type
-        # bl_category
     * price_types
         % price_type
     * bl_categories

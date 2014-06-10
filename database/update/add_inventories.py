@@ -115,7 +115,7 @@ def add_bl_inventory_to_database(set_id, set_dict):
     """
 
     if set_dict is None or set_id is None:
-        logging.warning("Can't add blapi inventory to database: set_id = {}".format(set_id))
+        logging.warning("Can't add blds inventory to database: set_id = {}".format(set_id))
         return None
 
     con = lite.connect(database)
@@ -136,7 +136,7 @@ def add_bl_inventory_to_database(set_id, set_dict):
 
         # If it isn't in the database yet, add it
         if design_id is None:
-            logging.info("Adding blapi element to database: design = " + current_design)
+            logging.info("Adding blds element to database: design = " + current_design)
 
             design_id = blapi.add_part_to_database(current_design)
 

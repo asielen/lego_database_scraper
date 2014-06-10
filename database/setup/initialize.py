@@ -51,11 +51,11 @@ def _initiate_database():
                     "bl_color_id INTEGER, "
                     "re_color_id INTEGER, "
                     "bo_color_id INTEGER, "
-                    "color_name TEXT, "
-                    "hex_value TEXT,"
-                    "bl_color_type TEXT,"
-                    "bl_category INTEGER);")
-        con.execute("CREATE UNIQUE INDEX IF NOT EXISTS re_color_idx ON colors(re_color_id)")
+                    "ldraw_color_id INTEGER, "
+                    "lego_color_id INTEGER, "
+                    "bl_color_name TEXT, "
+                    "lego_color_name TEXT, "
+                    "hex_value TEXT);")
 
         con.execute("CREATE TABLE IF NOT EXISTS part_color_codes(id INTEGER PRIMARY KEY,"
                     "part_id INTEGER, "

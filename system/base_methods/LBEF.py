@@ -7,6 +7,7 @@ import gzip
 import html.parser
 from io import StringIO
 import json
+from time import sleep
 
 import requests
 from bs4 import BeautifulSoup
@@ -25,12 +26,23 @@ def soupify(url):
         try:
             page = requests.get(url, timeout=10).content
         except:
-            logging.warning("Can't reach the url! {}".format(url))
+            logging.error("Can't reach the url! {}".format(url))
             return None
     soup = BeautifulSoup(page)
     if soup is None:
-        logging.warning("Can't make the soup! {}".format(url))
+        logging.error("Can't make the soup! {}".format(url))
         soup = BeautifulSoup(page)
+
+    # Check that bricklink isn't down
+    available = soup.find(text="System Unavailable")
+    if available is not None:
+        bold = soup.find('b').text[-9:-8]
+        logging.warning("bricklink down for maintenence, it will be back in {} minutes".format(bold))
+        logging.info("Waiting to continue")
+        for n in range(1, int(bold)):
+            sleep(60)
+            logging.info("{} minutes remaining".format(int(bold) - n))
+        return soupify(url)
     return soup
 
 
@@ -337,6 +349,10 @@ def read_json_from_url(url, params=None):
     return json.loads(requests.get(url, params=params, verify=False).text)
 
 
+def read_xml_from_url(url, params=None):
+    return BeautifulSoup(requests.get(url, params=params, verify=False).text)
+
+
 def print4(list, n=4):
     """
     Print the first four items of a list or iterable
@@ -348,3 +364,4 @@ def print4(list, n=4):
     for idx, r in enumerate(list):
         print(r)
         if idx >= n: break
+

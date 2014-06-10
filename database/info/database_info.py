@@ -146,7 +146,7 @@ def read_bl_colors_name():
 
     @return: a list in this format {color_id, id}
     """
-    return LBEF.list_to_dict(db.run_sql('SELECT color_name, id FROM colors'))
+    return LBEF.list_to_dict(db.run_sql('SELECT bl_color_name, id FROM colors'))
 
 
 def read_bl_sets():
@@ -163,3 +163,11 @@ def read_bl_parts():
     @return: a dict in this format {part_num: id, }
     """
     return LBEF.list_to_dict(db.run_sql('SELECT bricklink_id, id FROM parts'))
+
+
+def read_re_parts():
+    """
+
+    @return: a dict in this format {part_num: id, }
+    """
+    return LBEF.list_to_dict(db.run_sql('SELECT rebrickable_id, id FROM parts'))

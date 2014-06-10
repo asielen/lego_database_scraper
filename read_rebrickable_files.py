@@ -73,12 +73,12 @@ def check_pieces():
     missing_pieces = diff.added()
 
     for piece in missing_pieces:
-        print("Adding blapi element to database: design = " + piece)
+        print("Adding blds element to database: design = " + piece)
 
         piece_info = BLPI.get_bl_piece_info(piece, missing_pieces[piece])
 
         if piece_info is None:
-            print("blapi design info cannot be found: design = " + piece)
+            print("blds design info cannot be found: design = " + piece)
             continue
 
         add_part_to_database(piece_info)

@@ -25,12 +25,10 @@ def batch_update(sql_text, csvfile, header_len=0):
 
         if idx % 100 == 0:
             logging.info("{} rows processed".format(idx))
-            print(sql_text)
-            print(rows_to_process)
             run_batch_sql(sql_text, rows_to_process)
             rows_to_process = []
 
-    print("Inserting Final Rows")
+    logging.info("Inserting Final Rows")
     run_batch_sql(sql_text, rows_to_process)
 
 
