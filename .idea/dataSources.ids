@@ -6,4 +6,8 @@
   <data-source source="LOCAL" name="system" uuid="12ec3313-792a-4fc5-83cb-1b3fe6ead9fb">
     <database-info product="" version="" jdbc-version="" driver-name="" driver-version=""/>
   </data-source>
+  <data-source source="LOCAL" name="lego_eval" uuid="c0003ed7-f6f5-46d8-9fd8-d5c069c0dfb0">
+    <database-info product="SQLite" version="3.7.6.3" jdbc-version="2.1" driver-name="SQLiteJDBC" driver-version="native"/>
+    <case-sensitivity plain-identifiers="mixed" quoted-identifiers="mixed"/>
+  </data-source>
 </component>

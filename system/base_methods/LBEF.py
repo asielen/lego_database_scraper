@@ -14,34 +14,39 @@ from bs4 import BeautifulSoup
 import arrow
 
 
+invalid_urls = 0
+logger = logging.getLogger('LBEF')
+
 def soupify(url):
     """
 
     @param url: any url
     @return: returns the soup for that url
     """
+    global invalid_urls
     try:
         page = requests.get(url, timeout=10).content
     except:
         try:
-            page = requests.get(url, timeout=10).content
+            page = requests.get(url, timeout=20).content
         except:
-            logging.error("Can't reach the url! {}".format(url))
+            invalid_urls += 1
+            logger.error("INVALID URL {}: Can't reach the url! {}".format(invalid_urls, url))
             return None
     soup = BeautifulSoup(page)
     if soup is None:
-        logging.error("Can't make the soup! {}".format(url))
+        logger.error("Can't make the soup! {}".format(url))
         soup = BeautifulSoup(page)
 
     # Check that bricklink isn't down
     available = soup.find(text="System Unavailable")
     if available is not None:
-        bold = soup.find('b').text[-9:-8]
-        logging.warning("bricklink down for maintenence, it will be back in {} minutes".format(bold))
-        logging.info("Waiting to continue")
-        for n in range(1, int(bold)):
+        bold = soup.find('b').text[-10:-9]
+        logger.warning("bricklink down for maintenence, it will be back in {} minutes.".format(bold))
+        logger.info("Waiting to continue")
+        for n in range(1, int_zero(bold)):
             sleep(60)
-            logging.info("{} minutes remaining".format(int(bold) - n))
+            logger.info("{} minutes remaining".format(int_zero(bold) - n))
         return soupify(url)
     return soup
 
@@ -92,6 +97,20 @@ def int_null(s):
         n = int(float(s))
     except:
         return None
+    return n
+
+
+def int_zero(s):
+    """
+
+    @param s: a string
+    @return: an int if the string can be converted else None
+    """
+    n = None
+    try:
+        n = int(float(s))
+    except:
+        return 0
     return n
 
 
@@ -283,6 +302,9 @@ def input_set_num(type=0):
         return expand_set_num(set_num)[2]
 
 
+def list2string(list):
+    return ', '.join(map(str, list))
+
 # source http://stackoverflow.com/questions/1165352/fast-comparison-between-two-python-dictionary
 class DictDiffer(object):
     """
@@ -364,4 +386,3 @@ def print4(list, n=4):
     for idx, r in enumerate(list):
         print(r)
         if idx >= n: break
-

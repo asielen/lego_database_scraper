@@ -1,4 +1,4 @@
-from system import system_setup as sys
+from system import setup_logging as sys
 
 __author__ = 'andrew.sielen'
 

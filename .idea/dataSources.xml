@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="DataSourceManagerImpl" format="xml" hash="2524972171">
+  <component name="DataSourceManagerImpl" format="xml" hash="2553674295">
     <data-source source="LOCAL" name="lego_sets" uuid="80da43b6-4599-4c97-a79b-e4f4356568de">
       <driver-ref>sqlite.xerial</driver-ref>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
@@ -11,6 +11,12 @@
       <driver-ref>sqlite.xerial</driver-ref>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
       <jdbc-url>jdbc:sqlite:D:\Andrew\Pycharm Projects\lego_database_scraper\system\system.sqlite</jdbc-url>
+      <libraries />
+    </data-source>
+    <data-source source="LOCAL" name="lego_eval" uuid="c0003ed7-f6f5-46d8-9fd8-d5c069c0dfb0">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/lego_eval.sqlite</jdbc-url>
       <libraries />
     </data-source>
   </component>

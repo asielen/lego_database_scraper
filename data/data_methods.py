@@ -2,6 +2,7 @@ __author__ = 'andrew.sielen'
 
 import logging
 
+logger = logging.getLogger('LBEF')
 import arrow
 
 from system.base_methods import LBEF
@@ -17,7 +18,7 @@ def get_colors():
     combine data from peeron and rebrickable to create the colors table
     @return:
     """
-    logging.debug("Get all colors from rebrickable and peeron")
+    logger.debug("Get all colors from rebrickable and peeron")
 
     rebrickable_colors = _filter_rebrickable_colors(
         reapi.pull_colors())  # bl_color: [rebrickable ID, Name, hex, [ldraw color], [bricklink color]]
@@ -136,7 +137,7 @@ def _filter_rebrickable_colors(colors):
 
 def _process_clist(clist):
     """
-    Take a list like '{12,3,4}'
+    Take a list like '{12, 3, 4}'
     and return [12,3,4]
     @param clist:
     @return:
@@ -165,9 +166,35 @@ def get_piece_info(bl_id=None, bo_id=None, re_id=None, lego_id=None, type=1):
     design_alts = None
     if bl_id is not None:
         bl_piece_info, design_alts = blds.get_bl_piece_info(bl_id)
+
+    # Try to find the bl_id for this set by searching alternate ids and element ids. This can be very slow
     elif re_id is not None:
-        # Todo: this should actually call the re api and then try to find the bricklink code by searching bricklink
-        bl_piece_info = blds.get_bl_piece_info(re_id)
+        logger.info("Searching for bl_id for re_id {}".format(re_id))
+        re_piece_info = reapi.pull_piece_info(re_id)  # [re_id, bl_id, name, alt_ids, element_ids]
+        if re_piece_info is None:
+            logger.info("Doesn't even exist on rebrickable")
+            return piece_info, design_alts
+        elif re_piece_info[1] is not None:
+            bl_piece_info = blds.get_bl_piece_info(re_piece_info[1], default=None)
+        else:
+            bl_piece_info = blds.get_bl_piece_info(re_piece_info[0], default=None)
+            if bl_piece_info is None and re_piece_info[3] is not None:
+                for alt in re_piece_info[3]:
+                    bl_piece_info = blds.get_bl_piece_info(alt, default=None)
+                    if bl_piece_info is not None: break
+            if bl_piece_info is None and re_piece_info[4] is not None:
+                for elm in re_piece_info[4]:
+                    bl_piece_info = blds.get_bl_piece_info(elm, default=None)
+                    if bl_piece_info is not None: break
+            # if bl_piece_info is None:
+            # bl_piece_info = blds.get_bl_piece_info(re_piece_info[2], default=None) # Worst case, lookup the name
+
+
+            if bl_piece_info is not None:
+                logger.info("Found bl_id {}".format(bl_piece_info['design_num']))
+            else:
+                logger.info("Couldn't Find bl_id adding as filler")
+                LBEF.note("Missing Piece Info: re_id={}".format(re_id))
 
     if bl_piece_info is not None:
         piece_info['bricklink_id'] = bl_piece_info['design_num']
@@ -177,15 +204,15 @@ def get_piece_info(bl_id=None, bo_id=None, re_id=None, lego_id=None, type=1):
         piece_info['bl_type'] = bl_piece_info['piece_type']
 
     if type == 1:
-        return [piece_info['lego_id'],
-                piece_info['bricklink_id'],
+        return [piece_info['bricklink_id'],
                 piece_info['brickowl_id'],
                 piece_info['rebrickable_id'],
+                piece_info['lego_id'],
                 piece_info['design_name'],
                 piece_info['weight'],
                 piece_info['bl_type'],
-                piece_info["bl_category"]], design_alts
-    return piece_info, design_alts
+                piece_info["bl_category"]]
+    return piece_info
 
 
 def get_basestats(set, type=1):
@@ -197,7 +224,7 @@ def get_basestats(set, type=1):
     """
 
     if set is None:
-        logging.warning("Trying to update a set but there is none to update")
+        logger.warning("Trying to update a set but there is none to update")
         return None
 
     set_num, set_seq, set = LBEF.expand_set_num(set)
@@ -301,7 +328,7 @@ def get_basestats(set, type=1):
         scrubbed_dic['box_volume'] = None
 
     if scrubbed_dic == {}:
-        logging.warning("No data for set: {}".format(set))
+        logger.warning("No data for set: {}".format(set))
         return None
 
     scrubbed_dic['last_update'] = arrow.now('US/Pacific').format('YYYY-MM-DD')

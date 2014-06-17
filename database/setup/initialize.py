@@ -28,17 +28,18 @@ def _initiate_database():
 
 
         # ### Build pieces table
-        con.execute("CREATE TABLE IF NOT EXISTS parts(id INTEGER PRIMARY KEY,"
-                    "lego_id TEXT,"  # probably not known for most, or at least it could be the same as the bl_id
-                    "bricklink_id TEXT,"
-                    "brickowl_id TEXT,"
-                    "rebrickable_id TEXT,"
-                    "design_name TEXT,"
+        con.execute("CREATE TABLE IF NOT EXISTS parts(id INTEGER PRIMARY KEY, "
+                    "bricklink_id TEXT, "
+                    "brickowl_id TEXT ,"
+                    "rebrickable_id TEXT, "
+                    "lego_id TEXT, "  # probably not known for most, or at least it could be the same as the bl_id
+                    "design_name TEXT, "
                     "weight REAL, "
                     "bl_category INTEGER,"
                     "bl_type TEXT);")  # P for part, M for minifig - may implement others
-        con.execute("CREATE UNIQUE INDEX IF NOT EXISTS bl_num_idx ON parts(bricklink_id)")
         con.execute("CREATE UNIQUE INDEX IF NOT EXISTS bo_num_idx ON parts(brickowl_id)")
+        con.execute("CREATE UNIQUE INDEX IF NOT EXISTS bl_num_idx ON parts(bricklink_id)")
+        con.execute("CREATE UNIQUE INDEX IF NOT EXISTS re_num_idx ON parts(rebrickable_id)")
 
         # For alternate part ids
         con.execute("CREATE TABLE IF NOT EXISTS part_alternates(id INTEGER PRIMARY KEY,"
@@ -135,7 +136,7 @@ def _initiate_database():
         con.execute("CREATE TABLE IF NOT EXISTS historic_prices(id INTEGER PRIMARY KEY,"
                     "set_id INTEGER,"
                     "record_date INTEGER,"
-                    "price_type INTEGER,"  #current_new, current_used, historic_new, historic_used
+                    "price_type INTEGER,"  # current_new, current_used, historic_new, historic_used
                     "avg REAL,"
                     "lots REAL,"
                     "max REAL,"

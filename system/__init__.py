@@ -1,3 +1,3 @@
 __author__ = 'Andrew'
 
-from system.system_setup import *
+from system.setup_logging import *

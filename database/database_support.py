@@ -4,7 +4,9 @@ import logging
 import sqlite3 as lite
 
 from database import database
+import system.base_methods as LBEF
 
+logger = logging.getLogger('LBEF')
 
 def batch_update(sql_text, csvfile, header_len=0):
     """
@@ -24,20 +26,25 @@ def batch_update(sql_text, csvfile, header_len=0):
         rows_to_process.append(row)
 
         if idx % 100 == 0:
-            logging.info("{} rows processed".format(idx))
+            logger.info("{} rows processed".format(idx))
             run_batch_sql(sql_text, rows_to_process)
             rows_to_process = []
 
-    logging.info("Inserting Final Rows")
+    logger.info("Inserting Final Rows")
     run_batch_sql(sql_text, rows_to_process)
 
 
-def run_batch_sql(sql_text, list):
+def run_batch_sql(sql_text, values):
     con = lite.connect(database)
 
     with con:
         c = con.cursor()
-        c.executemany(sql_text, list)
+        try:
+            c.executemany(sql_text, values)
+        except:
+            for r in values:
+                LBEF.note("Can't insert row: {}".format(LBEF.list2string(r)))
+
 
 
 def run_sql(sql_text, insert_list=None, one=False):
