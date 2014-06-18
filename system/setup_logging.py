@@ -34,6 +34,4 @@ def setup_logging():
     return logger
 
 
-def note(string):
-    with open(notes_file, 'a') as text_file:
-        print(string, file=text_file)
+

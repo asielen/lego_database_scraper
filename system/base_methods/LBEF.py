@@ -1,3 +1,5 @@
+from system import notes_file
+
 __author__ = 'andrew.sielen'
 
 import re  # Regular expressions
@@ -16,6 +18,7 @@ import arrow
 
 invalid_urls = 0
 logger = logging.getLogger('LBEF')
+
 
 def soupify(url):
     """
@@ -305,6 +308,7 @@ def input_set_num(type=0):
 def list2string(list):
     return ', '.join(map(str, list))
 
+
 # source http://stackoverflow.com/questions/1165352/fast-comparison-between-two-python-dictionary
 class DictDiffer(object):
     """
@@ -386,3 +390,11 @@ def print4(list, n=4):
     for idx, r in enumerate(list):
         print(r)
         if idx >= n: break
+
+
+def note(string):
+    with open(notes_file, 'a')  as text_file:
+        print(arrow.now('US/Pacific').format('YYYYMMDD HH:mm') + " @ " + string, file=text_file)
+
+
+note("TEST")

@@ -2,9 +2,11 @@ __author__ = 'andrew.sielen'
 
 import logging
 import sqlite3 as lite
+import sys
 
 from database import database
 import system.base_methods as LBEF
+
 
 logger = logging.getLogger('LBEF')
 
@@ -42,9 +44,10 @@ def run_batch_sql(sql_text, values):
         try:
             c.executemany(sql_text, values)
         except:
+            LBEF.note("ERROR: {}".format(sys.exc_info()[0]))
+            LBEF.note("Can't insert row: {} / {}".format(len(values), LBEF.list2string(values)))
             for r in values:
                 LBEF.note("Can't insert row: {}".format(LBEF.list2string(r)))
-
 
 
 def run_sql(sql_text, insert_list=None, one=False):
