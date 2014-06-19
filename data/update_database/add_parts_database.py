@@ -7,12 +7,14 @@ from multiprocessing import Pool as _pool
 from system import base_methods as LBEF
 
 
+
 # other modules
 import database as db
 from database import info as info
 import data
 from time import sleep
 import sys
+import arrow
 
 logger = logging.getLogger('LBEF')
 
@@ -51,6 +53,9 @@ def add_parts_to_database(part_id_list, type="bl"):
     parts_to_insert = []
     pool = _pool(RUNNINGPOOL)
     bl_categories = info.read_bl_categories()  # To convert the category ids to table ids
+    start_time = arrow.now()
+    number_processed = 0
+    total_ids = len(part_id_list)
     if type == "bl":  # TODO need to update this with re info
         part_database = info.read_bl_parts()
         for idx, part in enumerate(part_id_list):
@@ -63,6 +68,9 @@ def add_parts_to_database(part_id_list, type="bl"):
                 parts_to_insert.extend(pool.map(_parse_get_bl_pieceinfo, parts_to_scrape))
                 parts_to_scrape = []
                 logger.info("Running Pool {}".format(idx))
+
+                number_processed += len(parts_to_insert)
+                _compare_time(start_time, number_processed, total_ids - idx)
                 sleep(.5)
             if idx > 0 and idx % 1500 == 0:
                 logger.info("Inserting {} pieces".format(len(parts_to_insert)))
@@ -83,12 +91,16 @@ def add_parts_to_database(part_id_list, type="bl"):
                 parts_to_scrape.append(part)
                 # parts_to_insert.extend(_parse_get_re_pieceinfo(part)) #Todo this is a test just to see where an error is
             if idx > 0 and idx % 150 == 0:
-                logger.debug("######################################## Running Pool {}".format(idx))
+                logger.info("######################################## Running Pool {}".format(idx))
                 parts_to_insert.extend(pool.map(_parse_get_re_pieceinfo, parts_to_scrape))
                 parts_to_scrape = []
+
+                number_processed += len(parts_to_insert)
+                _compare_time(start_time, number_processed, total_ids - idx)
+
                 sleep(.5)
             if idx > 0 and idx % 1500 == 0:
-                logger.info("Inserting {} pieces".format(len(parts_to_insert)))
+                logger.info("######################################## Inserting {} pieces".format(len(parts_to_insert)))
                 parts_to_insert = _process_categories(parts_to_insert, bl_categories)
                 add_part_date_to_database(parts_to_insert)
                 parts_to_insert = []
@@ -96,10 +108,21 @@ def add_parts_to_database(part_id_list, type="bl"):
         parts_to_insert = _process_categories(parts_to_insert, bl_categories)
         add_part_date_to_database(parts_to_insert)
 
+    number_processed += len(parts_to_insert)
+    _compare_time(start_time, number_processed, 1)
 
-#Todo add number of filler vs number added to report
-#figure out why a second instance of logger loads
-#Are bl_items being updated right?
+
+def _compare_time(start_time, number_processed, total_remaining):
+    current_time = arrow.now() - start_time
+    current_time = current_time.seconds
+    logger.info("Run Time: {} seconds / {} processed".format(current_time, number_processed))
+    current_time = number_processed / current_time
+    logger.info("Run Time: {} per second".format(round(current_time)))
+    current_time = 60 * current_time
+    logger.info("Run Time: {} per min".format(round(current_time)))
+    logger.info("Run Time: Est Time Remaining {} mins for {} objects".format(round(total_remaining / current_time),
+                                                                             total_remaining))
+
 
 def _process_categories(parts_to_insert, bl_categories):
     parts_to_insert_processed = []
@@ -143,6 +166,13 @@ def add_part_date_to_database(insert_list, basics=0):
             re_add.append(row)
         elif row[3] is not None:
             lg_add.append(row)
+
+    logger.debug("Inserting: {} BL [{}%] ; {} OL [{}%] ; {} RE [{}%] ; {} LG [{}%] ; Total {}".format(
+        len(bl_add), round(len(bl_add) / len(insert_list) * 100, 2),
+        len(ol_add), round(len(ol_add) / len(insert_list) * 100, 2),
+        len(re_add), round(len(re_add) / len(insert_list) * 100, 2),
+        len(lg_add), round(len(lg_add) / len(insert_list) * 100, 2),
+        len(insert_list)))
 
     if len(bl_add) > 0:  # If Bricklink Id is set
         try:
@@ -220,7 +250,7 @@ def _parse_get_bl_pieceinfo(part_num):
     @param part:
     @return:
     """
-    logger.info("Getting info on bl part {}".format(part_num))
+    logger.debug("Getting info on bl part {}".format(part_num))
     return data.get_piece_info(bl_id=part_num)
 
 
@@ -230,9 +260,8 @@ def _parse_get_re_pieceinfo(part_num):
     @param part:
     @return:
     """
-    logger.info("Getting info on re part {}".format(part_num))
+    logger.debug("Getting info on re part {}".format(part_num))
     return data.get_piece_info(re_id=part_num)
-
 
 
 

@@ -55,7 +55,7 @@ def _fix_part_data_order(pl):
         return [pl[1], None, None, None, pl[2], pl[3], pl[4], pl[0]]
     else:
         LBEF.note("CAN'T CONVERT LIST: [{}]".format(LBEF.list2string(pl)))
-        logger.info("CAN'T CONVERT LIST: [{}]".format(LBEF.list2string(pl)))
+        logger.warning("CAN'T CONVERT LIST: [{}]".format(LBEF.list2string(pl)))
         return None
 
 
@@ -144,7 +144,7 @@ def init_part_color_codes():
 
     # db.batch_update(
     # 'INSERT OR IGNORE INTO parts(bl_category, bricklink_id, design_name, weight, bl_type) VALUES (?,?,?,?,?)',
-    #     parts_to_insert,
+    # parts_to_insert,
     #     header_len=1)
 
 

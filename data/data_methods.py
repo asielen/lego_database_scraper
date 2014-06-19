@@ -169,10 +169,10 @@ def get_piece_info(bl_id=None, bo_id=None, re_id=None, lego_id=None, type=1):
 
     # Try to find the bl_id for this set by searching alternate ids and element ids. This can be very slow
     elif re_id is not None:
-        logger.info("Searching for bl_id for re_id {}".format(re_id))
+        logger.debug("Searching for bl_id for re_id {}".format(re_id))
         re_piece_info = reapi.pull_piece_info(re_id)  # [re_id, bl_id, name, alt_ids, element_ids]
         if re_piece_info is None:
-            logger.info("Doesn't even exist on rebrickable")
+            logger.warning("{} oesn't even exist on rebrickable".format(re_id))
             return piece_info, design_alts
         elif re_piece_info[1] is not None:
             bl_piece_info = blds.get_bl_piece_info(re_piece_info[1], default=None)
@@ -191,9 +191,9 @@ def get_piece_info(bl_id=None, bo_id=None, re_id=None, lego_id=None, type=1):
 
 
             if bl_piece_info is not None:
-                logger.info("Found bl_id {}".format(bl_piece_info['design_num']))
+                logger.debug("Found bl_id {}".format(bl_piece_info['design_num']))
             else:
-                logger.info("Couldn't Find bl_id adding as filler")
+                logger.debug("Couldn't Find bl_id adding as filler")
                 LBEF.note("Missing Piece Info: re_id={}".format(re_id))
 
     if bl_piece_info is not None:
