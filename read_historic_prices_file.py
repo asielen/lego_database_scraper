@@ -4,7 +4,7 @@ __author__ = 'Andrew'
 
 import csv
 import sqlite3 as lite
-import logging
+from system.logger import logger
 
 import arrow
 from profilehooks import profile
@@ -63,7 +63,7 @@ def get_rows(row, set_id_dict):
             set_id = set_id_dict[LBEF.expand_set_num(row[0])]
         except:
             if len(row) > 0:
-                logging.warning("Can't find set: {}".format(row[0]))
+                logger.warning("Can't find set: {}".format(row[0]))
             return None, None
 
     date = parse_date(row[5])
@@ -90,7 +90,7 @@ def scrub_row(set_id, date, row):
     # price_dict = {'current_new': dict(set_id=None, date=None, avg=None, max=None, min=None, qty_avg=None, tot=None, qty=None, price_avg=None),
     # 'current_used': dict(set_id=None, date=None, avg=None, max=None, min=None, qty_avg=None, tot=None, qty=None, price_avg=None),
     # 'historic_new': dict(set_id=None, date=None, avg=None, max=None, min=None, qty_avg=None, tot=None, qty=None, price_avg=None),
-    #               'historic_used': dict(set_id=None, date=None, avg=None, max=None, min=None, qty_avg=None, tot=None, qty=None, price_avg=None)}
+    # 'historic_used': dict(set_id=None, date=None, avg=None, max=None, min=None, qty_avg=None, tot=None, qty=None, price_avg=None)}
     #
     # raiting_dict = {'set_id': None, 'date': None, 'bs_want': None, 'bs_own': None}
     #

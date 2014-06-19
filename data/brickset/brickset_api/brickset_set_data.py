@@ -2,7 +2,9 @@ __author__ = 'andrew.sielen'
 
 import pprint
 
-from system.base_methods.LBEF import *
+import arrow
+
+import system.base_methods as LBEF
 
 
 # http://brickset.com/inventories/[set-num]-[set-seq] <- THe set inventory
@@ -32,7 +34,7 @@ def get_basestats(set_num_primary, set_num_secondary=1):
 
     url = "http://brickset.com/sets/{0}-{1}".format(set_num_primary, set_num_secondary)
 
-    soup = soupify(url)
+    soup = LBEF.soupify(url)
 
     if soup is None: return {}
 
@@ -55,7 +57,7 @@ def get_daily_data(set_num_primary, set_num_secondary=1):
     """
     url = "http://brickset.com/sets/{0}-{1}".format(set_num_primary, set_num_secondary)
 
-    soup = soupify(url)
+    soup = LBEF.soupify(url)
 
     dic = {}
     # #These three should be updated every day
@@ -100,7 +102,7 @@ def _parse_set_dimensions(d_string):
     if 'cm' in d_string:
         # if 'cm' is in the second element of the list, use those numbers
         cm = str.split(d_string, "cm")[0]
-        return tuple([zero_2_null(only_numerics_float(s)) for s in str.split(cm, ' x ')])
+        return tuple([LBEF.zero_2_null(LBEF.only_numerics_float(s)) for s in str.split(cm, ' x ')])
     else:
         # if no cm dims in the string
         return (None, None, None)
@@ -109,7 +111,7 @@ def _parse_set_dimensions(d_string):
 # def _parse_set_name(soup):
 # """
 # Finds the set name in the soup
-#     """
+# """
 #     parent_tags0 = soup.find("h1")
 #     if not parent_tags0:
 #         return ""
@@ -118,7 +120,7 @@ def _parse_set_dimensions(d_string):
 def get_bs_want_own(set_num_primary, set_num_secondary=1):
     url = "http://brickset.com/sets/{0}-{1}".format(set_num_primary, set_num_secondary)
 
-    soup = soupify(url)
+    soup = LBEF.soupify(url)
 
     return _parse_want_own(soup)
 
@@ -149,7 +151,7 @@ def _parse_want_own(soup):
 def get_bs_avaiable_dates(set_num_primary, set_num_secondary=1):
     url = "http://brickset.com/sets/{0}-{1}".format(set_num_primary, set_num_secondary)
 
-    soup = soupify(url)
+    soup = LBEF.soupify(url)
 
     return _parse_avaiable_dates(soup)
 
@@ -200,7 +202,7 @@ def _parse_available_dates_make_string(l):
     if len(l) < 2: return ""
     if l[1] not in months: return ""
     date_string = "20" + l[2] + "-" + months[l[1]] + "-" + l[0]
-    return date_string
+    return arrow.get(date_string).timestamp
 
 
 ##### Get Dates #####
@@ -209,7 +211,7 @@ def _parse_available_dates_make_string(l):
 def get_bs_rating(set_num_primary, set_num_secondary=1):
     url = "http://brickset.com/sets/{0}-{1}".format(set_num_primary, set_num_secondary)
 
-    soup = soupify(url)
+    soup = LBEF.soupify(url)
 
     return _parse_rating(soup)
 
@@ -278,11 +280,11 @@ def scrub_data(dic):
     if 'LEGO item numbers' in dic:
         scrubbed_dic['lego_item_num'] = dic['LEGO item numbers']
     if 'Minifigs' in dic:
-        scrubbed_dic['figures'] = scrub_text2int(dic['Minifigs'])
+        scrubbed_dic['figures'] = LBEF.scrub_text2int(dic['Minifigs'])
     if 'Dimensions' in dic:
         scrubbed_dic['dimensions'], scrubbed_dic['volume'] = bs_scrub_dimensions(dic['Dimensions'])
     if 'Pieces' in dic:
-        scrubbed_dic['pieces'] = scrub_text2int(dic['Pieces'])
+        scrubbed_dic['pieces'] = LBEF.scrub_text2int(dic['Pieces'])
     if 'Price per piece' in dic:
         scrubbed_dic['price_per_piece'] = bs_scrub_price(dic['Price per piece'])
     if 'RRP' in dic:
@@ -301,9 +303,9 @@ def scrub_data(dic):
     if 'United States' in dic:
         scrubbed_dic['available_us'] = dic['United States']
     if 'people own this set' in dic:
-        scrubbed_dic['bs_own'] = only_numerics_int(dic['people own this set'])
+        scrubbed_dic['bs_own'] = LBEF.only_numerics_int(dic['people own this set'])
     if 'want this set' in dic:
-        scrubbed_dic['bs_want'] = only_numerics_int(dic['want this set'])
+        scrubbed_dic['bs_want'] = LBEF.only_numerics_int(dic['want this set'])
     if 'bs_score' in dic:
         scrubbed_dic['bs_score'] = dic['bs_score']
 
@@ -363,11 +365,11 @@ def scrub_daily_data(dic):
     else:
         scrubbed_dic['available_us'] = (None, None)
     if 'people own this set' in dic:
-        scrubbed_dic['bs_own'] = only_numerics_int(dic['people own this set'])
+        scrubbed_dic['bs_own'] = LBEF.only_numerics_int(dic['people own this set'])
     else:
         scrubbed_dic['bs_own'] = None
     if 'want this set' in dic:
-        scrubbed_dic['bs_want'] = only_numerics_int(dic['want this set'])
+        scrubbed_dic['bs_want'] = LBEF.only_numerics_int(dic['want this set'])
     else:
         scrubbed_dic['bs_want'] = None
     if 'bs_score' in dic:
@@ -389,20 +391,12 @@ def bs_scrub_price(s):
     for p in price_list:
         if '\u00A3' in p or 'p' in p:
             #searches for the pound sign or pence
-            price_dic['uk'] = zero_2_null(only_numerics_float(p))
+            price_dic['uk'] = LBEF.zero_2_null(LBEF.only_numerics_float(p))
         elif '$' in p or 'c' in p:
             #searches for the dollar sign or c for cents
-            price_dic['us'] = zero_2_null(only_numerics_float(p))
+            price_dic['us'] = LBEF.zero_2_null(LBEF.only_numerics_float(p))
     return price_dic
 
-
-# def bs_scrub_set_name(s):
-#     """
-#         Takes a string in the format: 4431-1: Ambulance
-#             and returns ['4431-1','Ambulance']
-#     """
-#     name_list = s.split(': ')
-#     return name_list
 
 def bs_scrub_age_range(s):
     """
@@ -412,7 +406,7 @@ def bs_scrub_age_range(s):
             returns (7,)
     """
     ages = s.split('-')
-    ages_list = tuple([zero_2_null(only_numerics_int(s)) for s in ages])
+    ages_list = tuple([LBEF.zero_2_null(LBEF.only_numerics_int(s)) for s in ages])
     if len(ages_list) < 2:
         ages_list = (ages_list[0], None)
     return ages_list
@@ -433,7 +427,7 @@ def bs_scrub_weight(s):
             and returns 400.0
     """
     weight = s.split('Kg')[0]
-    weight = only_numerics_float(weight) * 1000  #Kg to grams conversion
+    weight = LBEF.only_numerics_float(weight) * 1000  #Kg to grams conversion
     if weight == 0: return None
     return weight
 
@@ -442,7 +436,7 @@ def bs_scrub_year(s):
     """
         Takes a year as '2012' and returns '2012-1-1'
     """
-    return zero_2_null(only_numerics_int(s))
+    return LBEF.zero_2_null(LBEF.only_numerics_int(s))
 
 
 def main():

@@ -56,9 +56,10 @@ def add_part_design_alt(primary, alts):
     @return:
     """
     primary_id = info.get_bl_piece_id(primary)
-    alts = alts.split(', ')
+    alts = alts.split(',')
     if primary_id is not None:
         for n in alts:
+            n = n.strip()
             db.run_sql("INSERT OR IGNORE INTO part_alternates(part_id, alternate_id) VALUES (?,?)", (primary_id, n))
 
 
@@ -84,7 +85,7 @@ def get_blPieceInfo(design_num):
     # EX: <td width="20%"><font color="#666666">Weight (in grams):</font><br>0.45</td>
     weight = LBEF.float_zero(weight_tag)
 
-    #Find Name
+    # Find Name
     name_tag = soup.find("font", {"face": "Geneva,Arial,Helvetica"})
     name = name_tag.get_text()
 
@@ -157,7 +158,7 @@ def _check_minifig(soup, design_num):
     # EX: <td width="20%"><font color="#666666">Weight (in grams):</font><br>0.45</td>
     weight = LBEF.float_zero(weight_tag)
 
-    #Find Type and Categories
+    # Find Type and Categories
     type = "M"
     category = None
     types_tag = soup.find("font", {"face": "Arial"})

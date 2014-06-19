@@ -1,13 +1,12 @@
 __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
-import logging
 
-import arrow
-
+from system.logger import logger
 from database import set_info_old
 from database.info.database_info import database
 import public_api
+import system.base_methods as LBEF
 from z_junk import get_daily
 
 
@@ -26,7 +25,7 @@ def add_daily_set_data_to_database(set_num, prices, ratings):
         public_api.get_basestats(set_num)
         set_id = set_info_old.get_set_id(set_num)
         if set_id is None:
-            logging.warning("Cannot get daily data because set [{}] is not loading".format(set_num))
+            logger.warning("Cannot get daily data because set [{}] is not loading".format(set_num))
             return None
 
     add_daily_prices_to_database(set_id, prices)
@@ -37,11 +36,11 @@ def add_daily_set_data_to_database(set_num, prices, ratings):
     with con:  # Update the last date
         c = con.cursor()
         c.execute('UPDATE sets SET last_price_updated=? WHERE id=?',
-                  (arrow.now('US/Pacific').format('YYYY-MM-DD'), set_id))
+                  (LBEF.timestamp(), set_id))
 
 
 def add_daily_prices_to_database(set_id, prices):
-    current_date = arrow.now('US/Pacific').format('YYYY-MM-DD')
+    current_date = LBEF.timestamp()
 
     con = lite.connect(database)
     with con:
@@ -80,7 +79,7 @@ def add_daily_ratings_to_database(set_id, ratings):
                    ratings['bs_want'],
                    ratings['bs_own'],
                    ratings['bs_score'],
-                   arrow.now('US/Pacific').format('YYYY-MM-DD')))
+                   LBEF.timestamp()))
 
     if 'available_us' in ratings or 'available_uk' in ratings:
         check_set_availability_dates(set_id, ratings)

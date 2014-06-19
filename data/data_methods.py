@@ -1,9 +1,6 @@
 __author__ = 'andrew.sielen'
 
-import logging
-
-logger = logging.getLogger('LBEF')
-import arrow
+from system.logger import logger
 
 from system.base_methods import LBEF
 from data.bricklink import bricklink_data_scrape as blds
@@ -331,7 +328,7 @@ def get_basestats(set, type=1):
         logger.warning("No data for set: {}".format(set))
         return None
 
-    scrubbed_dic['last_update'] = arrow.now('US/Pacific').format('YYYY-MM-DD')
+    scrubbed_dic['last_update'] = LBEF.timestamp()
 
     if type == 1:  # Return a list instead of a dict
         return [scrubbed_dic['set_name'],

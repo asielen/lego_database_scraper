@@ -3,9 +3,7 @@ from data.update_database.add_parts_database import add_part_to_database
 __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
-import logging
-
-import arrow
+from system.logger import logger
 
 from database.info.database_info import database
 from database.set_info_old import get_set_id
@@ -13,6 +11,7 @@ from database.piece_info_old import get_element_id
 from database.piece_info_old import get_design_id
 from database.update.add_pieces import add_element_to_database
 import data.bricklink.bricklink_api as blapi
+import system.base_methods as LBEF
 
 
 def add_bs_set_pieces_to_database(set_num, brickset_pieces):
@@ -40,7 +39,7 @@ def add_bs_inventory_to_database(set_id, set_dict):
     """
 
     if set_dict is None or set_id is None:
-        logging.warning("Can't add BS inventory to database: set_id = {}".format(set_id))
+        logger.warning("Can't add BS inventory to database: set_id = {}".format(set_id))
         return None
 
     con = lite.connect(database)
@@ -60,21 +59,21 @@ def add_bs_inventory_to_database(set_id, set_dict):
 
         # If the piece isn't already in the database, add it
         if piece_id is None:
-            logging.info("Adding BS element to database: element = " + current_element)
+            logger.debug("Adding BS element to database: element = " + current_element)
 
             piece_dic = BSPI.get_pieceinfo(current_element)
 
             if piece_dic is None:
-                logging.warning("BS piece failed to scrape: element = " + current_element)
+                logger.warning("BS piece failed to scrape: element = " + current_element)
                 return None
 
             design_id = get_design_id(piece_dic['design_num'])
 
             if design_id is None:
-                logging.info("Adding BS design to database: design = " + piece_dic['design_num'])
+                logger.debug("Adding BS design to database: design = " + piece_dic['design_num'])
                 design_id = add_part_to_database(piece_dic)
                 if design_id is None:
-                    logging.warning("BS design id cannot be found: design = " + piece_dic['design_num'])
+                    logger.warning("BS design id cannot be found: design = " + piece_dic['design_num'])
                     return None
 
             piece_id = add_element_to_database(design_id, piece_dic)
@@ -87,7 +86,7 @@ def add_bs_inventory_to_database(set_id, set_dict):
     with con:  # Update the last date
         c = con.cursor()
         c.execute('UPDATE sets SET last_inv_updated_bs=? WHERE id=?',
-                  (arrow.now('US/Pacific').format('YYYY-MM-DD'), set_id))
+                  (LBEF.timestamp(), set_id))
 
 
 def add_bl_set_pieces_to_database(set_num, bricklink_pieces):
@@ -115,7 +114,7 @@ def add_bl_inventory_to_database(set_id, set_dict):
     """
 
     if set_dict is None or set_id is None:
-        logging.warning("Can't add blds inventory to database: set_id = {}".format(set_id))
+        logger.warning("Can't add blds inventory to database: set_id = {}".format(set_id))
         return None
 
     con = lite.connect(database)
@@ -136,7 +135,7 @@ def add_bl_inventory_to_database(set_id, set_dict):
 
         # If it isn't in the database yet, add it
         if design_id is None:
-            logging.info("Adding blds element to database: design = " + current_design)
+            logger.debug("Adding blds element to database: design = " + current_design)
 
             design_id = blapi.add_part_to_database(current_design)
 
@@ -148,4 +147,4 @@ def add_bl_inventory_to_database(set_id, set_dict):
     with con:  # Update the last date
         c = con.cursor()
         c.execute('UPDATE sets SET last_inv_updated_bl=? WHERE id=?',
-                  (arrow.now('US/Pacific').format('YYYY-MM-DD'), set_id))
+                  (LBEF.timestamp(), set_id))

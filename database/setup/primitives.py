@@ -1,19 +1,13 @@
 __author__ = 'andrew.sielen'
 
-import logging
-
-logger = logging.getLogger('LBEF')
 import sqlite3 as lite
-
-from profilehooks import profile
 
 from navigation import menu
 import data.bricklink.bricklink_api as blapi
 import data.rebrickable.rebrickable_api as reapi
 import data.update_database as update
 import database.database as db
-import system as sys
-
+from system.logger import logger
 
 
 #
@@ -22,7 +16,7 @@ import system as sys
 # @ Download colors
 # * init_parts()
 # @ Download parts from Bricklink
-#         @ Download parts from Rebrickable
+# @ Download parts from Rebrickable
 #     * init_price_types()
 #         @ Internal, no need to download
 #     * init_bl_categories()
@@ -37,7 +31,6 @@ def init_colors():
     update.update_colors()
 
 
-@profile()
 def init_parts():
     """
     Pull parts from bulk downloads on bricklink and rebrickable
@@ -75,8 +68,6 @@ if __name__ == "__main__":
         Main launch menu
         @return:
         """
-        sys.setup_logging()
-        logger = logging.getLogger('LBEF')
         logger.critical("Primitives testing")
         options = {}
 

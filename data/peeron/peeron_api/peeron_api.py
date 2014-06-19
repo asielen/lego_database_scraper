@@ -3,7 +3,7 @@ __author__ = 'andrew.sielen'
 # Master part list: http://www.peeron.com/inv/master.txt
 # lego color guide: http://www.peeron.com/cgi-bin/invcgis/colorguide.cgi
 # peeron colors: http://www.peeron.com/inv/colors
-# TODO: Need to make sure colors and parts match peeron
+
 
 from system import base_methods as LBEF
 
@@ -18,13 +18,3 @@ def pull_colors():
     table_tags = soup.findAll('table')
     table = table_tags[1]
     return LBEF.parse_html_table(table)
-
-
-def pull_parts():
-    pass
-
-
-if __name__ == "__main__":
-    import pprint as pp
-
-    pp.pprint(pull_colors())

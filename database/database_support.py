@@ -1,14 +1,12 @@
 __author__ = 'andrew.sielen'
 
-import logging
 import sqlite3 as lite
 import sys
 
 from database import database
 import system.base_methods as LBEF
+from system.logger import logger
 
-
-logger = logging.getLogger('LBEF')
 
 def batch_update(sql_text, csvfile, header_len=0):
     """

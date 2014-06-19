@@ -10,12 +10,11 @@ __author__ = 'andrew.sielen'
 #
 # Basic: {once the database is initlaized, these are used to update one at a time}
 # * add_set(set_num)
-#         @ Scrape data from Bricklink & Brickset
+# @ Scrape data from Bricklink & Brickset
 #     * add_part(part_num)
 #         @ Scrape data from Bricklink & Brickset
 
-# external
-import logging
+
 
 # other modules
 import database.info as info
@@ -24,6 +23,8 @@ import system as sys
 
 import public_api
 import data.update_database as update
+
+from system.logger import logger
 
 
 def add_set_to_database(set_num):
@@ -56,7 +57,7 @@ def add_bl_inventory_to_database(set):
     """
     set_num, set_seq, set = LBEF.expand_set_num(set)
 
-    logging.info("Updating bricklink inventory for set {}".format(set))
+    logger.debug("Updating bricklink inventory for set {}".format(set))
     blapi.add_bl_set_inventory_to_database(set)
 
 
@@ -86,7 +87,7 @@ if __name__ == "__main__":
         @return:
         """
         sys.setup_logging()
-        logging.critical("Basics testing")
+        logger.critical("Basics testing")
         options = {}
 
         options['1'] = "Add Set To Database", menu_add_set_to_database

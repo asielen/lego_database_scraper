@@ -5,7 +5,7 @@ __author__ = 'Andrew'
 
 import csv
 import sqlite3 as lite
-import logging
+from system.logger import logger
 import pprint as pp
 
 import arrow
@@ -137,7 +137,7 @@ def get_rows(row, set_id_dict):
             set_id = set_id_dict[LBEF.expand_set_num(row[0])]
         except:
             if len(row) > 0:
-                logging.warning("Can't find set: {}".format(row[0]))
+                logger.warning("Can't find set: {}".format(row[0]))
             return None, None
 
     date = parse_date(row[5])

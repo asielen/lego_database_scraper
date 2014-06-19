@@ -1,8 +1,6 @@
-from system import setup_logging as sys
-
 __author__ = 'andrew.sielen'
 
-import logging
+from system.logger import logger
 
 import navigation.menu as menu
 import navigation.menu_daily_price_capture as DPC
@@ -38,8 +36,7 @@ def main():
     @return:
     """
 
-    sys.setup_logging()
-    logging.info("Running Main")
+    logger.info("Running Main")
     options = {}
 
     options['1'] = "Run Daily Price Capture", run_get_prices

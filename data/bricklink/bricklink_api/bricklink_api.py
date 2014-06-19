@@ -9,16 +9,13 @@
 #
 # downloadType =
 # T : tabs
-#   X : XML (seems to default to this)
+# X : XML (seems to default to this)
 
 #external
-import logging
-
-logger = logging.getLogger('LBEF')
+from system.logger import logger
 
 #other module
 from navigation import menu
-from system import setup_logging as sys
 from system.base_methods import LBEF
 
 
@@ -248,7 +245,7 @@ if __name__ == "__main__":
         Main launch menu
         @return:
         """
-        sys.setup_logging()
+
         logger.critical("Bricklink API testing")
         options = {}
 

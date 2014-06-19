@@ -4,6 +4,7 @@ import logging
 
 import arrow
 
+
 notes_file = "notes.txt"
 
 
@@ -34,4 +35,4 @@ def setup_logging():
     return logger
 
 
-
+logger = logging.getLogger('LBEF')

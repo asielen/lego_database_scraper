@@ -1,9 +1,7 @@
 __author__ = 'andrew.sielen'
 
 # external
-import logging
-
-logger = logging.getLogger('LBEF')
+from system.logger import logger
 # other modules
 import database as db
 import database.info as info
@@ -27,7 +25,7 @@ def update_sets():
     """
 
     set_list = blapi.pull_set_catalog()
-    update.add_sets_to_database(set_list)
+    update.add_sets_to_database(set_list, id_col=2)
 
 
 # Categories
@@ -139,13 +137,12 @@ def init_part_color_codes():
             codes_processed.append(code)
         else:
             logger.error("Could not find part {} in the database".format(code[0]))
-    LBEF.print4(codes_processed, 100)
+            # now in this format [part_id, color_id, color_code]
 
-
-    # db.batch_update(
-    # 'INSERT OR IGNORE INTO parts(bl_category, bricklink_id, design_name, weight, bl_type) VALUES (?,?,?,?,?)',
-    # parts_to_insert,
-    #     header_len=1)
+    db.batch_update(
+        'INSERT OR IGNORE INTO part_color_codes(part_id, color_id, element_color_code) VALUES (?,?,?)',
+        parts_to_insert, header_len=0)
+    logger.debug("Added Color Codes to Database")
 
 
 def add_bl_set_inventory_to_database(set_num, parts):
@@ -232,7 +229,7 @@ def _get_bl_piece_id(part_num, add=False):
 
 if __name__ == "__main__":
     def _main():
-        print(init_parts())
+        print(init_part_color_codes())
 
 
     if __name__ == "__main__":

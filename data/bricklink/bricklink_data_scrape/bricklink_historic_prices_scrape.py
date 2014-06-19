@@ -97,7 +97,7 @@ def _parse_priceout(soup):
         Shared parsing of New and Used Piece out parsing since the pages use the same format
     """
     parent_tags = soup.find("tr", {"bgcolor": "#EEEEEE", "valign": "TOP", "align": "CENTER"})
-    #items.contents = items.contents[1:-1] #Remove the first and last elements because they are strings
+    # items.contents = items.contents[1:-1] #Remove the first and last elements because they are strings
     if parent_tags == None: return {}
     children_tags0 = parent_tags.findAll("td")
 
@@ -223,7 +223,7 @@ def _scrub_price_data(dic):
 
 
 
-    #aggregate_dic = {'total_sold_new':0,'total_sold_used':0,
+    # aggregate_dic = {'total_sold_new':0,'total_sold_used':0,
     #                 'current_total_for_sale_new':0,'current_total_for_sale_used':0}
     # Not sure I actually need this
     if 'current_new' in dic:

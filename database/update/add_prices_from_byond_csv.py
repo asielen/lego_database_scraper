@@ -54,7 +54,7 @@ def get_all_set_ids():
 
 
 def add_daily_prices_to_database(set_id, price_type, prices):
-    current_date = arrow.now('US/Pacific').format('YYYY-MM-DD')
+    current_date = LBEF.timestamp()
 
     con = lite.connect(database)
     with con:
@@ -91,7 +91,7 @@ def add_daily_ratings_to_database(set_id, ratings):
                    ratings['bs_want'],
                    ratings['bs_own'],
                    ratings['bs_score'],
-                   arrow.now('US/Pacific').format('YYYY-MM-DD')))
+                   LBEF.timestamp()))
 
 
 def main():

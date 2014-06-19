@@ -1,48 +1,27 @@
 __author__ = 'andrew.sielen'
 
-import logging
-
-logger = logging.getLogger('LBEF')
 from multiprocessing import Pool as _pool
 
 import data
 import database as db
 import database.info as info
+import system.base_methods as LBEF
+from system.logger import logger
 
+SLOWPOOL = 5
+FASTPOOL = 50
+RUNNINGPOOL = SLOWPOOL
 
 def add_set_to_database(set_data):
     """
     Adds a set to the database
-    @param set_data: in the format below
+    @param set_data: either complete set data or a set id
     @return:
     """
     if set_data is None: return None
-    # con = lite.connect(db.database)
-    # with con:
-    # c = con.cursor()
-    #     c.execute('INSERT OR IGNORE INTO sets('
-    #                 'set_name, '
-    #                 'set_num, '
-    #                 'item_num, '
-    #                 'item_seq, '
-    #                 'theme, '
-    #                 'subtheme, '
-    #                 'piece_count, '
-    #                 'figures, '
-    #                 'set_weight, '
-    #                 'year_released, '
-    #                 'date_released_us, '
-    #                 'date_ended_us, '
-    #                 'date_released_uk, '
-    #                 'date_ended_uk, '
-    #                 'original_price_us, '
-    #                 'original_price_uk, '
-    #                 'age_low, '
-    #                 'age_high, '
-    #                 'box_size, '
-    #                 'box_volume, '
-    #                 'last_updated'
-    #                 ') VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', tuple(set_data))
+    if len(set_data) is 1:
+        set_data = data.get_basestats(set_data)
+        if set_data is None: return None
 
     return db.run_sql(
         'INSERT OR IGNORE INTO sets('
@@ -70,35 +49,43 @@ def add_set_to_database(set_data):
         ') VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', insert_list=tuple(set_data))
 
 
-def add_sets_to_database(set_id_list):
+def add_sets_to_database(set_id_list, id_col=0, update=1):
     """
 
     @param set_id_list: list of set ids
+    @param id_col: the column that set_ids are in
+    @param update: 0 no updates, 1 basic updates, 2 all updates
+        Basic is everything but prices and dates
     @return:
     """
     set_dict = info.read_bl_sets()
 
-    logger.debug("Adding {} sets to the database".format(len(set_id_list)))
+    logger.debug("Adding sets to the database")
     sets_to_scrape = []
     sets_to_insert = []
-    pool = _pool(50)
+    pool = _pool(RUNNINGPOOL)
+    timer = LBEF.process_timer()
     for idx, row in enumerate(set_id_list):
-        if len(row) == 0: continue
-        if row[2] in set_dict:
+        if len(row) == 0:
             continue
-        else:
-            sets_to_scrape.append(row)
+        if row[id_col] in set_dict:
+            if _check_set_completeness(set_dict[row[id_col]], level=update) is True:
+                continue
+
+            else:
+                sets_to_scrape.append(row[id_col])
+
         if idx > 0 and idx % 150 == 0:
+            logger.info("Running Pool {}".format(idx))
             sets_to_insert.extend(pool.map(_parse_get_basestats, sets_to_scrape))
-            print("Completed {}".format(idx))
-            print(len(sets_to_insert))
+            timer.log_time(len(sets_to_scrape))
             sets_to_scrape = []
+
     sets_to_insert.extend(pool.map(_parse_get_basestats, sets_to_scrape))
-    print("Completed {}".format(idx))
-    print(len(sets_to_insert))
+    timer.log_time(len(sets_to_scrape))
 
     pool.close()
-    pool.join()  # TODO: Test with database insert
+    pool.join()
     db.batch_update('INSERT OR IGNORE INTO sets('
                     'set_name, '
                     'set_num, '
@@ -121,14 +108,35 @@ def add_sets_to_database(set_id_list):
                     'box_size, '
                     'box_volume, '
                     'last_updated'
-                    ') VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', sets_to_insert,
-                    header_len=0)
+                    ') VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', sets_to_insert, header_len=0)
 
 
-def _parse_get_basestats(row):
+def _check_set_completeness(set_data, level=1):
+    """
+
+    @param set_data: data in database insert format
+    @param level: -1 checks nothing, 0 checks date, 1 checks for basic stuff like name, theme, year released, pieces; 2 checks for everything
+    @return: True if complete; False if not
+    """
+    if level == -1: return True
+    if level >= 0:
+        if LBEF.data_old(set_data[21]) is True:
+            return False
+    if level == 2:
+        for n in level:
+            if n is None:
+                return False
+    elif level == 1:
+        for n in level[:11]:
+            if n is None:
+                return False
+    return True
+
+
+def _parse_get_basestats(id):
     """
     Wrapper for the get_basestats method to make it work easier with multiprocess
     @param row:
     @return:
     """
-    return data.get_basestats(row[2], 1)
+    return data.get_basestats(id, 1)

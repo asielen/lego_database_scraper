@@ -62,7 +62,6 @@ def _initiate_database():
                     "part_id INTEGER, "
                     "color_id INTEGER, "
                     "element_color_code TEXT,"
-                    "bs_color_code TEXT,"
                     "FOREIGN KEY (part_id) REFERENCES parts(id),"
                     "FOREIGN KEY (color_id) REFERENCES colors(id));")
         con.execute("CREATE UNIQUE INDEX IF NOT EXISTS part_num_idx ON part_color_codes(element_color_code)")

@@ -3,14 +3,13 @@ from system.base_methods import LBEF
 __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
-import os.path
 
 import database as db
 
 
 # Todo: Make this all work with the new database structure
 
-database = os.path.abspath('lego_sets.sqlite')
+# database = os.path.abspath('/Users/andrew.sielen/PycharmProjects/lego_database_scraper/lego_sets.sqlite')
 
 # ### General Database information
 def get_sets_between_years(start_year, end_year=None):
@@ -154,7 +153,8 @@ def read_bl_sets():
 
     @return: a list in this format [set_num, id]
     """
-    return LBEF.list_to_dict(db.run_sql('SELECT set_num, id FROM sets'))
+    bl_set_list = db.run_sql('SELECT * FROM sets')
+    return {b[1]: b[:] for b in bl_set_list}  # 1 is the position of the bricklink column
 
 
 def read_bl_parts():
@@ -171,3 +171,5 @@ def read_re_parts():
     @return: a dict in this format {part_num: id, }
     """
     return LBEF.list_to_dict(db.run_sql('SELECT rebrickable_id, id FROM parts'))
+
+

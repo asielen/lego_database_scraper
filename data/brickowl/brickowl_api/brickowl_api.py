@@ -1,13 +1,9 @@
-from system import setup_logging as sys
-
 __author__ = 'Andrew'
-
-import logging
 
 logger = logging.getLogger('LBEF')
 import navigation.menu as menu
 import system.base_methods as LBEF
-
+from system.logger import logger
 
 KEY = '12da35f38a061ef52efc56eba9267ed7c9a8f3d4b5c54c396729378788819a0b'
 url = 'https://public_api.brickowl.com/v1/catalog'
@@ -87,7 +83,6 @@ def main_menu():
     Main launch menu
     @return:
     """
-    sys.setup_logging()
     logger.info("RUNNING: Brickowl API testing")
     options = {}
 

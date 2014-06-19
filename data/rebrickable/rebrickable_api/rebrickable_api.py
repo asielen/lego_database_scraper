@@ -1,17 +1,11 @@
 __author__ = 'Andrew'
 
-# external
-import logging
-
-logger = logging.getLogger('LBEF')
-import system as sys
-
 # other modules
 import navigation.menu as menu
 
-#internal
+# internal
 from system.base_methods import LBEF
-
+from system.logger import logger
 
 KEY = 'LmtbQqIRtP'
 url = 'http://rebrickable.com/api'
@@ -47,6 +41,20 @@ def pull_all_set_parts():
     """
     url = "http://rebrickable.com/files/set_pieces.csv.gz"
     return LBEF.read_gzip_csv_from_url(url)
+
+
+def pull_set_catalog():
+    """
+    There is no api to get a list of sets, so i just take the list of inventories and get the sets from that
+    @return:
+    """
+    set_pieces = pull_all_set_parts()
+    sets = set()  #Ignore duplicates
+    for r in set_pieces:
+        if r[0] == 'set_id':
+            continue
+        sets.add((r[0],))
+    return sets
 
 
 def pull_set_info(set_num):
@@ -142,7 +150,6 @@ if __name__ == "__main__":
         @return:
         """
 
-        sys.setup_logging()
         logger.info("RUNNING: Rebrickable API testing")
         options = {}
 
@@ -151,7 +158,8 @@ if __name__ == "__main__":
         options['3'] = "Pull Piece Info", menu_pull_piece_info
         options['4'] = "Pull all Pieces", menu_pull_all_pieces
         options['5'] = "Pull all set Parts", menu_pull_all_set_parts
-        options['6'] = "SYS Pull Colors", menu_pull_colors
+        options['6'] = "Pull all Sets", menu_pull_all_sets
+        options['7'] = "SYS Pull Colors", menu_pull_colors
         options['9'] = "Quit", menu.quit
 
         while True:
@@ -169,6 +177,9 @@ if __name__ == "__main__":
         csvfile = pull_all_set_parts()
         LBEF.print4(csvfile)
 
+    def menu_pull_all_sets():
+        csvfile = pull_set_catalog()
+        LBEF.print4(csvfile, 100)
 
     def menu_pull_set_info():
         set_num = input("What set num? ")
@@ -179,7 +190,6 @@ if __name__ == "__main__":
     def menu_pull_set_inventory():
         set_num = input("What set num? ")
         csvfile = pull_set_inventory(set_num)
-        # public_api.print4(csvfile)
         for c in csvfile:
             print(c)
 

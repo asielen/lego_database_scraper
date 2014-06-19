@@ -1,9 +1,6 @@
-from system import notes_file
-
 __author__ = 'andrew.sielen'
 
 import re  # Regular expressions
-import logging
 import csv
 import gzip
 import html.parser
@@ -15,9 +12,10 @@ import requests
 from bs4 import BeautifulSoup
 import arrow
 
+from system.logger import logger
+from system import notes_file
 
 invalid_urls = 0
-logger = logging.getLogger('LBEF')
 
 
 def soupify(url):
@@ -260,6 +258,17 @@ def check_in_date_range(date, start, end):
         return False
 
 
+def old_data(date, date_range=90):
+    """
+
+    @param date: date in timestamp format
+    @return: True if it is outside 90 days and needs to be updated, False otherwise
+    """
+    today = arrow.now()
+    past = today.replace(days=-date_range)
+    return not check_in_date_rangeA(arrow.get(date), past, today)
+
+
 def check_in_date_rangeA(date, start, end):
     """
     all dates should already be in arrow format
@@ -272,6 +281,10 @@ def check_in_date_rangeA(date, start, end):
         return True
     else:
         return False
+
+
+def timestamp():
+    return arrow.now('US/Pacific').timestamp
 
 
 def flatten_list(l):
@@ -289,7 +302,13 @@ def list_to_dict(l):
     @param l: a list of lists ie [(a,b),(c,d),(e,f))
     @return: {a:b,c:d,e:f}
     """
-    return {n[0]: n[1] for n in l}
+    dict = {}
+    for n in l:
+        if len(n) > 2:
+            dict[n[0]] = n[1:]
+        else:
+            dict[n[0]] = n[0]
+    return dict
 
 
 def input_set_num(type=0):
@@ -396,5 +415,3 @@ def note(string):
     with open(notes_file, 'a')  as text_file:
         print(arrow.now('US/Pacific').format('YYYYMMDD HH:mm') + " @ " + string, file=text_file)
 
-
-note("TEST")

@@ -11,6 +11,7 @@ __author__ = 'andrew.sielen'
 # todo: need to implement this
 
 import data.bricklink.bricklink_api as blapi
+import data.rebrickable.rebrickable_api as reapi
 
 
 def init_part_color_codes():
@@ -18,7 +19,7 @@ def init_part_color_codes():
     Download the part color codes from bricklink and insert them into the database
     @return:
     """
-    pass
+    blapi.init_part_color_codes()
 
 
 def init_sets():
@@ -27,14 +28,7 @@ def init_sets():
     @return:
     """
     blapi.update_sets()
-
-
-def init_re_parts():
-    """
-    Download the list of sets from rebrickable and compare it to the current database, adding whatever is missing
-    @return:
-    """
-    pass
+    reapi.update_sets()
 
 
 def init_re_inventories():
@@ -42,4 +36,4 @@ def init_re_inventories():
 
 
 if __name__ == "__main__":
-    pass
+    init_sets()
