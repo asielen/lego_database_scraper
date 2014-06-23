@@ -34,7 +34,7 @@ def get_basestats(set_num_primary, set_num_secondary=1):
     parent_tags1 = soup.find("td", {"width": "25%", "valign": "TOP", "class": "fv"})
     if not parent_tags1: return {}
     children_tags_text = parent_tags1.get_text()
-    # print(children_tags_text)
+
     piece_count = 0
     figures_count = 0
     children_tags_text = children_tags_text[17:]

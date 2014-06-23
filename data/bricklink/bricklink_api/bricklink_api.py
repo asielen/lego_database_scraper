@@ -11,7 +11,7 @@
 # T : tabs
 # X : XML (seems to default to this)
 
-#external
+# external
 from system.logger import logger
 
 #other module
@@ -307,5 +307,4 @@ if __name__ == "__main__":
 
 
     if __name__ == "__main__":
-        print("Running as Test")
         main_menu()

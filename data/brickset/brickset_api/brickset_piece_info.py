@@ -124,7 +124,7 @@ def get_blPieceInfo(design_num, element_num):
         return {'weight': weight, 'design_num': [design_num], 'name': name, 'piece_type': 'element'}
     else:
         design_ids = []
-        parent_tags3 = parent_tags2.find("td", {"align": "CENTER"})  #Find the alternative design id
+        parent_tags3 = parent_tags2.find("td", {"align": "CENTER"})  # Find the alternative design id
         if parent_tags3 is None:
             return {'weight': weight, 'design_num': [design_num], 'name': name, 'piece_type': 'element'}
         parent_tags4 = soup.find("font", {"face": "Arial"})  # Find the _main design id
@@ -142,7 +142,6 @@ def get_blPieceInfo(design_num, element_num):
 def _search_piece(design_num, element_num):
     soup = None
     url = "http://www.bricklink.com/catalogItem.asp?P={0}".format(design_num)
-    print(url)
     soup = soupify(url)
     if soup is not None:
         parent_tags0 = soup.find("font", {"size": "+2"})

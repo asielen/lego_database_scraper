@@ -15,6 +15,7 @@ import arrow
 from system.logger import logger
 from system import notes_file
 
+
 invalid_urls = 0
 
 
@@ -266,7 +267,7 @@ def old_data(date, date_range=90):
     """
     today = arrow.now()
     past = today.replace(days=-date_range)
-    return not check_in_date_rangeA(arrow.get(date), past, today)
+    return not (check_in_date_rangeA(arrow.get(date), past, today))
 
 
 def check_in_date_rangeA(date, start, end):
@@ -307,7 +308,7 @@ def list_to_dict(l):
         if len(n) > 2:
             dict[n[0]] = n[1:]
         else:
-            dict[n[0]] = n[0]
+            dict[n[0]] = n[1]
     return dict
 
 
@@ -396,6 +397,18 @@ def read_json_from_url(url, params=None):
 
 def read_xml_from_url(url, params=None):
     return BeautifulSoup(requests.get(url, params=params, verify=False).text)
+
+
+def get_site_text(url, params, verify=False):
+    """
+    Todo impliment this
+    A modification of requests.get that checks for bricklink downtime
+    @return:
+    """
+    site_text = requests.get(url, params=params, verify=verify).text
+    if site is None: return None
+    if 'daily maintenance' in site_text:
+        pass
 
 
 def print4(list, n=4):

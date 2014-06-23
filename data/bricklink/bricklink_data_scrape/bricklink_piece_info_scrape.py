@@ -12,6 +12,7 @@ import re
 from system.base_methods import LBEF
 from database import info
 import database as db
+from system.logger import logger
 
 
 def get_bl_piece_info(design_num, design_name=None, default='dict'):
@@ -28,7 +29,7 @@ def get_bl_piece_info(design_num, design_name=None, default='dict'):
 
     piece_info = {}
     bl_piece_info = get_blPieceInfo(design_num)
-    if bl_piece_info is None and default is None: return None
+    if bl_piece_info is None and default is None: return None  # Todo what does default do?
     design_alts = None
     if bl_piece_info is not None:
         piece_info["design_num"] = bl_piece_info['design_num'][0]
@@ -97,6 +98,7 @@ def get_blPieceInfo(design_num):
         types_links = types_tag.findAll("a")
         if len(types_links) >= 3:
             piece_type = _parse_type_category(str(types_links[1]))
+
             category = _parse_type_category(str(types_links[2]))
 
     #Find Alternate Design IDs
@@ -140,7 +142,7 @@ def _parse_type_category(text):
         result = result.group()
         return result[2:-2]
     except:
-        return None
+        return 0  # unknown category
 
 
 def _check_minifig(soup, design_num):
@@ -179,36 +181,42 @@ def _check_minifig(soup, design_num):
 def _search_piece(design_num, verbose=0):
     soup = None
     url = "http://www.bricklink.com/catalogItem.asp?P={0}".format(design_num)
-    if verbose == 1: print(url)
+    soup = _verify_valid_url(url, verbose)
+    if soup is not None:
+        return soup
+    # alt search
+    url = "http://www.bricklink.com/cataloglist.asp?&searchNo=Y&q={0}&catLike=W&catType=P".format(design_num)
+    soup = _verify_valid_url(url, verbose)
+    if soup is not None:
+        return soup
+
+    # minifigs
+    url = "http://www.bricklink.com/catalogItem.asp?M={0}".format(design_num)
+    soup = _verify_valid_url(url, verbose)
+    if soup is not None:
+        return soup
+    # gear
+    url = "http://www.bricklink.com/catalogItem.asp?G={0}".format(design_num)
+    soup = _verify_valid_url(url, verbose)
+    if soup is not None:
+        return soup
+    # books
+    url = "http://www.bricklink.com/catalogItem.asp?B={0}".format(design_num)
+    soup = _verify_valid_url(url, verbose)
+
+    return soup
+
+
+def _verify_valid_url(url, verbose=0):
+    if verbose == 1: logger.debug(url)
     soup = LBEF.soupify(url)
     if soup is not None:
         parent_tags0 = soup.find("font", {"size": "+2"})
         parent_tags1 = soup.find(text="Search Results")
         if parent_tags0 is None and parent_tags1 is None:
             return soup
-
-        url = "http://www.bricklink.com/cataloglist.asp?&searchNo=Y&q={0}&catLike=W&catType=P".format(design_num)
-        if verbose == 1: print(url)
-        soup = LBEF.soupify(url)
-        if soup is not None:
-            parent_tags0 = soup.find("font", {"size": "+2"})
-            parent_tags1 = soup.find(text="Search Results")
-            if parent_tags0 is None and parent_tags1 is None:
-                return soup
-        url = "http://www.bricklink.com/catalogItem.asp?M={0}".format(design_num)
-        if verbose == 1: print(url)
-        soup = LBEF.soupify(url)
-    return soup
+        else:
+            return None
+    return None
 
 
-if __name__ == "__main__":
-    import pprint
-
-    def main():
-        set = input("What is the piece num? ")
-        pprint.pprint(get_bl_piece_info(set))
-        main()
-
-
-    if __name__ == "__main__":
-        main()

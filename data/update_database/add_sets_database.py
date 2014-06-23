@@ -9,8 +9,9 @@ import system.base_methods as LBEF
 from system.logger import logger
 
 SLOWPOOL = 5
-FASTPOOL = 50
-RUNNINGPOOL = SLOWPOOL
+FASTPOOL = 35
+RUNNINGPOOL = FASTPOOL
+
 
 def add_set_to_database(set_data):
     """
@@ -72,8 +73,7 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
             if _check_set_completeness(set_dict[row[id_col]], level=update) is True:
                 continue
 
-            else:
-                sets_to_scrape.append(row[id_col])
+        sets_to_scrape.append(row[id_col])
 
         if idx > 0 and idx % 150 == 0:
             logger.info("Running Pool {}".format(idx))
@@ -81,34 +81,55 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
             timer.log_time(len(sets_to_scrape))
             sets_to_scrape = []
 
+        if idx > 0 and idx % 600 == 0:
+            add_sets_data_to_database(sets_to_insert)
+            sets_to_insert = []
+
     sets_to_insert.extend(pool.map(_parse_get_basestats, sets_to_scrape))
     timer.log_time(len(sets_to_scrape))
 
     pool.close()
     pool.join()
-    db.batch_update('INSERT OR IGNORE INTO sets('
-                    'set_name, '
-                    'set_num, '
-                    'item_num, '
-                    'item_seq, '
-                    'theme, '
-                    'subtheme, '
-                    'piece_count, '
-                    'figures, '
-                    'set_weight, '
-                    'year_released, '
-                    'date_released_us, '
-                    'date_ended_us, '
-                    'date_released_uk, '
-                    'date_ended_uk, '
-                    'original_price_us, '
-                    'original_price_uk, '
-                    'age_low, '
-                    'age_high, '
-                    'box_size, '
-                    'box_volume, '
-                    'last_updated'
-                    ') VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', sets_to_insert, header_len=0)
+
+    add_sets_data_to_database(sets_to_insert)
+
+
+def add_sets_data_to_database(sets_to_insert):
+    """
+    Add and update a list of sets to the database (need bl_id to be filled out)
+
+    @return:
+    """
+    if sets_to_insert is None or len(sets_to_insert) == 0:
+        return
+    sets_to_insert = list(filter(None, sets_to_insert))
+    logger.info("Adding {} sets to the database".format(len(sets_to_insert)))
+    db.batch_update('INSERT OR IGNORE INTO sets(set_num) VALUES (?)', ((p[1],) for p in sets_to_insert))
+
+    sets_to_insert_processed = [tuple(p[:] + [p[1]]) for p in sets_to_insert]
+    db.batch_update('UPDATE sets SET '
+                    'set_name=?, '
+                    'set_num=?, '
+                    'item_num=?, '
+                    'item_seq=?, '
+                    'theme=?, '
+                    'subtheme=?, '
+                    'piece_count=?, '
+                    'figures=?, '
+                    'set_weight=?, '
+                    'year_released=?, '
+                    'date_released_us=?, '
+                    'date_ended_us=?, '
+                    'date_released_uk=?, '
+                    'date_ended_uk=?, '
+                    'original_price_us=?, '
+                    'original_price_uk=?, '
+                    'age_low=?, '
+                    'age_high=?, '
+                    'box_size=?, '
+                    'box_volume=?, '
+                    'last_updated=?'
+                    'WHERE set_num=?', sets_to_insert_processed)
 
 
 def _check_set_completeness(set_data, level=1):
@@ -120,16 +141,17 @@ def _check_set_completeness(set_data, level=1):
     """
     if level == -1: return True
     if level >= 0:
-        if LBEF.data_old(set_data[21]) is True:
+        if LBEF.old_data(set_data[22]) is True:
             return False
     if level == 2:
-        for n in level:
+        for n in set_data:
             if n is None:
                 return False
     elif level == 1:
-        for n in level[:11]:
+        for n in set_data[3:12]:
             if n is None:
                 return False
+
     return True
 
 

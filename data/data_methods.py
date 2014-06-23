@@ -158,30 +158,34 @@ def get_piece_info(bl_id=None, bo_id=None, re_id=None, lego_id=None, type=1):
 
     piece_info = {'lego_id': lego_id, 'bricklink_id': bl_id, 'brickowl_id': bo_id, 'rebrickable_id': re_id,
                   'design_name': None,
-                  'weight': None, "bl_category": None, "bl_type": None}
+                  'weight': None, "bl_category": 0, "bl_type": None}
     bl_piece_info = None
     design_alts = None
     if bl_id is not None:
-        bl_piece_info, design_alts = blds.get_bl_piece_info(bl_id)
+        bl_piece_info = blds.get_bl_piece_info(bl_id)
 
     # Try to find the bl_id for this set by searching alternate ids and element ids. This can be very slow
     elif re_id is not None:
         logger.debug("Searching for bl_id for re_id {}".format(re_id))
         re_piece_info = reapi.pull_piece_info(re_id)  # [re_id, bl_id, name, alt_ids, element_ids]
         if re_piece_info is None:
-            logger.warning("{} oesn't even exist on rebrickable".format(re_id))
+            logger.warning("{} doesn't even exist on rebrickable".format(re_id))
             return piece_info, design_alts
         elif re_piece_info[1] is not None:
             bl_piece_info = blds.get_bl_piece_info(re_piece_info[1], default=None)
+
         else:
             bl_piece_info = blds.get_bl_piece_info(re_piece_info[0], default=None)
+
             if bl_piece_info is None and re_piece_info[3] is not None:
                 for alt in re_piece_info[3]:
                     bl_piece_info = blds.get_bl_piece_info(alt, default=None)
+
                     if bl_piece_info is not None: break
             if bl_piece_info is None and re_piece_info[4] is not None:
                 for elm in re_piece_info[4]:
                     bl_piece_info = blds.get_bl_piece_info(elm, default=None)
+
                     if bl_piece_info is not None: break
             # if bl_piece_info is None:
             # bl_piece_info = blds.get_bl_piece_info(re_piece_info[2], default=None) # Worst case, lookup the name

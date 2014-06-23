@@ -1,7 +1,5 @@
 __author__ = 'andrew.sielen'
 
-import pprint
-
 import arrow
 
 import system.base_methods as LBEF
@@ -11,7 +9,7 @@ import system.base_methods as LBEF
 # http://brickset.com/parts/[piece number] <-Gives you element number, element name, design number, color,
 
 
-pp = pprint.PrettyPrinter(indent=4)
+
 
 
 def get_basestats(set_num_primary, set_num_secondary=1):
@@ -112,7 +110,7 @@ def _parse_set_dimensions(d_string):
 # """
 # Finds the set name in the soup
 # """
-#     parent_tags0 = soup.find("h1")
+# parent_tags0 = soup.find("h1")
 #     if not parent_tags0:
 #         return ""
 #     return parent_tags0.string.strip()
@@ -440,6 +438,9 @@ def bs_scrub_year(s):
 
 
 def main():
+    import pprint
+
+    pp = pprint.PrettyPrinter(indent=4)
     set = input("What is the set num? ")
     pp.pprint(get_basestats(set))
     pp.pprint(get_daily_data(set))

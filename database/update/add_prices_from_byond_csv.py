@@ -43,7 +43,6 @@ def parse_date(s):
 
 def get_all_set_ids():
     con = lite.connect(database)
-    print(database)
     with con:
         c = con.cursor()
 

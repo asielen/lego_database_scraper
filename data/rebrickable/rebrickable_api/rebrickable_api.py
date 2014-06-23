@@ -1,7 +1,5 @@
 __author__ = 'Andrew'
 
-# other modules
-import navigation.menu as menu
 
 # internal
 from system.base_methods import LBEF
@@ -49,7 +47,7 @@ def pull_set_catalog():
     @return:
     """
     set_pieces = pull_all_set_parts()
-    sets = set()  #Ignore duplicates
+    sets = set()  # Ignore duplicates
     for r in set_pieces:
         if r[0] == 'set_id':
             continue
@@ -144,6 +142,8 @@ def pull_colors():
 
 
 if __name__ == "__main__":
+    import navigation.menu as menu
+
     def main_menu():
         """
         Main launch menu

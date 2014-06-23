@@ -7,7 +7,7 @@ import sqlite3 as lite
 import arrow
 
 from system.calculate_inflation import get_inflation_rate
-from database import database
+import database as db
 
 
 def get_set_id(set_num):
@@ -16,8 +16,7 @@ def get_set_id(set_num):
     @param add: if True, Add the set if it is missing in the database
     @return: the id column num of the set in the database
     """
-    print(database)
-    con = lite.connect(database)
+    con = lite.connect(db.database)
     with con:
         c = con.cursor()
         c.execute('SELECT id FROM sets WHERE set_num=?', (set_num,))
@@ -57,7 +56,7 @@ def check_last_updated_daily_stats(set_num):
     @return: True if updated today, False otherwise
     """
 
-    con = lite.connect(database)
+    con = lite.connect(db.database)
     with con:
         c = con.cursor()
 
@@ -83,7 +82,7 @@ def get_set_price(set_num, year=None):
     set_id = get_set_id(set_num)
     if set_id is None: return None
 
-    con = lite.connect(database)
+    con = lite.connect(db.database)
     year = int(arrow.now().format("YYYY")) - 2
     with con:
         c = con.cursor()
@@ -121,7 +120,7 @@ def get_piece_count(set_num, type=''):
     set_id = get_set_id(set_num)
     if set_id is None: return None
 
-    con = lite.connect(database)
+    con = lite.connect(db.database)
 
     count = None
 
@@ -135,7 +134,7 @@ def get_piece_count(set_num, type=''):
         with con:
             c = con.cursor()
             c.execute("SELECT SUM(bl_inventories.quantity) FROM bl_inventories "
-                      "JOIN piece_designs ON bl_inventories.piece_id = piece_designs.id"
+                      "JOIN parts ON bl_inventories.piece_id = parts.id"
                       " WHERE bl_inventories.set_id=?;", (set_id,))
             count = c.fetchone()[0]
 
@@ -160,18 +159,18 @@ def get_unique_piece_count(set_num, type=''):
     @param type: bricklink or brickset
     @return: the number of pieces
     """
-    #Get the set ID.
+    # Get the set ID.
     set_id = get_set_id(set_num)
 
-    con = lite.connect(database)
+    con = lite.connect(db.database)
 
     count = None
 
     if type == 'bricklink':
         with con:
             c = con.cursor()
-            c.execute("SELECT COUNT(bl_inventories.quantity) FROM bl_inventories JOIN piece_designs"
-                      " ON bl_inventories.piece_id = piece_designs.id"
+            c.execute("SELECT COUNT(bl_inventories.quantity) FROM bl_inventories JOIN parts"
+                      " ON bl_inventories.piece_id = parts.id"
                       " WHERE bl_inventories.set_id=?;", (set_id,))
             count = c.fetchone()[0]
 
@@ -187,7 +186,7 @@ def get_unique_piece_count(set_num, type=''):
     return count
 
 
-#TODO: Make sure this works with the new database structure
+# TODO: Make sure this works with the new database structure
 def get_set_weight(set_num, type=''):
     """
     Returns the weight of a set by either gettting it straight from the set weight column or by
@@ -200,7 +199,7 @@ def get_set_weight(set_num, type=''):
     #Get the set ID.
     set_id = get_set_id(set_num)
 
-    con = lite.connect(database)
+    con = lite.connect(db.database)
 
     weight = None
 
@@ -232,8 +231,10 @@ def get_set_weight(set_num, type=''):
 
 
 def main():
-    set = input("What is the set number?: ")
-    print(get_set_price(set))
+    set = LBEF.input_set_num()
+    print("Calculated: {}".format(get_piece_count(set, 'bricklink')))
+    print("Reported: {}".format(get_piece_count(set, '')))
+    print("Unique: {}".format(get_unique_piece_count(set, 'bricklink')))
     main()
 
 

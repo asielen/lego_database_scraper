@@ -1,5 +1,6 @@
 __author__ = 'andrew.sielen'
 
+# Probably no longer needed
 from system.base_methods import LBEF
 
 # http://brickset.com/inventories/21010-1 <-Set piece lookip
@@ -25,7 +26,6 @@ def get_setpieces_details(set_num_primary, set_num_secondary=1):
 
     pieces_details = {}
     for p in pieces:
-        print(p[0])
         pieces_details[p[0]] = BPI.get_pieceinfo(p[0])
 
     return pieces_details

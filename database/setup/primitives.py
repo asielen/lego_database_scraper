@@ -2,7 +2,6 @@ __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
 
-from navigation import menu
 import data.bricklink.bricklink_api as blapi
 import data.rebrickable.rebrickable_api as reapi
 import data.update_database as update
@@ -17,7 +16,7 @@ from system.logger import logger
 # * init_parts()
 # @ Download parts from Bricklink
 # @ Download parts from Rebrickable
-#     * init_price_types()
+# * init_price_types()
 #         @ Internal, no need to download
 #     * init_bl_categories()
 #         @ Download categories from Bricklink
@@ -63,6 +62,8 @@ def init_bl_categories():
 
 
 if __name__ == "__main__":
+    from navigation import menu
+
     def main_menu():
         """
         Main launch menu
@@ -98,5 +99,4 @@ if __name__ == "__main__":
         init_bl_categories()
 
     if __name__ == "__main__":
-        print("Running as Test")
         main_menu()

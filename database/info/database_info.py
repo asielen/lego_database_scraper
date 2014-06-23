@@ -140,10 +140,18 @@ def read_bl_colors():
     return LBEF.list_to_dict(db.run_sql('SELECT bl_color_id, id FROM colors'))
 
 
-def read_bl_colors_name():
+def read_re_colors():
     """
 
     @return: a list in this format {color_id, id}
+    """
+    return LBEF.list_to_dict(db.run_sql('SELECT re_color_id, id FROM colors'))
+
+
+def read_bl_colors_name():
+    """
+
+    @return: a list in this format {color_name, id}
     """
     return LBEF.list_to_dict(db.run_sql('SELECT bl_color_name, id FROM colors'))
 
@@ -151,10 +159,39 @@ def read_bl_colors_name():
 def read_bl_sets():
     """
 
-    @return: a list in this format [set_num, id]
+    @return: a list in this format {set_num: [set]}
     """
     bl_set_list = db.run_sql('SELECT * FROM sets')
     return {b[1]: b[:] for b in bl_set_list}  # 1 is the position of the bricklink column
+
+
+def read_bl_set_ids():
+    """
+
+    @return: a list in this format {id: set_num}
+    """
+    bl_set_list = db.run_sql('SELECT * FROM sets')
+    return {b[0]: b[1] for b in bl_set_list}  # 1 is the position of the bricklink column
+
+
+def read_bl_invs():
+    """
+
+    @return: a list of the sets who's inventory is in the system
+    """
+    bl_set_list = db.run_sql('SELECT * FROM bl_inventories')
+    bl_set_list = set(b[1] for b in bl_set_list)
+    return bl_set_list
+
+
+def read_re_invs():
+    """
+
+    @return: a list of the sets who's inventory is in the system
+    """
+    re_set_list = db.run_sql('SELECT * FROM re_inventories')
+    re_set_list = set(b[1] for b in re_set_list)
+    return re_set_list
 
 
 def read_bl_parts():
@@ -171,5 +208,3 @@ def read_re_parts():
     @return: a dict in this format {part_num: id, }
     """
     return LBEF.list_to_dict(db.run_sql('SELECT rebrickable_id, id FROM parts'))
-
-
