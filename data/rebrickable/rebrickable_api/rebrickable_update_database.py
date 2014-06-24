@@ -4,10 +4,10 @@ __author__ = 'andrew.sielen'
 
 from data.update_database.add_parts_database import add_parts_to_database
 from data.rebrickable.rebrickable_api import rebrickable_api as reapi
-from data.bricklink.bricklink_api.bricklink_update_database import get_bl_piece_id
 import data.update_database as update
 import database.info as info
 import system.base_methods as LBEF
+from system.logger import logger
 
 
 def update_parts():
@@ -33,28 +33,64 @@ def update_sets(check_update=1):
     update.add_sets_to_database(set_list, update=check_update)
 
 
-def update_set_inventories():
+def update_one_set_inventory(set_num):
     """
-    Insert and update all set inventories
+    Update a single set inventory
+    @param set_num:
+    @return:
+    """
+    set_inv = reapi.pull_set_inventory(set_num)
+
+
+def update_set_inventories(check_updates=0):
+    """
+    Insert and update all set inventories from a master list of pieces - may not be as up to date as the api call
     @return:
     """
     parts = info.read_re_parts()
+    parts.update(info.read_bl_parts())
     set_inv = info.read_re_invs()
-    colors_dict = info.read_re_colors()
+    sets = info.read_bl_set_ids()
+    colors = info.read_re_colors()
     parts_to_insert = []
     set_inventories = reapi.pull_all_set_parts()
-    for row in set_inventories:
+    # Need to update this to use pooling
+    for idx, row in enumerate(set_inventories):
         if row[0] == 'set_id': continue
-        if row[0] in set_inv:
+        if row[0] in set_inv and not check_updates:
             continue  # already in the database todo: check last update
-        row[0] = get_bl_piece_id(row[0], add=True)
-        row[1] = parts[row[1]]
-        row[2] = int(row[2])
-        row[3] = colors_dict[row[3]]
+        row[0] = update.get_set_id(row[0], sets=sets, add=True)
+        row[1] = get_re_piece_id(row[1], parts=parts, add=False)
+        row[2] = LBEF.int_zero(row[2])
+        print("color = {}".format(row[3]))
+        row[3] = info.get_color_id(row[3], colors=colors)
         del row[-1]
         parts_to_insert.append(row)
-    LBEF.print4(parts_to_insert)
+        if idx > 0 and idx % 100 == 0:
+            break
+    # todo add to database
+    LBEF.print4(parts_to_insert, 100)
 
+
+def get_re_piece_id(part_num, parts=None, add=False):
+    """
+    Wrapper for the get_bl_piece_id method in db.info
+    @param part_num: the number used by bricklink for pieces
+    @return: the primary key for a piece in the database
+    """
+    piece_id = None
+    if parts is not None:
+        try:
+            piece_id = parts[part_num]
+        except:
+            piece_id = None
+    if piece_id is None:
+        piece_id = info.get_re_piece_id(part_num)
+    if piece_id is None and add:
+        logger.debug('{} part not in db'.format(part_num))
+        update.add_part_to_database(part_num, type='re')
+        return get_re_piece_id(part_num)
+    return piece_id
 
 if __name__ == "__main__":
     import navigation.menu as menu
@@ -70,7 +106,8 @@ if __name__ == "__main__":
 
         options['1'] = "Update Parts", menu_update_parts
         options['2'] = "Update Sets", menu_update_sets
-        options['3'] = "Update Set Inventories", menu_update_set_inventories
+        options['3'] = "UPDATE One SET Inventory", menu_update_one_set_inventory
+        options['4'] = "Update Set Inventories", menu_update_set_inventories
         options['9'] = "Quit", menu.quit
 
         while True:
@@ -86,6 +123,9 @@ if __name__ == "__main__":
     def menu_update_sets():
         update_sets()
 
+    def menu_update_one_set_inventory():
+        set_num = LBEF.input_set_num()
+        update_one_set_inventory(set_num)
 
     def menu_update_set_inventories():
         update_set_inventories()

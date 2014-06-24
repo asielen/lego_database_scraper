@@ -174,6 +174,29 @@ def read_bl_set_ids():
     return {b[0]: b[1] for b in bl_set_list}  # 1 is the position of the bricklink column
 
 
+def read_bl_set_date(date='last_updated'):
+    """
+
+    @param date: last_updated,
+    @return: a list in the format {set_num: last_updated} for the date type in list:
+        # last_updated pos = 22
+        # last_inv_updated_bo = 23
+        # last_inv_updated_bl = 24
+        # last_inv_updated_re = 25
+        # last_price_updated = 26
+    """
+    date_list = db.run_sql('SELECT * FROM sets')
+    date_pos = 22
+    if date == 'last_inv_updated_bo':
+        date_pos = 23
+    elif date == 'last_inv_updated_bl':
+        date_pos = 24
+    elif date == 'last_inv_updated_re':
+        date_pos = 25
+    elif date == 'last_price_updated':
+        date_pos = 26
+    return {b[1]: b[date_pos] for b in date_list}
+
 def read_bl_invs():
     """
 

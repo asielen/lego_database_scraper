@@ -23,19 +23,39 @@ FASTPOOL = 50
 RUNNINGPOOL = SLOWPOOL
 
 
-def add_part_to_database(piece_data):
+def add_part_to_database(part_num, type='bl'):
     """
-    Adds a design to the database
-    @param piece_data: a list in this format [bricklink_id, brickowl_id, rebrickable_id, design_name, weight, bl_type, bl_category]
+
+    @param part_num: the part num in standard format 3001
+    @param type: optional, bl should work for most
     @return:
     """
-    piece_data[7] = info.get_bl_category_id(piece_data[7])
-    db.run_sql(
-        'INSERT OR IGNORE INTO parts(bricklink_id, brickowl_id, rebrickable_id, lego_id) VALUES (?,?,?,?)',
-        piece_data[:4])
-    return db.run_sql(
-        'UPDATE parts SET design_name=?, weight=?, bl_type=?, bl_category=? WHERE bricklink_id=?',
-        (piece_data[4], piece_data[5], piece_data[6], piece_data[7], piece_data[0]))
+    bl_categories = info.read_bl_categories()
+    if type == 'bl':
+        part_database = info.read_bl_parts()
+        if part_num in part_database:
+            logger.info('{} not added to database, already there'.format(part_num))
+            return
+        part_data = [_parse_get_bl_pieceinfo(part_num)]
+    elif type == 're':
+        part_database = info.read_re_parts()
+        if part_num in part_database:
+            logger.info('{} not added to database, already there'.format(part_num))
+            return
+        part_data = [_parse_get_re_pieceinfo(part_num)]
+    part_data = _process_categories(part_data, bl_categories)
+    add_part_data_to_database(part_data)
+    logger.info('{} was added to the database'.format(part_num))
+
+
+    #
+    # piece_data[7] = info.get_bl_category_id(piece_data[7])
+    # db.run_sql(
+    # 'INSERT OR IGNORE INTO parts(bricklink_id, brickowl_id, rebrickable_id, lego_id) VALUES (?,?,?,?)',
+    #     piece_data[:4])
+    # return db.run_sql(
+    #     'UPDATE parts SET design_name=?, weight=?, bl_type=?, bl_category=? WHERE bricklink_id=?',
+    #     (piece_data[4], piece_data[5], piece_data[6], piece_data[7], piece_data[0]))
 
 
 def add_parts_to_database(part_id_list, type="bl"):
@@ -55,7 +75,7 @@ def add_parts_to_database(part_id_list, type="bl"):
 
     timer = LBEF.process_timer()
     total_ids = len(part_id_list)
-    if type == "bl":  # TODO need to update this with re info
+    if type == "bl":  # TODO need to update this with all the changes to the re side of things
         part_database = info.read_bl_parts()
         for idx, part in enumerate(part_id_list):
             if part in part_database:
@@ -249,4 +269,31 @@ def _parse_get_re_pieceinfo(part_num):
     return data.get_piece_info(re_id=part_num)
 
 
+if __name__ == "__main__":
+    import navigation.menu as menu
 
+    def main_menu():
+        """
+        Main launch menu
+        @return:
+        """
+
+        logger.info("RUNNING: Update Database - add parts")
+        options = {}
+
+        options['1'] = "Add Part", menu_add_part_to_database
+        options['9'] = "Quit", menu.quit
+
+        while True:
+            result = menu.options_menu(options)
+            if result is 'kill':
+                exit()
+
+
+    def menu_add_part_to_database():
+        part_num = input("What part num? ")
+        add_part_to_database(part_num, 're')
+
+
+    if __name__ == "__main__":
+        main_menu()

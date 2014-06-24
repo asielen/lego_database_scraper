@@ -3,13 +3,32 @@ __author__ = 'andrew.sielen'
 import sqlite3 as lite
 
 import database as db
+import system.base_methods as LBEF
 
 
-def get_bl_piece_id(part_num):
+def get_color_id(color_num, colors=None, type='bl'):
+    """
+
+    @param color_num:
+    @param type: bl, re, ol, ld, lg
+    @return:
+    """
+    color_id = 9999
+    color_num = LBEF.int_null(color_num)
+    if colors is not None:
+        try:
+            color_id = colors[color_num]
+        except:
+            pass
+    return color_id
+
+
+def get_bl_piece_id(part_num, parts=None):
     """
     @param part_num: the number used by bricklink for pieces
     @return: the primary key for a piece in the database
     """
+    # Todo update this using parts passed through and db.runsql method
 
     element_id = None
     con = lite.connect(db.database)
@@ -21,9 +40,28 @@ def get_bl_piece_id(part_num):
         if element_id_raw is None:
             return None
         element_id = element_id_raw[0]
-
     return element_id
 
+
+def get_re_piece_id(part_num, parts=None):
+    """
+    @param part_num: the number used by bricklink for pieces
+    @return: the primary key for a piece in the database
+    """
+    # Todo update this using parts passed through and db.runsql method
+
+    element_id = None
+    con = lite.connect(db.database)
+
+    with con:
+        c = con.cursor()
+        c.execute('SELECT id FROM parts WHERE rebrickable_id=?', (part_num,))
+        element_id_raw = c.fetchone()
+        if element_id_raw is None:
+            return None
+        element_id = element_id_raw[0]
+
+    return element_id
 
 # TODO: Make sure this works with the new database structure
 def get_sets_per_design():

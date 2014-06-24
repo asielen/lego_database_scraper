@@ -182,13 +182,13 @@ if __name__ == "__main__":
         LBEF.print4(csvfile, 100)
 
     def menu_pull_set_info():
-        set_num = input("What set num? ")
+        set_num = LBEF.input_set_num("What set num? ")
         csvfile = pull_set_info(set_num)
         LBEF.print4(csvfile)
 
 
     def menu_pull_set_inventory():
-        set_num = input("What set num? ")
+        set_num = LBEF.input_set_num("What set num? ")
         csvfile = pull_set_inventory(set_num)
         for c in csvfile:
             print(c)

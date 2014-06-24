@@ -1,4 +1,3 @@
-from data.update_database.add_parts_database import add_part_to_database
 from system.base_methods import LBEF
 
 __author__ = 'Andrew'
@@ -45,6 +44,7 @@ def create_color_database():
 
 def check_pieces():
     """
+    # Todo fix add part to database call
     compare the pieces in the database to the pieces in the csv file
     @return:
     """
@@ -81,7 +81,7 @@ def check_pieces():
             print("blds design info cannot be found: design = " + piece)
             continue
 
-        add_part_to_database(piece_info)
+            # add_part_to_database(piece_info)
 
     pp.pprint(len(missing_pieces))
 

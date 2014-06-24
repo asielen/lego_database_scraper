@@ -132,6 +132,25 @@ def add_sets_data_to_database(sets_to_insert):
                     'WHERE set_num=?', sets_to_insert_processed)
 
 
+def get_set_id(set_num, sets=None, add=False):
+    """
+    a more useable version of the one in database info that also allows for saving
+    @param set_num:
+    @param sets:
+    @param add:
+    @return:
+    """
+    set_id = None
+    try:
+        set_id = sets[set_num]
+    except:
+        set_id = info.get_set_id(set_num)
+    if set_id is None and add:
+        add_sets_to_database([set_num])
+        set_id = info.get_set_id(set_num)
+    return set_id
+
+
 def _check_set_completeness(set_data, level=1):
     """
 

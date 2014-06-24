@@ -10,7 +10,7 @@ from system.calculate_inflation import get_inflation_rate
 import database as db
 
 
-def get_set_id(set_num):
+def get_set_id(set_num, sets=None, add=False):
     """
     @param set_num:
     @param add: if True, Add the set if it is missing in the database

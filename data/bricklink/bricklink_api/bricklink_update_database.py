@@ -153,14 +153,16 @@ def update_bl_set_inventories(check_update=0):
     @return:
     """
     sets = info.read_bl_set_ids()
+    last_updated = info.read_bl_set_date('last_inv_updated_bl')
     set_inv = info.read_bl_invs()
     colors_dict = info.read_bl_colors()
     num_sets = len(sets)
     completed_sets = 0
     timer = LBEF.process_timer()
     for idx, s in enumerate(sets):
-        if s in set_inv and check_update == 0:
-            continue
+        if s in set_inv:
+            if check_update == 0 or not LBEF.old_data(last_updated[s]):
+                continue
         add_bl_set_inventory_to_database(sets[s], colors=colors_dict)
         if idx > 0 and idx % 10 == 0:
             logger.info(
@@ -196,6 +198,7 @@ def add_bl_set_inventory_to_database(set_num, colors=None):
         db.batch_update(
             'INSERT OR IGNORE INTO bl_inventories(set_id, piece_id, quantity, color_id) VALUES (?,?,?,?)',
             parts_to_insert)
+        db.run_sql("UPDATE sets SET last_inv_updated_bl = ? WHERE id = ?", (LBEF.timestamp(), set_id))
     logger.debug("Added {} unique pieces to database for set {}/{}".format(len(parts_to_insert), set_num, set_id))
 
 
@@ -255,19 +258,21 @@ def add_part_to_database(part_num):
     @param part_list:
     @return:
     """
-    # These calls shouldn't need to be called every time we add one
-    part_database = info.read_bl_parts()  # Used so we don't do double duty and update parts in the system
-
-    if part_num in part_database: return
-
-    bl_categories = info.read_bl_categories()  # To convert the category ids to table ids
-
-    part_row = data.get_piece_info(bl_id=part_num)
-    part_row[7] = bl_categories[LBEF.int_zero(part_row[7])]  # Adjust the category
-
-    update.add_part_to_database(part_row)
-
-    logger.debug("Adding {} to part db (Values: {})".format(part_num, LBEF.list2string(part_row)))
+    update.add_part_to_database(part_num)
+    # Todo: see if any of this is needed
+    # # These calls shouldn't need to be called every time we add one
+    # part_database = info.read_bl_parts()  # Used so we don't do double duty and update parts in the system
+    #
+    # if part_num in part_database: return
+    #
+    # bl_categories = info.read_bl_categories()  # To convert the category ids to table ids
+    #
+    # part_row = data.get_piece_info(bl_id=part_num)
+    # part_row[7] = bl_categories[LBEF.int_zero(part_row[7])]  # Adjust the category
+    #
+    # update.add_part_to_database(part_row)
+    #
+    # logger.debug("Adding {} to part db (Values: {})".format(part_num, LBEF.list2string(part_row)))
 
     return get_bl_piece_id(part_num)
 

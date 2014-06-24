@@ -39,7 +39,7 @@ def init_re_inventories():
     @return:
     """
     blapi.update_bl_set_inventories(check_update=0)
-
+    reapi.update_set_inventories(check_updates=0)
     pass
 
 
