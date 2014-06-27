@@ -115,7 +115,7 @@ Secondary: {initiate the database, rely on primitives but can still be downloade
     * init_sets()
         @ Download sets from Bricklink
         @ Download sets from Rebrickable
-    * init_re_inventories()
+    * init_inventories()
         @ Download from Rebrickable Api and add to the database
 
 Automated: {run over all sets to update info}

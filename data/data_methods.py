@@ -361,9 +361,5 @@ def get_basestats(set, type=1):
 
 
 if __name__ == "__main__":
-    def main():
-        LBEF.print4(get_colors(), 200)
-
-
-    if __name__ == "__main__":
-        main()
+    part = input("part num? ")
+    print(get_piece_info(bl_id=part))

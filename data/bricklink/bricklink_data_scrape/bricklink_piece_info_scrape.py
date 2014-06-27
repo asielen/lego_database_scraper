@@ -73,24 +73,7 @@ def get_blPieceInfo(design_num):
     if soup is None:
         return None
 
-    parent_tags0 = soup.find("td", {"colspan": "4", "align": "CENTER"})
-    if parent_tags0 is None:
-        return _check_minifig(soup, design_num)
-
-    parent_tags1 = parent_tags0.find("tr", {"align": "CENTER", "valign": "TOP"})
-    if parent_tags1 is None:
-        return None
-    child_tags0 = parent_tags1.findAll("td")
-    weight_tag = child_tags0[3].get_text().split(":")[1]
-    # Pull the weight from the tag that contains the weight.
-    # EX: <td width="20%"><font color="#666666">Weight (in grams):</font><br>0.45</td>
-    weight = LBEF.float_zero(weight_tag)
-
-    # Find Name
-    name_tag = soup.find("font", {"face": "Geneva,Arial,Helvetica"})
-    name = name_tag.get_text()
-
-    #Find Type and Categories
+    # Find Type and Categories
     piece_type = "P"
     category = None
     types_tag = soup.find("font", {"face": "Arial"})
@@ -100,6 +83,34 @@ def get_blPieceInfo(design_num):
             piece_type = _parse_type_category(str(types_links[1]))
 
             category = _parse_type_category(str(types_links[2]))
+
+    if types_tag is None:
+        return None
+
+    if piece_type == "M":
+        return _check_minifig(soup, design_num)
+    if piece_type == "G" or piece_type == "B":
+        parent_tags0 = soup.find("td", {"colspan": "3", "align": "CENTER"})
+    else:
+        parent_tags0 = soup.find("td", {"colspan": "4", "align": "CENTER"})
+    if parent_tags0 is None:
+        return None
+
+    parent_tags1 = parent_tags0.find("tr", {"align": "CENTER", "valign": "TOP"})
+    if parent_tags1 is None:
+        return None
+    child_tags0 = parent_tags1.findAll("td")
+
+    weight_tag = child_tags0[3].get_text().split(":")[1]
+    # Pull the weight from the tag that contains the weight.
+    # EX: <td width="20%"><font color="#666666">Weight (in grams):</font><br>0.45</td>
+    weight = LBEF.float_zero(weight_tag)
+
+    # Find Name
+    name_tag = soup.find("font", {"face": "Geneva,Arial,Helvetica"})
+    name = name_tag.get_text()
+
+
 
     #Find Alternate Design IDs
 
@@ -220,3 +231,6 @@ def _verify_valid_url(url, verbose=0):
     return None
 
 
+if __name__ == "__main__":
+    part = input("part num? ")
+    print(get_blPieceInfo(part))

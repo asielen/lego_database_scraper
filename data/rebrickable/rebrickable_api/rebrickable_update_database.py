@@ -6,6 +6,7 @@ from data.update_database.add_parts_database import add_parts_to_database
 from data.rebrickable.rebrickable_api import rebrickable_api as reapi
 import data.update_database as update
 import database.info as info
+import database as db
 import system.base_methods as LBEF
 from system.logger import logger
 
@@ -42,34 +43,69 @@ def update_one_set_inventory(set_num):
     set_inv = reapi.pull_set_inventory(set_num)
 
 
-def update_set_inventories(check_updates=0):
+def update_set_inventories(check_update=0):
     """
     Insert and update all set inventories from a master list of pieces - may not be as up to date as the api call
     @return:
     """
-    parts = info.read_re_parts()
-    parts.update(info.read_bl_parts())
-    set_inv = info.read_re_invs()
-    sets = info.read_bl_set_ids()
-    colors = info.read_re_colors()
-    parts_to_insert = []
     set_inventories = reapi.pull_all_set_parts()
-    # Need to update this to use pooling
+    last_updated = info.read_inv_update_date('last_inv_updated_re')
+    set_inv = info.read_re_invs()
+
+    sets = info.read_bl_set_ids()
+    parts = info.read_re_parts()
+    parts.update(info.read_bl_parts())  # Add bl parts in there just in case
+    colors = info.read_re_colors()
+
+    timer = LBEF.process_timer(name="Add Re Inventories")
+    parts_to_insert = []
+
     for idx, row in enumerate(set_inventories):
         if row[0] == 'set_id': continue
-        if row[0] in set_inv and not check_updates:
-            continue  # already in the database todo: check last update
-        row[0] = update.get_set_id(row[0], sets=sets, add=True)
-        row[1] = get_re_piece_id(row[1], parts=parts, add=False)
-        row[2] = LBEF.int_zero(row[2])
-        print("color = {}".format(row[3]))
-        row[3] = info.get_color_id(row[3], colors=colors)
+        if row[0] in set_inv:
+            if check_update == 0 or not LBEF.old_data(last_updated[row[0]]):
+                continue
+
+        row[0] = update.get_set_id(row[0], sets=sets, add=True)  # Set Id
+        row[1] = get_re_piece_id(row[1], parts=parts, add=False)  # Re_piece Id
+        row[2] = LBEF.int_zero(row[2])  # Quantity
+        row[3] = info.get_color_id(row[3], colors=colors)  # Color ID
+
         del row[-1]
         parts_to_insert.append(row)
+
         if idx > 0 and idx % 100 == 0:
-            break
-    # todo add to database
-    LBEF.print4(parts_to_insert, 100)
+            _add_re_inventories_to_database(parts_to_insert)
+            timer.log_time(len(parts_to_insert))
+            parts_to_insert = []
+
+    _add_re_inventories_to_database(parts_to_insert)
+    timer.log_time(len(parts_to_insert))
+    timer.end()
+
+
+def _add_re_inventories_to_database(invs):
+    """
+    Adds a inventory to the database
+    @param set_num: xxxx-xx
+    @param parts: ['Type', 'Item No', 'Item Name', 'Qty', 'Color ID', 'Extra?', 'Alternate?', 'Match ID', 'Counterpart?']
+        With - 2 - lines for heading
+    @return:
+    """
+    set_ids_to_delete = set([n[0] for n in invs])  # list of just the set ids to remove them from the database
+    #
+    # LBEF.print4(set_ids_to_delete, 5)
+    # LBEF.print4(invs, 5)
+
+    timestamp = LBEF.timestamp()
+    for s in set_ids_to_delete:
+        db.run_sql("DELETE FROM re_inventories WHERE set_id = ?", (s,))
+        db.run_sql("UPDATE sets SET last_inv_updated_re = ? WHERE id = ?", (timestamp, s))
+    db.batch_update(
+        'INSERT OR IGNORE INTO re_inventories(set_id, piece_id, quantity, color_id) VALUES (?,?,?,?)',
+        invs)
+
+    logger.debug("Added {} unique pieces to database for {}".format(len(invs), len(set_ids_to_delete)))
 
 
 def get_re_piece_id(part_num, parts=None, add=False):

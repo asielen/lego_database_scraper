@@ -65,7 +65,8 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
     sets_to_scrape = []
     sets_to_insert = []
     pool = _pool(RUNNINGPOOL)
-    timer = LBEF.process_timer()
+
+    timer = LBEF.process_timer("Add Sets to Database")
     for idx, row in enumerate(set_id_list):
         if len(row) == 0:
             continue
@@ -87,6 +88,7 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
 
     sets_to_insert.extend(pool.map(_parse_get_basestats, sets_to_scrape))
     timer.log_time(len(sets_to_scrape))
+    timer.end()
 
     pool.close()
     pool.join()

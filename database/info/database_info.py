@@ -174,7 +174,7 @@ def read_bl_set_ids():
     return {b[0]: b[1] for b in bl_set_list}  # 1 is the position of the bricklink column
 
 
-def read_bl_set_date(date='last_updated'):
+def read_inv_update_date(date='last_updated'):
     """
 
     @param date: last_updated,
@@ -196,6 +196,7 @@ def read_bl_set_date(date='last_updated'):
     elif date == 'last_price_updated':
         date_pos = 26
     return {b[1]: b[date_pos] for b in date_list}
+
 
 def read_bl_invs():
     """

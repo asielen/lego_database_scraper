@@ -6,6 +6,13 @@ from system.logger import logger
 import database as db
 import database.info as info
 import system.base_methods as LBEF
+from multiprocessing import Pool as _pool
+from time import sleep
+
+# Depending on the internet connection
+SLOWPOOL = 5
+FASTPOOL = 50
+RUNNINGPOOL = SLOWPOOL
 
 # internal
 import data
@@ -153,28 +160,53 @@ def update_bl_set_inventories(check_update=0):
     @return:
     """
     sets = info.read_bl_set_ids()
-    last_updated = info.read_bl_set_date('last_inv_updated_bl')
+    last_updated = info.read_inv_update_date('last_inv_updated_bl')
     set_inv = info.read_bl_invs()
     colors_dict = info.read_bl_colors()
+
     num_sets = len(sets)
-    completed_sets = 0
-    timer = LBEF.process_timer()
+
+    set_invs_to_scrape = []
+    set_invs_to_insert = []
+    pool = _pool(RUNNINGPOOL)
+    timer = LBEF.process_timer("Upadate Bricklink Inventories")
     for idx, s in enumerate(sets):
         if s in set_inv:
             if check_update == 0 or not LBEF.old_data(last_updated[s]):
                 continue
-        add_bl_set_inventory_to_database(sets[s], colors=colors_dict)
-        if idx > 0 and idx % 10 == 0:
+        set_invs_to_scrape.append((sets[s], s))
+
+        # Scrape Pieces
+        if idx > 0 and idx % 25 == 0:
+            temp_list = [y for x in pool.map(_get_set_inventory, set_invs_to_scrape) for y in x]
+            set_invs_to_insert.extend(temp_list)
             logger.info(
-                "## Processed {} of {} sets ({}% complete)".format(idx, num_sets, round((idx / num_sets) * 100)))
-        completed_sets += 1
-        if idx > 0 and completed_sets % 50 == 0:
-            timer.log_time(completed_sets, num_sets - idx)
-            completed_sets = 0
+                "Running Pool {} of {} sets ({}% complete)".format(idx, num_sets, round((idx / num_sets) * 100)))
+            timer.log_time(len(set_invs_to_scrape), num_sets - idx)
+            set_invs_to_scrape = []
+            sleep(.5)
+        # Insert Pieces
+        if idx > 0 and idx % 100 == 0:
+            logger.info("Inserting {} pieces".format(len(set_invs_to_insert)))
+
+            _process_colors(set_invs_to_insert, colors_dict)
+            _add_bl_inventories_to_database(set_invs_to_insert)
+            set_invs_to_insert = []
+
+    # Final Scrape and insert
+    temp_list = [y for x in pool.map(_get_set_inventory, set_invs_to_scrape) for y in x]
+    set_invs_to_insert.extend(temp_list)
+    _process_colors(set_invs_to_insert, colors_dict)
+    _add_bl_inventories_to_database(set_invs_to_insert)
+
+    pool.close()
+    pool.join()
+
     timer.log_time(num_sets)
+    timer.end()
 
 
-def add_bl_set_inventory_to_database(set_num, colors=None):
+def _add_bl_inventories_to_database(invs):
     """
     Adds a inventory to the database
     @param set_num: xxxx-xx
@@ -182,37 +214,54 @@ def add_bl_set_inventory_to_database(set_num, colors=None):
         With - 2 - lines for heading
     @return:
     """
-    if set_num is None:
-        return
-    if colors is None:
-        colors = info.read_bl_colors()
-    set_id = _get_set_id(set_num, add=True)  # True means add if it is missing
-    if set_id is None:
-        logger.warning("Could not find set id for {}".format(set_num))
-        return
+    set_ids_to_delete = set([n[0] for n in invs])  # list of just the set ids to remove them from the database
+    #
+    # LBEF.print4(set_ids_to_delete, 5)
+    # LBEF.print4(invs, 5)
 
-    parts_to_insert = _get_set_inventory(set_num, set_id, colors)
-    # todo if adding gear or books, need to fix the weight, the year is being placed in the weight (use minifig method?)
-    if parts_to_insert is not None:
-        db.run_sql("DELETE FROM bl_inventories WHERE set_id = ?", (set_id,))
-        db.batch_update(
-            'INSERT OR IGNORE INTO bl_inventories(set_id, piece_id, quantity, color_id) VALUES (?,?,?,?)',
-            parts_to_insert)
-        db.run_sql("UPDATE sets SET last_inv_updated_bl = ? WHERE id = ?", (LBEF.timestamp(), set_id))
-    logger.debug("Added {} unique pieces to database for set {}/{}".format(len(parts_to_insert), set_num, set_id))
+    timestamp = LBEF.timestamp()
+    for s in set_ids_to_delete:
+        db.run_sql("DELETE FROM bl_inventories WHERE set_id = ?", (s,))
+        db.run_sql("UPDATE sets SET last_inv_updated_bl = ? WHERE id = ?", (timestamp, s))
+    db.batch_update(
+        'INSERT OR IGNORE INTO bl_inventories(set_id, piece_id, quantity, color_id) VALUES (?,?,?,?)',
+        invs)
+
+    logger.debug("Added {} unique pieces to database for {}".format(len(invs), len(set_ids_to_delete)))
 
 
-def _get_set_inventory(set_num, set_id, colors=None):
+def _process_colors(invs, colors):
+    """
+
+    @param invs:
+    @param colors:
+    @return:
+    """
+    for inv in invs:
+        if LBEF.int_null(inv[2]) in colors:
+            inv[2] = colors[int(inv[2])]
+        else:
+            logger.critical(
+                "Missing {} from color table".format(inv[2]))
+            inv[2] = None
+
+
+def _get_set_inventory(set_dat=None):
     """
     returns a list of all the pieces in the correct format
     @param set_num:
     @param colors:
     @return:
     """
-    logger.info("Getting Set Inventory {}".format(set_num))
 
-    if colors is None:
-        colors = info.read_bl_colors()
+    if len(set_dat) != 2:
+        logger.warning("Missing Set Num or Set Id {}".format(set_dat))
+
+    set_num = set_dat[0]
+    set_id = set_dat[1]
+
+    logger.debug("Getting Set Inventory {}".format(set_num))
+
     parts = blapi.pull_set_inventory(set_num)
     if parts is None:
         logger.warning("Could not find set inventory for {}".format(set_num))
@@ -224,24 +273,19 @@ def _get_set_inventory(set_num, set_id, colors=None):
             if row[0] == 'Type': continue
             if row[0] == 'S':  # All this stupid code takes care of subsets (sets of sets)
                 sub_set_id = _get_set_id(row[1], add=True)
-                sub_set = _get_set_inventory(row[1], sub_set_id, colors)
+                sub_set = _get_set_inventory((row[1], sub_set_id))
                 for sr in sub_set:  # change the set id to the set main id
                     sr[0] = set_id
-                logger.info('Adding {} parts in subset {}'.format(len(sub_set), row[1]))
+                logger.debug('Adding {} parts in subset {}'.format(len(sub_set), row[1]))
                 parts_to_insert.extend(sub_set)
                 continue
             row.pop(0)  # remove the type which can be found in the pieces table
             row[0] = get_bl_piece_id(row[0], add=True)
             row.pop(1)  # remove the item name which can be found in the pieces table
             row[1] = int(row[1])  # Make the qty a number not a string
-            if LBEF.int_null(row[2]) in colors:
-                row[2] = colors[int(row[2])]
-            else:
-                logger.critical(
-                    "#add_bl_set_inventory_to_database({})# - Missing {} from color table".format(set_num, row[2]))
-                row[2] = None
+
             row.insert(0, set_id)  # Add the set_id to the front
-            # Now list is in this format ['set_id', 'piece_id',  'quantity', 'color_id', 'Extra?', 'Alternate?', 'Match ID', 'Counterpart?']
+            # Now list is in this format ['set_id', 'piece_id',  'quantity', 'color_num', 'Extra?', 'Alternate?', 'Match ID', 'Counterpart?']
             # Just need to remove the last 4 items
             del row[4:]
             parts_to_insert.append(row)
@@ -356,7 +400,7 @@ if __name__ == "__main__":
 
     def menu_add_bl_set_inventory_to_database():
         set_num = LBEF.input_set_num()
-        add_bl_set_inventory_to_database(set_num)
+        add_bl_inventories_to_database(set_num)
 
 
     def menu_add_part_to_database():

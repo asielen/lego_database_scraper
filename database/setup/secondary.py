@@ -5,10 +5,12 @@ __author__ = 'andrew.sielen'
 # @ Download from Bricklink and add to the database
 # * init_sets()
 # @ Download sets from Bricklink
-#         @ Download sets from Rebrickable
-#     * init_re_inventories()
+# @ Download sets from Rebrickable
+#     * init_inventories()
 #         @ Download from Rebrickable Api and add to the database
 # todo: need to implement this
+
+from profilehooks import profile
 
 import data.bricklink.bricklink_api as blapi
 import data.rebrickable.rebrickable_api as reapi
@@ -33,13 +35,14 @@ def init_sets():
     reapi.update_sets(check_update=0)
 
 
-def init_re_inventories():
+@profile
+def init_inventories():
     """
     Download inventories for rebrickable and bricklink
     @return:
     """
     blapi.update_bl_set_inventories(check_update=0)
-    reapi.update_set_inventories(check_updates=0)
+    reapi.update_set_inventories(check_update=0)
     pass
 
 
@@ -71,7 +74,7 @@ if __name__ == "__main__":
         init_sets()
 
     def menu_init_re_inventories():
-        init_re_inventories()
+        init_inventories()
 
     if __name__ == "__main__":
         main_menu()

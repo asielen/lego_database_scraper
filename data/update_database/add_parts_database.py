@@ -73,7 +73,7 @@ def add_parts_to_database(part_id_list, type="bl"):
     pool = _pool(RUNNINGPOOL)
     bl_categories = info.read_bl_categories()  # To convert the category ids to table ids
 
-    timer = LBEF.process_timer()
+    timer = LBEF.process_timer("Add parts to database")
     total_ids = len(part_id_list)
     if type == "bl":  # TODO need to update this with all the changes to the re side of things
         part_database = info.read_bl_parts()
@@ -83,6 +83,8 @@ def add_parts_to_database(part_id_list, type="bl"):
             else:
                 parts_to_scrape.append(part)
                 # parts_to_insert.extend(_parse_get_bl_pieceinfo(part)) #Todo this is a test just to see where an error is
+
+            # Scrape
             if idx > 0 and idx % 150 == 0:
                 parts_to_insert.extend(pool.map(_parse_get_bl_pieceinfo, parts_to_scrape))
 
@@ -92,11 +94,14 @@ def add_parts_to_database(part_id_list, type="bl"):
 
                 parts_to_scrape = []
                 sleep(.5)
+
+            #Insert
             if idx > 0 and idx % 1500 == 0:
                 logger.info("Inserting {} pieces".format(len(parts_to_insert)))
                 parts_to_insert = _process_categories(parts_to_insert, bl_categories)
                 add_part_data_to_database(parts_to_insert)
                 parts_to_insert = []
+
         parts_to_insert.extend(pool.map(_parse_get_bl_pieceinfo, parts_to_scrape))
         parts_to_insert = _process_categories(parts_to_insert, bl_categories)
         add_part_data_to_database(parts_to_insert)
@@ -130,7 +135,7 @@ def add_parts_to_database(part_id_list, type="bl"):
         add_part_data_to_database(parts_to_insert)
 
     timer.log_time(len(parts_to_scrape), 0)
-
+    timer.end()
 
 def _process_categories(parts_to_insert, bl_categories):
     parts_to_insert_processed = []
