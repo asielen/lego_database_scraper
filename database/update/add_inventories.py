@@ -1,4 +1,4 @@
-from data.update_database.add_parts_database import add_part_to_database
+from data.update_secondary.add_parts_database import add_part_to_database
 
 __author__ = 'andrew.sielen'
 

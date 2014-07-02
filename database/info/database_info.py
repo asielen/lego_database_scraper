@@ -165,13 +165,22 @@ def read_bl_sets():
     return {b[1]: b[:] for b in bl_set_list}  # 1 is the position of the bricklink column
 
 
-def read_bl_set_ids():
+def read_bl_set_id_num():
     """
 
     @return: a list in this format {id: set_num}
     """
     bl_set_list = db.run_sql('SELECT * FROM sets')
     return {b[0]: b[1] for b in bl_set_list}  # 1 is the position of the bricklink column
+
+
+def read_bl_set_num_id():
+    """
+
+    @return: a list in this format {set_num: is}
+    """
+    bl_set_list = db.run_sql('SELECT * FROM sets')
+    return {b[1]: b[0] for b in bl_set_list}  # 1 is the position of the bricklink column
 
 
 def read_inv_update_date(date='last_updated'):
@@ -213,8 +222,9 @@ def read_re_invs():
 
     @return: a list of the sets who's inventory is in the system
     """
-    re_set_list = db.run_sql('SELECT * FROM re_inventories')
-    re_set_list = set(b[1] for b in re_set_list)
+    re_set_list = db.run_sql(
+        'SELECT DISTINCT sets.set_num FROM re_inventories JOIN sets ON re_inventories.set_id = sets.id')
+    re_set_list = set(b[0] for b in re_set_list)
     return re_set_list
 
 

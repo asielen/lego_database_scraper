@@ -11,7 +11,7 @@ __author__ = 'andrew.sielen'
 # Basic: {once the database is initlaized, these are used to update one at a time}
 # * add_set(set_num)
 # @ Scrape data from Bricklink & Brickset
-#     * add_part(part_num)
+# * add_part(part_num)
 #         @ Scrape data from Bricklink & Brickset
 
 
@@ -22,7 +22,7 @@ from navigation import menu
 import system as sys
 
 import public_api
-import data.update_database as update
+import data.update_secondary as update
 
 from system.logger import logger
 

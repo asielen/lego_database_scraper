@@ -2,7 +2,7 @@ __author__ = 'andrew.sielen'
 
 import navigation.menu
 
-from data.bricklink.bricklink_api.bricklink_update_database import init_parts
+from database import setup
 
 
 def main():
@@ -11,7 +11,7 @@ def main():
     options['2'] = "Database Stat Report", run_databaseReport
     options['3'] = "Dump all set data", run_dumpSets
     options['7'] = "Initiate New Database", init_new_database
-    options['8'] = "Insert parts", insert_parts
+    options['8'] = "Initiate Primitives", insert_parts
     options['9'] = "Back", navigation.menu.back
 
     while True:
@@ -42,4 +42,4 @@ def init_new_database():
 
 
 def insert_parts():
-    init_parts()
+    setup.run_primitives()

@@ -234,6 +234,7 @@ def expand_set_num(set_id):
         if ' or ' in set_id:
             set_id = set_id.split(' or ')[0]
         set_list = set_id.split("-")
+        if len(set_list) > 2: return (None, None, set_id)
         set_num = set_list[0]
         set_seq = set_list[1]
     except:

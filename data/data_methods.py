@@ -13,7 +13,7 @@ from data.peeron.peeron_api import peeron_api as perapi
 def get_colors():
     """
     combine data from peeron and rebrickable to create the colors table
-    @return:
+    @return:  [bl_id, re_id, bo_id, ldraw_id, lego_id, bl_name, lego_name, hex]
     """
     logger.debug("Get all colors from rebrickable and peeron")
 
@@ -216,47 +216,59 @@ def get_piece_info(bl_id=None, bo_id=None, re_id=None, lego_id=None, type=1):
     return piece_info
 
 
-def get_basestats(set, type=1):
+def get_basestats(o_set, type=1):
     """
-    Gets base set info from a combination of bricklink and brickset data
-    @param set: set num in standard format xxxx-x
+    Gets base o_set info from a combination of bricklink and brickset data
+    @param o_set: o_set num in standard format xxxx-x
     @param type: 0 = dict, 1 = list
-    @return: dictionary of set information
+    @return: dictionary of o_set information
     """
 
-    if set is None:
+    if o_set is None:
         logger.warning("Trying to update a set but there is none to update")
         return None
 
-    set_num, set_seq, set = LBEF.expand_set_num(set)
+    set_num, set_seq, o_set = LBEF.expand_set_num(o_set)
+    if set_num is None:  # If it is an invalid setnum then return Num, this happens for rebrickable alternate sets that have multiple dashes in the setnum
+        return None
 
     scrubbed_dic = {}
 
     brickset_stats = BS.get_basestats(set_num, set_seq)
     bricklink_stats = blds.get_basestats(set_num, set_seq)
+    rebrickable_stats = list(reapi.pull_set_info(o_set))
 
     if 'set_name' in brickset_stats:
-        if brickset_stats['set_name'] == '': return None
+        # if brickset_stats['set_name'] == '':
+        # return None
         scrubbed_dic['set_name'] = brickset_stats['set_name']
     elif 'set_name' in bricklink_stats:
-        if bricklink_stats['set_name'] == '': return None
+        # if bricklink_stats['set_name'] == '':
+        # return None
         scrubbed_dic['set_name'] = bricklink_stats['set_name']
+    elif len(rebrickable_stats) > 1:
+        scrubbed_dic['set_name'] = rebrickable_stats[3]
     else:
-        return None
+        scrubbed_dic['set_name'] = None
 
     if 'set_num' in brickset_stats:
-        if brickset_stats['set_num'] == '': return None
+        # if brickset_stats['set_num'] == '':
+        # return None
         scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = LBEF.expand_set_num(
             brickset_stats['set_num'])
     elif 'set_num' in bricklink_stats:
-        if bricklink_stats['set_num'] == '': return None
+        # if bricklink_stats['set_num'] == '':
+        # return None
         scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = LBEF.expand_set_num(
             bricklink_stats['set_num'])
     else:
-        return None
+        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = LBEF.expand_set_num(
+            o_set)
 
     if "theme" in brickset_stats:
         scrubbed_dic['theme'] = brickset_stats['theme']
+    elif len(rebrickable_stats) > 1:
+        scrubbed_dic['theme'] = rebrickable_stats[4]
     else:
         scrubbed_dic['theme'] = ""
 
@@ -288,6 +300,8 @@ def get_basestats(set, type=1):
         scrubbed_dic['year_released'] = brickset_stats['year_released']
     elif 'year_released' in bricklink_stats:
         scrubbed_dic['year_released'] = bricklink_stats['year_released']
+    elif len(rebrickable_stats) > 1:
+        scrubbed_dic['year_released'] = rebrickable_stats[5]
     else:
         scrubbed_dic['year_released'] = None
 
@@ -329,7 +343,7 @@ def get_basestats(set, type=1):
         scrubbed_dic['box_volume'] = None
 
     if scrubbed_dic == {}:
-        logger.warning("No data for set: {}".format(set))
+        logger.warning("No data for o_set: {}".format(o_set))
         return None
 
     scrubbed_dic['last_update'] = LBEF.timestamp()

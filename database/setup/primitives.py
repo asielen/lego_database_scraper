@@ -4,7 +4,7 @@ import sqlite3 as lite
 
 import data.bricklink.bricklink_api as blapi
 import data.rebrickable.rebrickable_api as reapi
-import data.update_database as update
+import data.update_primitives as update_p
 import database.database as db
 from system.logger import logger
 
@@ -22,12 +22,12 @@ from system.logger import logger
 #         @ Download categories from Bricklink
 
 
-def init_colors():
+def init_colors(update=0):
     """
     Download and add colors to the database
     @return:
     """
-    update.update_colors()
+    update_p.update_colors(update=update)
 
 
 def init_parts():
@@ -53,13 +53,19 @@ def init_price_types():
         con.executemany("INSERT OR IGNORE INTO price_types(price_type) VALUES (?)", price_types)
 
 
-def init_bl_categories():
+def init_bl_categories(update=0):
     """
     Download and add bl_categories to the database
     @return:
     """
-    blapi.init_categories()
+    blapi.init_categories(update=update)
 
+
+def run_primitives():
+    init_colors()
+    init_parts()
+    init_price_types()
+    init_bl_categories()
 
 if __name__ == "__main__":
     from navigation import menu

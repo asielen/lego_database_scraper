@@ -10,17 +10,13 @@ from system.calculate_inflation import get_inflation_rate
 import database as db
 
 
-def get_set_id(set_num, sets=None, add=False):
+def get_set_id(set_num):
     """
     @param set_num:
     @param add: if True, Add the set if it is missing in the database
     @return: the id column num of the set in the database
     """
-    con = lite.connect(db.database)
-    with con:
-        c = con.cursor()
-        c.execute('SELECT id FROM sets WHERE set_num=?', (set_num,))
-        set_id_raw = c.fetchone()
+    set_id_raw = db.run_sql('SELECT id FROM sets WHERE set_num=?', (set_num.lower(),), one=True)
     if set_id_raw is None:
         return None
     else:
@@ -196,7 +192,7 @@ def get_set_weight(set_num, type=''):
     @param type: '' or bricklink or brickset
     @return: the weight in grams
     """
-    #Get the set ID.
+    # Get the set ID.
     set_id = get_set_id(set_num)
 
     con = lite.connect(db.database)

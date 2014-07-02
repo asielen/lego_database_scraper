@@ -175,7 +175,9 @@ if __name__ == "__main__":
 
     def menu_pull_all_set_parts():
         csvfile = pull_all_set_parts()
+        filelist = list(csvfile)
         LBEF.print4(csvfile)
+        print(len(filelist))
 
     def menu_pull_all_sets():
         csvfile = pull_set_catalog()

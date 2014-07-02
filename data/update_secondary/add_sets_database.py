@@ -50,9 +50,57 @@ def add_set_to_database(set_data):
         ') VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', insert_list=tuple(set_data))
 
 
+def add_set_to_database(set_id):
+    """
+    Single add
+    @param set_id:
+    @param update: Always update if this is called
+    @return:
+    """
+    set_to_insert = _parse_get_basestats(set_id)
+    add_set_data_to_database(set_to_insert)
+
+
+def add_set_data_to_database(set_data):
+    """
+    Single set add to database
+    @param sets_to_insert:
+    @return:
+    """
+    if set_data is None:
+        return None
+    logger.info("Inserting Set: {}".format(set_data[1]))
+    db.run_sql('INSERT OR IGNORE INTO sets(set_num) VALUES (?)', (set_data[1],))
+
+    set_data_processed = tuple(set_data[:] + [set_data[1]])
+    db.run_sql('UPDATE sets SET '
+               'set_name=?, '
+               'set_num=?, '
+               'item_num=?, '
+               'item_seq=?, '
+               'theme=?, '
+               'subtheme=?, '
+               'piece_count=?, '
+               'figures=?, '
+               'set_weight=?, '
+               'year_released=?, '
+               'date_released_us=?, '
+               'date_ended_us=?, '
+               'date_released_uk=?, '
+               'date_ended_uk=?, '
+               'original_price_us=?, '
+               'original_price_uk=?, '
+               'age_low=?, '
+               'age_high=?, '
+               'box_size=?, '
+               'box_volume=?, '
+               'last_updated=?'
+               'WHERE set_num=?', set_data_processed)
+
+
 def add_sets_to_database(set_id_list, id_col=0, update=1):
     """
-
+    # Todo:  Make a single add
     @param set_id_list: list of set ids
     @param id_col: the column that set_ids are in
     @param update: 0 no updates, 1 basic updates, 2 all updates
@@ -143,13 +191,16 @@ def get_set_id(set_num, sets=None, add=False):
     @return:
     """
     set_id = None
+    set_num = set_num.lower()
     try:
         set_id = sets[set_num]
     except:
         set_id = info.get_set_id(set_num)
     if set_id is None and add:
-        add_sets_to_database([set_num])
+        add_set_to_database(set_num)
         set_id = info.get_set_id(set_num)
+        if set_id is not None:
+            sets[set_num] = set_id
     return set_id
 
 
@@ -182,4 +233,4 @@ def _parse_get_basestats(id):
     @param row:
     @return:
     """
-    return data.get_basestats(id, 1)
+    return data.get_basestats(id, type=1)

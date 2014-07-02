@@ -17,7 +17,7 @@ RUNNINGPOOL = SLOWPOOL
 # internal
 import data
 from data.bricklink.bricklink_api import bricklink_api as blapi
-import data.update_database as update
+import data.update_secondary as update
 
 
 def update_sets(check_update=1):
@@ -38,13 +38,14 @@ def update_sets(check_update=1):
 # Categories
 def init_categories():
     """
-
+    Pull categories from bricklink and insert them, no need for an update tage because it doesn't delete anything
     @return:
     """
     categories = blapi.pull_categories()
-    if categories is None: return False
+    if categories is None:
+        logger.warning("Could not pull category data")
+        return False
     # No Need for processing, it is in the right format [id, name]
-    # db.run_sql('DELETE FROM bl_categories')
     db.run_sql('INSERT OR IGNORE INTO bl_categories(bl_category_id, bl_category_name) VALUES (?,?)', (0, 'unknown'))
     db.batch_update('INSERT OR IGNORE INTO bl_categories(bl_category_id, bl_category_name) VALUES (?,?)', categories,
                     header_len=2)
@@ -159,7 +160,7 @@ def update_bl_set_inventories(check_update=0):
     Go through all bricklink sets and get their inventories
     @return:
     """
-    sets = info.read_bl_set_ids()
+    sets = info.read_bl_set_id_num()
     last_updated = info.read_inv_update_date('last_inv_updated_bl')
     set_inv = info.read_bl_invs()
     colors_dict = info.read_bl_colors()
@@ -177,7 +178,7 @@ def update_bl_set_inventories(check_update=0):
         set_invs_to_scrape.append((sets[s], s))
 
         # Scrape Pieces
-        if idx > 0 and idx % 25 == 0:
+        if idx > 0 and idx % 50 == 0:
             temp_list = [y for x in pool.map(_get_set_inventory, set_invs_to_scrape) for y in x]
             set_invs_to_insert.extend(temp_list)
             logger.info(
@@ -186,7 +187,7 @@ def update_bl_set_inventories(check_update=0):
             set_invs_to_scrape = []
             sleep(.5)
         # Insert Pieces
-        if idx > 0 and idx % 100 == 0:
+        if idx > 0 and idx % 200 == 0:
             logger.info("Inserting {} pieces".format(len(set_invs_to_insert)))
 
             _process_colors(set_invs_to_insert, colors_dict)

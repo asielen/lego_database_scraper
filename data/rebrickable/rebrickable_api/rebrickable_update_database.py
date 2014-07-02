@@ -2,13 +2,23 @@ __author__ = 'andrew.sielen'
 
 # other modules
 
-from data.update_database.add_parts_database import add_parts_to_database
+from functools import partial
+from multiprocessing import Pool as _pool
+from time import sleep
+
+from data.update_secondary.add_parts_database import add_parts_to_database
 from data.rebrickable.rebrickable_api import rebrickable_api as reapi
-import data.update_database as update
+import data.update_secondary as update
 import database.info as info
 import database as db
 import system.base_methods as LBEF
 from system.logger import logger
+
+
+# Depending on the internet connection
+SLOWPOOL = 5
+FASTPOOL = 50
+RUNNINGPOOL = SLOWPOOL
 
 
 def update_parts():
@@ -43,45 +53,83 @@ def update_one_set_inventory(set_num):
     set_inv = reapi.pull_set_inventory(set_num)
 
 
-def update_set_inventories(check_update=0):
+def update_set_inventories(check_update=1):
     """
     Insert and update all set inventories from a master list of pieces - may not be as up to date as the api call
     @return:
     """
-    set_inventories = reapi.pull_all_set_parts()
+    set_inventories = list(reapi.pull_all_set_parts())
     last_updated = info.read_inv_update_date('last_inv_updated_re')
     set_inv = info.read_re_invs()
 
-    sets = info.read_bl_set_ids()
+    sets = info.read_bl_set_num_id()
     parts = info.read_re_parts()
     parts.update(info.read_bl_parts())  # Add bl parts in there just in case
     colors = info.read_re_colors()
 
     timer = LBEF.process_timer(name="Add Re Inventories")
-    parts_to_insert = []
 
+    print("")
+    print("")
+    logger.info("Running Rebrickable Update")
+
+    sets_to_skip = []
+    rows_to_scrape = []
+    parts_to_insert = []
+    pool = _pool(RUNNINGPOOL)
     for idx, row in enumerate(set_inventories):
         if row[0] == 'set_id': continue
+        if row[0] in sets_to_skip: continue
         if row[0] in set_inv:
             if check_update == 0 or not LBEF.old_data(last_updated[row[0]]):
+                sets_to_skip.append(row[0])
                 continue
-
-        row[0] = update.get_set_id(row[0], sets=sets, add=True)  # Set Id
-        row[1] = get_re_piece_id(row[1], parts=parts, add=False)  # Re_piece Id
-        row[2] = LBEF.int_zero(row[2])  # Quantity
-        row[3] = info.get_color_id(row[3], colors=colors)  # Color ID
-
-        del row[-1]
-        parts_to_insert.append(row)
-
+        print("2222 {} | {} SET {}".format(idx, len(parts_to_insert), row[0]))
+        rows_to_scrape.append(row)
         if idx > 0 and idx % 100 == 0:
+            logger.info("Scraping {} rows".format(len(rows_to_scrape)))
+            _process_data = partial(_process_data_for_inv_db, sets=sets, parts=parts, colors=colors)
+            parts_to_insert.extend(pool.map(_process_data, rows_to_scrape))
+            # print("$[{}]".format(len(rows_to_scrape)))
+            rows_to_scrape = []
+            sleep(0.1)
+
+        if idx > 0 and idx % 300 == 0:
+            parts_to_insert = list(filter(None, parts_to_insert))
+            logger.info("Inserting rows >[{}]".format(len(parts_to_insert)))
             _add_re_inventories_to_database(parts_to_insert)
-            timer.log_time(len(parts_to_insert))
+            timer.log_time(300, len(set_inventories) - idx)
             parts_to_insert = []
 
     _add_re_inventories_to_database(parts_to_insert)
     timer.log_time(len(parts_to_insert))
     timer.end()
+
+    pool.close()
+    pool.join()
+
+
+def _process_data_for_inv_db(row=None, sets=None, parts=None, colors=None):
+    """
+    So pool will work, could also use partial but this is a little more control
+    @param set_num:
+    @return:
+    """
+    # print("Getting data for row {}".format(row[0]))
+    row[0] = update.get_set_id(row[0], sets=sets, add=True)  # Set Id
+    #print("Got ID {}".format(row[0]))
+    if row[0] is not None:
+        row[1] = get_re_piece_id(row[1], parts=parts, add=False)  # Re_piece Id
+        #print("Got Piece {}".format(row[1]))
+        row[2] = LBEF.int_zero(row[2])  # Quantity
+        row[3] = info.get_color_id(row[3], colors=colors)  # Color ID
+        #print("Got Color {}".format(row[3]))
+
+        del row[-1]
+        return row
+
+    else:
+        return None
 
 
 def _add_re_inventories_to_database(invs):
@@ -92,10 +140,9 @@ def _add_re_inventories_to_database(invs):
         With - 2 - lines for heading
     @return:
     """
-    set_ids_to_delete = set([n[0] for n in invs])  # list of just the set ids to remove them from the database
-    #
-    # LBEF.print4(set_ids_to_delete, 5)
-    # LBEF.print4(invs, 5)
+
+    set_ids_to_delete = set(
+        [n[0] for n in filter(None, invs)])  # list of just the set ids to remove them from the database
 
     timestamp = LBEF.timestamp()
     for s in set_ids_to_delete:
