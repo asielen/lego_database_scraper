@@ -2,7 +2,7 @@ __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
 
-from database.info.database_info import database
+import database.database as db
 
 
 def get_element_id(part_num):
@@ -10,7 +10,7 @@ def get_element_id(part_num):
     @param part_num: the number used by brickset for pieces
     @return: the primary key for a piece in the database
     """
-    con = lite.connect(database)
+    con = lite.connect(db)
 
     element_id = None
 
@@ -33,7 +33,7 @@ def get_design_id(design_num):
     """
     design_id = None
 
-    con = lite.connect(database)
+    con = lite.connect(db)
 
     element_id = None
 
@@ -56,7 +56,7 @@ def get_sets_per_design():
     """
     designs = []
 
-    con = lite.connect(database)
+    con = lite.connect(db)
     with con:
         c = con.cursor()
         c.execute("SELECT piece_designs.design_num, COUNT(bl_inventories.set_id) AS number_of_sets FROM piece_designs "
@@ -75,7 +75,7 @@ def get_years_available(design_num):
     """
     years = []
 
-    con = lite.connect(database)
+    con = lite.connect(db)
     with con:
         c = con.cursor()
         c.execute(
@@ -100,7 +100,7 @@ def get_avg_price_per_design(design_num):
 
     design_id = get_design_id(design_num)  # this saves us from having to do an extra join
 
-    con = lite.connect(database)
+    con = lite.connect(db)
     with con:
         c = con.cursor()
         c.execute("SELECT SUM((sets.original_price_us / sets.piece_count) * "

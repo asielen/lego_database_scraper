@@ -4,7 +4,7 @@ import sqlite3 as lite
 
 from system.logger import logger
 from database import set_info_old
-from database.info.database_info import database
+import database.database as db
 import public_api
 import system.base_methods as LBEF
 from z_junk import get_daily
@@ -32,7 +32,7 @@ def add_daily_set_data_to_database(set_num, prices, ratings):
 
     add_daily_ratings_to_database(set_id, ratings)
 
-    con = lite.connect(database)
+    con = lite.connect(db)
     with con:  # Update the last date
         c = con.cursor()
         c.execute('UPDATE sets SET last_price_updated=? WHERE id=?',
@@ -42,7 +42,7 @@ def add_daily_set_data_to_database(set_num, prices, ratings):
 def add_daily_prices_to_database(set_id, prices):
     current_date = LBEF.timestamp()
 
-    con = lite.connect(database)
+    con = lite.connect(db)
     with con:
         c = con.cursor()
 
@@ -70,7 +70,7 @@ def add_daily_ratings_to_database(set_id, ratings):
     @return:
     """
 
-    con = lite.connect(database)
+    con = lite.connect(db)
     with con:
         c = con.cursor()
         c.execute('INSERT OR IGNORE INTO bs_ratings(set_id, want, own, rating, record_date)'
@@ -94,7 +94,7 @@ def check_set_availability_dates(set_id, ratings):
     if 'available_uk' in ratings:
         set_dates['date_released_uk'], set_dates['date_ended_uk'] = ratings['available_uk']
 
-    con = lite.connect(database)
+    con = lite.connect(db)
     with con:
         c = con.cursor()
         c.execute('UPDATE sets SET '

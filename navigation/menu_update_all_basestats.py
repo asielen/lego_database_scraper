@@ -2,16 +2,16 @@ __author__ = 'andrew.sielen'
 
 import navigation.menu
 from data.bricklink.bricklink_api import pull_set_catalog
-import public_api
 
-from system.base.basics_support import get_all_basestats
+from data import update_secondary as secondary
+
 from database.info import database_info
 
 
 def main():
     options = {}
-    options['1'] = "Update In Database", update_in_database
-    options['2'] = "Update from API", update_from_api
+    options['1'] = "Update In Database x", update_in_database
+    options['2'] = "Update from API x", update_from_api
     options['9'] = "Back", navigation.menu.back
 
     while True:
@@ -33,7 +33,7 @@ def update_in_database():
     if proceed == "y" or proceed == "Y":
         set_list = database_info.get_sets_between_years(start_year, end_year)
 
-        get_all_basestats(set_list)
+        secondary.add_sets_to_database(set_list)
 
 
 def update_from_api():
@@ -45,7 +45,7 @@ def update_from_api():
     set_list_raw = pull_set_catalog()
     set_list = [s[2] for s in set_list_raw]
 
-    public_api.get_basestats(set_list)
+    secondary.add_sets_to_database(set_list)
 
 
 # def update_from_file():

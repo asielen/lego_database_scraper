@@ -22,14 +22,26 @@ def main():
 
 
 def backup_database():
+    """
+    #Todo Backup
+    @return:
+    """
     print("Backup Database")
 
 
 def run_databaseReport():
+    """
+    #Todo Reporting
+    @return:
+    """
     print("Database Report")
 
 
 def run_dumpSets():
+    """
+    #Todo Reporting
+    @return:
+    """
     print("Dump Sets")
 
 
@@ -38,7 +50,7 @@ def init_new_database():
     Creates the new database lego_eval.sqlite and populates it with basic info
     @return:
     """
-    pass
+    setup.create_database()
 
 
 def insert_parts():

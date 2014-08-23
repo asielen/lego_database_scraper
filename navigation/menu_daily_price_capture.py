@@ -2,9 +2,14 @@ from database.info import database_info
 from public_api import daily_data
 
 __author__ = 'andrew.sielen'
+# todo
 
 
 def main():
+    """
+    # Todo: make sure this runs the right update function - update inventories between the time frame
+    @return:
+    """
     print("Please enter the start and end years you would like to update. "
           "If left blank, it will capture everything before/after the date")
     start_year = input("What year would you like to start with? ")

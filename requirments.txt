@@ -1,0 +1,6 @@
+arrow==0.4.4
+beautifulsoup4==4.3.2
+profilehooks==1.7
+python-dateutil==2.2
+requests==2.3.0
+six==1.7.3

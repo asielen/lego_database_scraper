@@ -7,6 +7,7 @@ import sqlite3 as lite
 import database as db
 
 
+
 # Todo: Make this all work with the new database structure
 
 # database = os.path.abspath('/Users/andrew.sielen/PycharmProjects/lego_database_scraper/lego_sets.sqlite')
@@ -26,7 +27,7 @@ def get_sets_between_years(start_year, end_year=None):
     if end_year is None:
         end_year == start_year
 
-    con = lite.connect(database)
+    con = lite.connect(db.database)
 
     with con:
         c = con.cursor()
@@ -44,7 +45,7 @@ def get_set_year_range():
 
     min_year = None
     max_year = None
-    con = lite.connect(database)
+    con = lite.connect(db.database)
 
     with con:
         c = con.cursor()
@@ -64,7 +65,7 @@ def get_sets_by_year():
     """
     years = []
 
-    con = lite.connect(database)
+    con = lite.connect(db.database)
     with con:
         c = con.cursor()
         c.execute("SELECT year_released, COUNT(set_num) AS NumberOfSets FROM sets GROUP BY year_released;")
@@ -80,7 +81,7 @@ def get_sets_by_theme():
     """
     themes = []
 
-    con = lite.connect(database)
+    con = lite.connect(db.database)
     with con:
         c = con.cursor()
         c.execute("SELECT theme, COUNT(set_num) AS NumberOfSets FROM sets GROUP BY theme;")
@@ -96,7 +97,7 @@ def get_number_of_sets():
     """
     set_num = 0
 
-    con = lite.connect(database)
+    con = lite.connect(db.database)
     with con:
         c = con.cursor()
         c.execute("SELECT COUNT(set_num) FROM sets")

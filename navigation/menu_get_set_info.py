@@ -1,6 +1,8 @@
 __author__ = 'andrew.sielen'
+# todo
 
 import navigation.menu
+
 
 def main():
     options = {}
@@ -16,12 +18,13 @@ def main():
     print("Run Get Info")
 
 
-
 def quick_info():
     print("Quick Info")
 
+
 def make_setReport():
     print("Make Set Report")
+
 
 def make_priceReport():
     print("Make Price Report")

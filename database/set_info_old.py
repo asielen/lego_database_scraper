@@ -4,7 +4,7 @@ import sqlite3 as lite
 
 import arrow
 
-from database.info.database_info import database
+import database.database as db
 from system.calculate_inflation import get_inflation_rate
 
 
@@ -15,8 +15,8 @@ def get_set_id(set_num):
     @return: the id column num of the set in the database
     """
     set_id = None
-    print(database)
-    con = lite.connect(database)
+    print(db)
+    con = lite.connect(db)
     with con:
         c = con.cursor()
         c.execute('SELECT id FROM sets WHERE set_num=?', (set_num,))
@@ -34,7 +34,7 @@ def get_all_set_years():
 
     @return: a dictionary of all the sets in the database with the last date they were updated
     """
-    con = lite.connect(database)
+    con = lite.connect(db)
     with con:
         c = con.cursor()
         c.execute("SELECT set_num, last_updated FROM sets;")
@@ -51,7 +51,7 @@ def get_all_bl_update_years():
 
     @return: a list of all the sets in the database that need to be updated with bricklink inventory
     """
-    con = lite.connect(database)
+    con = lite.connect(db)
     with con:
         c = con.cursor()
         c.execute("SELECT set_num, last_inv_updated_bl FROM sets;")
@@ -68,7 +68,7 @@ def get_all_bs_update_years():
 
     @return: a list of all the sets in the database that need to be updated with brickset inventory
     """
-    con = lite.connect(database)
+    con = lite.connect(db)
     with con:
         c = con.cursor()
         c.execute("SELECT set_num, last_inv_updated_bs FROM sets;")
@@ -87,7 +87,7 @@ def check_last_updated_daily_stats(set_num):
     @return: True if updated today, False otherwise
     """
 
-    con = lite.connect(database)
+    con = lite.connect(db)
     with con:
         c = con.cursor()
 
@@ -112,7 +112,7 @@ def get_set_price(set_num, year=None):
     set_id = get_set_id(set_num)
     if set_id is None: return None
 
-    con = lite.connect(database)
+    con = lite.connect(db)
     year = int(arrow.now().format("YYYY")) - 2
     with con:
         c = con.cursor()
@@ -145,11 +145,11 @@ def get_piece_count(set_num, type=''):
     @param type: '' or bricklink or brickset
     @return: the number of pieces
     """
-    #Get the set ID.
+    # Get the set ID.
     set_id = get_set_id(set_num)
     if set_id is None: return None
 
-    con = lite.connect(database)
+    con = lite.connect(db)
 
     count = None
 
@@ -187,10 +187,10 @@ def get_unique_piece_count(set_num, type=''):
     @param type: bricklink or brickset
     @return: the number of pieces
     """
-    #Get the set ID.
+    # Get the set ID.
     set_id = get_set_id(set_num)
 
-    con = lite.connect(database)
+    con = lite.connect(db)
 
     count = None
 
@@ -223,10 +223,10 @@ def get_set_weight(set_num, type=''):
     @param type: '' or bricklink or brickset
     @return: the weight in grams
     """
-    #Get the set ID.
+    # Get the set ID.
     set_id = get_set_id(set_num)
 
-    con = lite.connect(database)
+    con = lite.connect(db)
 
     weight = None
 
