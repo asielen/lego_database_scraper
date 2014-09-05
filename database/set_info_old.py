@@ -12,7 +12,7 @@ from system import base_methods as base
 
 
 # Done: 20140901 Make sure all these functions work still
-#Todo: 20140904 Isn't some of this in database/info?
+# Todo: 20140904 Isn't some of this in database/info?
 
 # # Basic Funtions
 def get_set_id(set_num):

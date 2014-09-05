@@ -221,6 +221,7 @@ def add_bl_set_inventory_to_database(set_num):
     set_inv = _get_set_inventory((set_num, set_id))
     _add_bl_inventories_to_database(set_inv)
 
+
 def _add_bl_inventories_to_database(invs):
     """
     Adds a inventory to the database
