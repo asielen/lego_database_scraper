@@ -4,9 +4,11 @@ import sqlite3 as lite
 
 import database.database as db
 
+# Todo: 20140901 Make sure all these functions work still
 
 def get_element_id(part_num):
     """
+
     @param part_num: the number used by brickset for pieces
     @return: the primary key for a piece in the database
     """

@@ -9,7 +9,7 @@ from system.logger import logger
 import arrow
 from profilehooks import profile
 
-from database.info.database_info import database
+import database.database as db
 
 
 BYOND_EVAL_FILE = 'Eval_Data.csv'
@@ -134,7 +134,7 @@ def add_daily_prices_to_database(prices):
     @return:
     """
 
-    con = lite.connect(database)
+    con = lite.connect(db)
     with con:
         c = con.cursor()
 
@@ -145,7 +145,7 @@ def add_daily_prices_to_database(prices):
 
 
 def add_daily_ratings_to_database(raitings):
-    con = lite.connect(database)
+    con = lite.connect(db)
     with con:
         c = con.cursor()
         c.executemany('INSERT OR IGNORE INTO bs_ratings(set_id, want, own, record_date)'
@@ -157,8 +157,8 @@ def parse_date(s):
 
 
 def get_all_set_ids():
-    con = lite.connect(database)
-    print(database)
+    con = lite.connect(db)
+    print(db)  # Todo: remove this print statement
     with con:
         c = con.cursor()
 

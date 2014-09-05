@@ -207,6 +207,20 @@ def update_bl_set_inventories(check_update=0):
     timer.end()
 
 
+def add_bl_set_inventory_to_database(set_num):
+    """
+    Adds a single set inventory, mostly this is for testing
+    @param set_num:
+    @return:
+
+    """
+    set_id = info.get_set_id(set_num)
+    if set_id is None:
+        return None
+
+    set_inv = _get_set_inventory((set_num, set_id))
+    _add_bl_inventories_to_database(set_inv)
+
 def _add_bl_inventories_to_database(invs):
     """
     Adds a inventory to the database
@@ -250,7 +264,7 @@ def _process_colors(invs, colors):
 def _get_set_inventory(set_dat=None):
     """
     returns a list of all the pieces in the correct format
-    @param set_num:
+    @param set_dat: [set_num, set_id]
     @param colors:
     @return:
     """
@@ -401,7 +415,7 @@ if __name__ == "__main__":
 
     def menu_add_bl_set_inventory_to_database():
         set_num = LBEF.input_set_num()
-        add_bl_inventories_to_database(set_num)
+        add_bl_set_inventory_to_database(set_num)
 
 
     def menu_add_part_to_database():

@@ -1,7 +1,9 @@
+__author__ = 'andrew.sielen'
+
 from database.info import database_info
 from public_api import daily_data
 
-__author__ = 'andrew.sielen'
+
 # todo
 
 

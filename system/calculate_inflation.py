@@ -58,7 +58,8 @@ def update_inflation_database():
 
 
 def main():
-    print(get_inflation(1915, 2013))
+    update_inflation_database()
+    print(get_inflation_rate(1915, 2013))
 
 
 if __name__ == "__main__":

@@ -420,9 +420,12 @@ def print4(list, n=4):
     @return:
     """
     print()
-    for idx, r in enumerate(list):
-        print(r)
-        if idx >= n: break
+    try:
+        for idx, r in enumerate(list):
+            print(r)
+            if idx >= n: break
+    except TypeError:
+        print(list)
 
 
 def note(string):
