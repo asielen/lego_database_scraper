@@ -326,6 +326,14 @@ def input_set_num(type=0):
         return expand_set_num(set_num)[2]
 
 
+def input_part_num():
+    """
+    @param type:
+    @return:
+    """
+    part_num = input("What part num? ")
+    return part_num
+
 def list2string(list):
     return ', '.join(map(str, list))
 

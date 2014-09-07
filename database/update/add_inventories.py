@@ -7,8 +7,8 @@ from system.logger import logger
 
 from database.info.database_info import database
 from database.set_info_old import get_set_id
-from database.piece_info_old import get_element_id
-from database.piece_info_old import get_design_id
+from database.piece_info_old import get_bs_piece_id
+from database.piece_info_old import get_bl_piece_id
 from database.update.add_pieces import add_element_to_database
 import data.bricklink.bricklink_api as blapi
 import system.base_methods as LBEF
@@ -55,7 +55,7 @@ def add_bs_inventory_to_database(set_id, set_dict):
         current_element = e_set[0]
 
         # Check to see if the piece is in the database
-        piece_id = get_element_id(current_element)
+        piece_id = get_bs_piece_id(current_element)
 
         # If the piece isn't already in the database, add it
         if piece_id is None:
@@ -67,7 +67,7 @@ def add_bs_inventory_to_database(set_id, set_dict):
                 logger.warning("BS piece failed to scrape: element = " + current_element)
                 return None
 
-            design_id = get_design_id(piece_dic['design_num'])
+            design_id = get_bl_piece_id(piece_dic['design_num'])
 
             if design_id is None:
                 logger.debug("Adding BS design to database: design = " + piece_dic['design_num'])
@@ -131,7 +131,7 @@ def add_bl_inventory_to_database(set_id, set_dict):
         current_quantity = set_dict[e_set]
 
         # Check to see if the design is in the database
-        design_id = get_design_id(current_design)
+        design_id = get_bl_piece_id(current_design)
 
         # If it isn't in the database yet, add it
         if design_id is None:

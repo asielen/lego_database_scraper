@@ -7,7 +7,6 @@ import arrow
 from database import database as db
 from system.calculate_inflation import get_inflation_rate
 from system import logger
-from navigation import menu
 from system import base_methods as base
 
 
@@ -248,6 +247,8 @@ def main():
 
 # Done: 20140901 Make this menu work for this file
 if __name__ == "__main__":
+    from navigation import menu
+
     def main_menu():
         """
         Main launch menu
