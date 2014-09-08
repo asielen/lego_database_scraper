@@ -15,6 +15,7 @@ from system import base_methods as base
 
 # # Basic Funtions
 def get_set_id(set_num):
+    # not used outside of junk 20140908
     """
     confirmed 20140904
     @param set_num: (TEXT) in this format xxxx-yy
@@ -36,6 +37,7 @@ def get_set_id(set_num):
 
 # These three functions return lists of sets that need to be updated
 def get_all_set_years():
+    #not used outside of junk 20140908
     """
     confirmed 20140904
     @return: a dictionary of all the sets in the database with the last date they were updated
@@ -239,11 +241,6 @@ def get_set_weight(set_num, type=''):
 
     return weight
 
-
-def main():
-    set = input("What is the set number?: ")
-    print(get_set_price(set))
-    main()
 
 # Done: 20140901 Make this menu work for this file
 if __name__ == "__main__":

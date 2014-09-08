@@ -3,7 +3,7 @@ __author__ = 'andrew.sielen'
 import sqlite3 as lite
 
 from system.logger import logger
-from database import set_info_old
+from database import info
 import database.database as db
 import public_api
 import system.base_methods as LBEF
@@ -19,11 +19,11 @@ def add_daily_set_data_to_database(set_num, prices, ratings):
     @return:
     """
 
-    set_id = set_info_old.get_set_id(set_num)
+    set_id = info.get_set_id(set_num)
 
     if set_id is None:  # TODO: This isn't needed with new set_id lookup
         public_api.get_basestats(set_num)
-        set_id = set_info_old.get_set_id(set_num)
+        set_id = info.get_set_id(set_num)
         if set_id is None:
             logger.warning("Cannot get daily data because set [{}] is not loading".format(set_num))
             return None

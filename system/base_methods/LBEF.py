@@ -285,6 +285,22 @@ def check_in_date_rangeA(date, start, end):
         return False
 
 
+def check_if_the_same_day(dateA, dateB):
+    """
+        Useful for daily stats
+    @param dateA: Date in unix format
+    @param dateB: Date in unix format
+    @return: if A and B are in the same day, return True: else False
+    """
+    if dateA is None or dateB is None:
+        return False
+    dateAA = arrow.get(dateA)
+    dateBA = arrow.get(dateB)
+    if dateAA.date() == dateBA.date():
+        return True
+    return False
+
+
 def timestamp():
     return arrow.now('US/Pacific').timestamp
 

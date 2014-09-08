@@ -1,10 +1,11 @@
+from z_junk import set_info_old
+
 __author__ = 'andrew.sielen'
 
 import pprint as pp
 
 from data.brickset.brickset_api import brickset_set_data as BS
 from database.update import add_daily_stats as ADS
-from database import set_info_old
 from system.base_methods.LBEF import *
 from system.logger import logger
 

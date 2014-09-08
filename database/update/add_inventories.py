@@ -5,7 +5,6 @@ import sqlite3 as lite
 from system.logger import logger
 
 from database import database
-from database.set_info_old import get_set_id
 import database.info as info
 import data.bricklink.bricklink_api as blapi
 import system.base_methods as LBEF
@@ -21,7 +20,7 @@ def add_bl_set_pieces_to_database(set_num, bricklink_pieces):
 
     con = lite.connect(database)
 
-    set_id = get_set_id(set_num)
+    set_id = info.get_set_id(set_num)
 
     if set_id is not None:
         add_bl_inventory_to_database(set_id, bricklink_pieces)
