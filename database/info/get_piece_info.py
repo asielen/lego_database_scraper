@@ -1,16 +1,17 @@
 __author__ = 'andrew.sielen'
 
-import sqlite3 as lite
-
+from system import logger
+from system import base_methods as base
 import database as db
 import system.base_methods as LBEF
 
-
+# Todo: 20140908 Add type
 def get_color_id(color_num, colors=None, type='bl'):
     """
 
     @param color_num:
     @param type: bl, re, ol, ld, lg
+    @param colors:
     @return:
     """
     color_id = 9999
@@ -23,110 +24,166 @@ def get_color_id(color_num, colors=None, type='bl'):
     return color_id
 
 
-def get_bl_piece_id(part_num, parts=None):
+def get_bl_piece_id(bl_design_num=None):
     """
-    @param part_num: the number used by bricklink for pieces
-    @return: the primary key for a piece in the database
+    @param bl_design_num: the number used by bricklink for pieces
+    @return: the primary key for a piece in the database or if bl_design_num is none, it returns a list of ids and bl
     """
-    # Todo update this using parts passed through and db.runsql method
 
-    element_id = None
-    con = lite.connect(db.database)
+    if bl_design_num is None:
+        element_id = db.run_sql('SELECT id, bricklink_id FROM parts')
+    else:
+        element_id = db.run_sql('SELECT id FROM parts WHERE bricklink_id=?', (bl_design_num,), one=True)
 
-    with con:
-        c = con.cursor()
-        c.execute('SELECT id FROM parts WHERE bricklink_id=?', (part_num,))
-        element_id_raw = c.fetchone()
-        if element_id_raw is None:
-            return None
-        element_id = element_id_raw[0]
     return element_id
 
 
-def get_re_piece_id(part_num, parts=None):
+def get_re_piece_id(re_design_num=None):
     """
-    @param part_num: the number used by bricklink for pieces
+    @param re_design_num: the number used by bricklink for pieces
     @return: the primary key for a piece in the database
     """
-    # Todo update this using parts passed through and db.runsql method
-
-    element_id = None
-    con = lite.connect(db.database)
-
-    with con:
-        c = con.cursor()
-        c.execute('SELECT id FROM parts WHERE rebrickable_id=?', (part_num,))
-        element_id_raw = c.fetchone()
-        if element_id_raw is None:
-            return None
-        element_id = element_id_raw[0]
-
+    if re_design_num is None:
+        element_id = db.run_sql('SELECT id, rebrickable_id FROM parts')
+    else:
+        element_id = db.run_sql('SELECT id FROM parts WHERE rebrickable_id=?', (re_design_num,), one=True)
     return element_id
 
-# TODO: Make sure this works with the new database structure
-def get_sets_per_design():
+
+def get_num_sets_for_part_design(bl_design_num=None):
     """
 
-    @return: a list of all the designs with the number of sets they are in
+    @param bl_design_num: The bl design number or None if you want a list of all
+    @return: design list of all the designs with the number of sets they are in
     based off bricklink inventories
     """
-    designs = []
 
-    con = lite.connect(db.database)
-    with con:
-        c = con.cursor()
-        c.execute("SELECT piece_designs.design_num, COUNT(bl_inventories.set_id) AS number_of_sets FROM piece_designs "
-                  "JOIN bl_inventories ON piece_designs.id = bl_inventories.piece_id "
-                  "GROUP BY piece_designs.design_num;")
-        designs = c.fetchall()
+    designs = None
+    if bl_design_num is None:
+        designs = db.run_sql("SELECT parts.bricklink_id, COUNT(bl_inventories.set_id) AS number_of_sets FROM parts "
+                             "JOIN bl_inventories ON parts.id = bl_inventories.piece_id "
+                             "GROUP BY parts.bricklink_id;")
+    else:
+        designs = db.run_sql("SELECT parts.bricklink_id, COUNT(bl_inventories.set_id) AS number_of_sets FROM parts "
+                             "JOIN bl_inventories ON parts.id = bl_inventories.piece_id "
+                             "WHERE parts.bricklink_id=?;", (bl_design_num,), one=True)
 
     return designs
 
 
-#TODO: Make sure this works with the new database structure
-def get_years_available(design_num):
+def get_years_available(bl_design_num=None):
     """
 
-    @param design_num: the design id used by bricklink
+    @param bl_design_num: the design id used by bricklink
     @return: the first and last year a design was used in a set calculated by bl inventories
     """
-    years = []
-
-    con = lite.connect(db.database)
-    with con:
-        c = con.cursor()
-        c.execute(
-            "SELECT MIN(sets.year_released) AS first_year, MAX(sets.year_released) AS last_year FROM piece_designs "
-            "JOIN bl_inventories ON piece_designs.id = bl_inventories.piece_id "
+    years = None
+    if bl_design_num is None:
+        years = db.run_sql(
+            "SELECT MIN(sets.year_released) AS first_year, MAX(sets.year_released) AS last_year FROM parts "
+            "JOIN bl_inventories ON parts.id = bl_inventories.piece_id "
             "JOIN sets ON bl_inventories.set_id = sets.id "
-            "WHERE piece_designs.design_num=?;", (design_num,))
-        years = c.fetchall()
+            "GROUP BY parts.bricklink_id;")
+
+    else:
+        years = db.run_sql(
+            "SELECT MIN(sets.year_released) AS first_year, MAX(sets.year_released) AS last_year FROM parts "
+            "JOIN bl_inventories ON parts.id = bl_inventories.piece_id "
+            "JOIN sets ON bl_inventories.set_id = sets.id "
+            "WHERE parts.bricklink_id=?;", (bl_design_num,))
 
     return years
 
 
-#TODO: Make sure this works with the new database structure
-def get_avg_price_per_design(design_num):
+def get_avg_price_per_design(bl_design_num=None):
     """
         if a piece is 10 cents in one set and 20 in another this returns 15
         This is also weighted for the number in a set, so if one set has 1000 at .10 and another has 100 at .5
         it will be close to .10
-    @param design_num: the design id used by bricklink
-    @return: taking the price per piece of a set, this calculates the average price per piece of a piece
+    @param bl_design_num: the design id used by bricklink
+    @return: taking the price per piece of a set, this calculates the average price per piece of a piece; or if no
+        bl_design_num is given it returns the values for all pieces by bl_design
     """
-    avg_price = []
 
-    design_id = get_bl_piece_id(design_num)  #this saves us from having to do an extra join
+    avg_price = None
+    if bl_design_num is None:
+        avg_price = db.run_sql(
+            "SELECT bricklink_id, average_weighted_price FROM parts AS P JOIN "
+            "(SELECT bl_inventories.piece_id, SUM((sets.original_price_us / sets.piece_count) "
+            "* bl_inventories.quantity) / SUM(bl_inventories.quantity) AS average_weighted_price "
+            "FROM sets JOIN bl_inventories ON bl_inventories.set_id = sets.id "
+            "WHERE sets.original_price_us IS NOT NULL GROUP BY bl_inventories.piece_id) AS R ON P.id=R.piece_id;")
+        # This monstrosity gets the average price for every piece in the database by bl_num
 
-    con = lite.connect(db.database)
-    with con:
-        c = con.cursor()
-        c.execute("SELECT SUM((sets.original_price_us / sets.piece_count) * "
-                  "bl_inventories.quantity) / SUM(bl_inventories.quantity) "
-                  "AS average_weighted_price FROM sets JOIN bl_inventories ON bl_inventories.set_id = sets.id "
-                  "WHERE bl_inventories.piece_id=? AND sets.original_price_us IS NOT NULL;", (design_id, ))
-        avg_price = c.fetchall()
+    else:
+        avg_price = db.run_sql(
+            "SELECT average_weighted_price FROM parts AS P "
+            "JOIN (SELECT bl_inventories.piece_id, SUM((sets.original_price_us / sets.piece_count) "
+            "* bl_inventories.quantity) / SUM(bl_inventories.quantity) AS average_weighted_price "
+            "FROM sets JOIN bl_inventories ON bl_inventories.set_id = sets.id "
+            "WHERE sets.original_price_us IS NOT NULL GROUP BY bl_inventories.piece_id) "
+            "AS R ON P.id=R.piece_id WHERE P.bricklink_id=?", (bl_design_num, ), one=True)
+        # This beauty returns the average price for a single piece by bl_design num
 
     return avg_price
 
 
+if __name__ == "__main__":
+    from navigation import menu
+
+    def main_menu():
+        """
+        Main launch menu
+        @return:
+        """
+
+        logger.critical("set_info.py testing")
+        options = {}
+
+        options['1'] = "Get Color ID", menu_get_color_id
+        options['2'] = "Get RE Part ID", menu_get_re_piece_id
+        options['3'] = "Get BL Part ID", menu_get_bl_piece_id
+        options['4'] = "Get #sets / design", menu_get_num_sets_for_part_design
+        options['5'] = "Get years available", menu_get_years_available
+        options['6'] = "AVG price by design", menu_get_avg_price_per_design
+        options['9'] = "Quit", menu.quit
+
+        while True:
+            result = menu.options_menu(options)
+            if result is 'kill':
+                exit()
+
+    def menu_get_color_id():
+        color = input("What color number?")
+        print(get_color_id(color))
+
+    def menu_get_bl_piece_id():
+        part_num = base.input_part_num()
+        print(get_bl_piece_id(part_num))
+        base.print4(get_bl_piece_id())
+
+    def menu_get_re_piece_id():
+        part_num = base.input_part_num()
+        print(get_re_piece_id(part_num))
+        base.print4(get_re_piece_id())
+
+    def menu_get_num_sets_for_part_design():
+        part_num = base.input_part_num()
+        print(get_num_sets_for_part_design(part_num))
+        base.print4(get_num_sets_for_part_design())
+
+
+    def menu_get_years_available():
+        part_num = base.input_part_num()
+        print(get_years_available(part_num))
+        base.print4(get_years_available())
+
+
+    def menu_get_avg_price_per_design():
+        part_num = base.input_part_num()
+        print(get_avg_price_per_design(part_num))
+        base.print4(get_avg_price_per_design())
+
+
+    if __name__ == "__main__":
+        main_menu()
