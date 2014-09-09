@@ -99,7 +99,7 @@ def get_avg_price_per_design(bl_design_num=None):
     """
         if a piece is 10 cents in one set and 20 in another this returns 15
         This is also weighted for the number in a set, so if one set has 1000 at .10 and another has 100 at .5
-        it will be close to .10
+        it will be closer to .10
     @param bl_design_num: the design id used by bricklink
     @return: taking the price per piece of a set, this calculates the average price per piece of a piece; or if no
         bl_design_num is given it returns the values for all pieces by bl_design
