@@ -7,49 +7,47 @@ import arrow
 
 
 # other module
-from public_api.basics import add_bl_inventory_to_database
 from system.base_methods import LBEF
-from system.logger import logger
 from database.database import database
 
-
-def get_all_basestats(set_list, force=0):
-    """
-
-    @param set_list: a list of set_nums acquired either though sql or a text file
-    @return:
-    """
-    # TODO: Rewrite this to use multiprocess
-    if set_list is not None:
-        if force == 0:
-            filtered_set_list = _get_and_filter_sets_by_year(set_list)
-            total = len(filtered_set_list)
-        else:
-            filtered_set_list = set_list
-            total = len(set_list)
-
-        bl_designs_in_database = _get_and_filter_sets_blinv_by_year(set_list)
-        bs_elements_in_database = _get_and_filter_sets_bsinv_by_year(set_list)
-
-        finished = len(set_list) - total
-        logger.info("Starting at {}% of total list –– [ {} / {} ]".format(round((finished / len(set_list)) * 100, 2),
-                                                                          finished, len(set_list)))
-        # Update basestats
-        for idx, set in enumerate(filtered_set_list):
-            logger.info("[ {0}/{1} {2}% ] Getting info on {3}".format(idx, total, round((idx / total) * 100, 2), set))
-            basics.add_set_to_database(set)
-
-        # Update bricklink inventories
-        logger.info("Updating bricklink inventories for {} sets".format(len(bl_designs_in_database)))
-        for idx, set in enumerate(bl_designs_in_database):
-            logger.info("{0} Getting bl inventory on {1}".format(idx, set))
-            add_bl_inventory_to_database(set, bl_designs_in_database)
-
-        # Update brickset inventories
-        logger.info("Updating brickset inventories for {} sets".format(len(bs_elements_in_database)))
-        for idx, set in enumerate(bs_elements_in_database):
-            logger.info("{0} Getting bs inventory on {1}".format(idx, set))
-            get_bs_inventory(set, bs_elements_in_database)
+#
+# def get_all_basestats(set_list, force=0):
+# """
+#
+#     @param set_list: a list of set_nums acquired either though sql or a text file
+#     @return:
+#     """
+#     # TODO: Rewrite this to use multiprocess
+#     if set_list is not None:
+#         if force == 0:
+#             filtered_set_list = _get_and_filter_sets_by_year(set_list)
+#             total = len(filtered_set_list)
+#         else:
+#             filtered_set_list = set_list
+#             total = len(set_list)
+#
+#         bl_designs_in_database = _get_and_filter_sets_blinv_by_year(set_list)
+#         bs_elements_in_database = _get_and_filter_sets_bsinv_by_year(set_list)
+#
+#         finished = len(set_list) - total
+#         logger.info("Starting at {}% of total list –– [ {} / {} ]".format(round((finished / len(set_list)) * 100, 2),
+#                                                                           finished, len(set_list)))
+#         # Update basestats
+#         for idx, set in enumerate(filtered_set_list):
+#             logger.info("[ {0}/{1} {2}% ] Getting info on {3}".format(idx, total, round((idx / total) * 100, 2), set))
+#             basics.add_set_to_database(set)
+#
+#         # Update bricklink inventories
+#         logger.info("Updating bricklink inventories for {} sets".format(len(bl_designs_in_database)))
+#         for idx, set in enumerate(bl_designs_in_database):
+#             logger.info("{0} Getting bl inventory on {1}".format(idx, set))
+#             add_bl_inventory_to_database(set, bl_designs_in_database)
+#
+#         # Update brickset inventories
+#         logger.info("Updating brickset inventories for {} sets".format(len(bs_elements_in_database)))
+#         for idx, set in enumerate(bs_elements_in_database):
+#             logger.info("{0} Getting bs inventory on {1}".format(idx, set))
+#             get_bs_inventory(set, bs_elements_in_database)
 
 
 def _get_and_filter_sets_by_year(set_list):

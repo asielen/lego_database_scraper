@@ -2,13 +2,15 @@ __author__ = 'andrew.sielen'
 # todo
 
 import navigation.menu
+import database.info as info
+from system import base_methods as LBEF
 
 
 def main():
     options = {}
-    options['1'] = "Quick Info", quick_info
-    options['2'] = "Make set report", make_setReport
-    options['3'] = "Make price report", make_priceReport
+    options['1'] = "Quick Info", quick_info  # Working 2014-10-5
+    options['2'] = "Make single set report", make_setReport  # Todo: See DM report for example
+    options['3'] = "Make price report", make_priceReport  # Todo: See DM report for example
     options['9'] = "Back", navigation.menu.back
 
     while True:
@@ -19,7 +21,8 @@ def main():
 
 
 def quick_info():
-    print("Quick Info")
+    set_num = LBEF.input_set_num()
+    info.get_set_dump(set_num)
 
 
 def make_setReport():
@@ -28,3 +31,7 @@ def make_setReport():
 
 def make_priceReport():
     print("Make Price Report")
+
+
+if __name__ == "__main__":
+    main()

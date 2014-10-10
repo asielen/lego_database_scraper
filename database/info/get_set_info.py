@@ -3,6 +3,7 @@ __author__ = 'andrew.sielen'
 import arrow
 
 from system.calculate_inflation import get_inflation_rate
+from system.base_methods import LBEF
 import database as db
 from system import base_methods as base
 from system import logger
@@ -20,8 +21,8 @@ def get_set_id(set_num=None):
         set_id_raw = db.run_sql('SELECT set_num, id FROM sets')
     else:
         set_id_raw = db.run_sql('SELECT id FROM sets WHERE set_num=?', (set_num.lower(),), one=True)
-        if set_id_raw is not None:
-            set_id_raw = set_id_raw[0]
+        # if set_id_raw is not None:
+        # set_id_raw = set_id_raw[0]
 
     return set_id_raw
 
@@ -41,8 +42,8 @@ def get_all_set_years(set_num=None):
         last_updated = base.list_to_dict(last_updated_raw)
     else:
         last_updated_raw = db.run_sql("SELECT last_updated FROM sets WHERE set_num=?;", (set_num,), one=True)
-        if last_updated_raw is not None:
-            last_updated = last_updated_raw[0]
+        # if last_updated_raw is not None:
+        # last_updated = last_updated_raw[0]
     return last_updated
 
 
@@ -61,13 +62,14 @@ def get_last_updated_for_daily_stats(set_num=None):
         update = []
         for s in last_updated_raw:
             update.append((s[0], base.check_if_the_same_day(today, s[1])))
+        update = LBEF.list_to_dict(update)
     else:
         last_updated_raw = db.run_sql("SELECT last_price_updated FROM sets WHERE set_num=?", (set_num,), one=True)
 
         if last_updated_raw is None:
             update = False
-        last_updated = last_updated_raw[0]
-        update = base.check_if_the_same_day(today, last_updated)
+        # last_updated = last_updated_raw[0]
+        update = base.check_if_the_same_day(today, last_updated_raw)
 
     return update
 
@@ -111,8 +113,8 @@ def get_bl_update_years(set_num=None):
     else:
         last_updated = db.run_sql("SELECT set_num, last_inv_updated_bl FROM sets WHERE set_num=?;", (set_num,),
                                   one=True)
-        if last_updated is not None:
-            last_updated = last_updated[0]
+        # if last_updated is not None:
+        # last_updated = last_updated[0]
 
     return last_updated
 
@@ -121,7 +123,7 @@ def get_bl_update_years(set_num=None):
 # """
 # confirmed 20140904
 # @return: a list of all the sets in the database that need to be updated with brickset inventory
-#     """
+# """
 #     last_updated = None
 #     if set_num is None:
 #         last_updated = db.run_sql("SELECT set_num, last_inv_updated_bs FROM sets;")
@@ -147,8 +149,8 @@ def get_re_update_years(set_num=None):
     else:
         last_updated = db.run_sql("SELECT set_num, last_inv_updated_re FROM sets WHERE set_num=?;", (set_num,),
                                   one=True)
-        if last_updated is not None:
-            last_updated = last_updated[0]
+        # if last_updated is not None:
+        #     last_updated = last_updated[0]
 
     return last_updated
 
@@ -170,16 +172,14 @@ def get_set_price(set_n=None, inf_year=None):
         set_id = get_set_id(set_n)
         if set_id is None: return None
 
-        price_raw = db.run_sql("SELECT original_price_us FROM sets WHERE id=?;", (set_id,), one=True)
-        if price_raw is None:
+        price = db.run_sql("SELECT original_price_us FROM sets WHERE id=?;", (set_id,), one=True)
+        if price is None:
             return None
-        price = price_raw[0]
 
         if inf_year is not None and price is not None:
-            year_raw = db.run_sql("SELECT year_released FROM sets WHERE id=?;", (set_id,), one=True)
-            if year_raw is None:
+            year_released = db.run_sql("SELECT year_released FROM sets WHERE id=?;", (set_id,), one=True)
+            if year_released is None:
                 return None
-            year_released = year_raw[0]
             if inf_year >= year_released:
                 return price
             price_inflated = (get_inflation_rate(year_released, inf_year) * price) + price
@@ -226,11 +226,9 @@ def get_piece_count(set_n=None, type=''):
         if type == 'bricklink':
             count = db.run_sql("SELECT SUM(bl_inventories.quantity) FROM bl_inventories "
                                " WHERE bl_inventories.set_id=?;", (set_id,), one=True)
-            count = count[0]
 
         else:
             count = db.run_sql("SELECT piece_count FROM sets WHERE id=?;", (set_id,), one=True)
-            count = count[0]
 
     else:
         if type == 'bricklink':
@@ -257,7 +255,7 @@ def get_unique_piece_count(set_num=None, type=''):
         count = db.run_sql("SELECT COUNT(bl_inventories.quantity) FROM bl_inventories JOIN parts"
                            " ON bl_inventories.piece_id = parts.id"
                            " WHERE bl_inventories.set_id=?;", (set_id,), one=True)
-        count = count[0]
+
     else:
         count = db.run_sql("SELECT set_num, unique_pieces FROM sets AS S JOIN (SELECT bl_inventories.set_id, "
                            "COUNT(bl_inventories.quantity) AS unique_pieces FROM bl_inventories "
@@ -285,11 +283,10 @@ def get_set_weight(set_num=None, type=''):
             weight = db.run_sql("SELECT SUM(bl_inventories.quantity * parts.weight) FROM bl_inventories JOIN parts"
                                 " ON bl_inventories.piece_id = parts.id"
                                 " WHERE bl_inventories.set_id=?;", (set_id,), one=True)
-            weight = weight[0]
+
 
         else:
             weight = db.run_sql("SELECT set_weight FROM sets WHERE id=?;", (set_id,), one=True)
-            weight = weight[0]
 
     else:
         weight = db.run_sql("SELECT set_num, cset_weight, set_weight FROM sets AS S "
@@ -299,6 +296,7 @@ def get_set_weight(set_num=None, type=''):
 
     return weight
 
+
 def get_set_dump(set_num):
     """
     Get a string + list of all set variables
@@ -307,8 +305,8 @@ def get_set_dump(set_num):
     """
     if set_num is None: return None
 
-    set_info = db.run_sql("SELECT * FROM sets WHERE set_num=?", (set_num,), one=True)
-    # set_info = set_info[0]
+    set_info = db.run_sql("SELECT * FROM sets WHERE set_num=?", (set_num,))
+    set_info = set_info[0]
     # Todo, turn this into a class
     set_id = set_info[0]
     set_name = set_info[5]
@@ -398,6 +396,7 @@ if __name__ == "__main__":
 
     def menu_get_last_updated_for_daily_stats():
         set_num = base.input_set_num()
+        if set_num == '-1': set_num = None
         print(get_last_updated_for_daily_stats(set_num))
         base.print4(get_last_updated_for_daily_stats())
 

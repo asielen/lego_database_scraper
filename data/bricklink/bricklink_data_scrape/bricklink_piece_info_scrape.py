@@ -61,7 +61,7 @@ def add_part_design_alt(primary, alts):
     if primary_id is not None:
         for n in alts:
             n = n.strip()
-            db.run_sql("INSERT OR IGNORE INTO part_alternates(part_id, alternate_id) VALUES (?,?)", (primary_id, n))
+            db.run_sql("INSERT OR IGNORE INTO part_alternates(part_id, alternate_id) VALUES (?,?)", (primary_id[0], n))
 
 
 def get_blPieceInfo(design_num):

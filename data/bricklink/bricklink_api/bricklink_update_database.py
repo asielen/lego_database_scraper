@@ -9,10 +9,6 @@ import system.base_methods as LBEF
 from multiprocessing import Pool as _pool
 from time import sleep
 
-# Depending on the internet connection
-SLOWPOOL = 5
-FASTPOOL = 50
-RUNNINGPOOL = SLOWPOOL
 
 # internal
 import data
@@ -169,7 +165,7 @@ def update_bl_set_inventories(check_update=0):
 
     set_invs_to_scrape = []
     set_invs_to_insert = []
-    pool = _pool(RUNNINGPOOL)
+    pool = _pool(LBEF.RUNNINGPOOL)
     timer = LBEF.process_timer("Upadate Bricklink Inventories")
     for idx, s in enumerate(sets):
         if s in set_inv:
@@ -178,8 +174,8 @@ def update_bl_set_inventories(check_update=0):
         set_invs_to_scrape.append((sets[s], s))
 
         # Scrape Pieces
-        if idx > 0 and idx % 50 == 0:
-            temp_list = [y for x in pool.map(_get_set_inventory, set_invs_to_scrape) for y in x]
+        if idx > 0 and idx % LBEF.RUNNINGPOOL == 0:
+            temp_list = [y for x in pool.map(_get_set_inventory, set_invs_to_scrape) for y in x]  # flattens the list
             set_invs_to_insert.extend(temp_list)
             logger.info(
                 "Running Pool {} of {} sets ({}% complete)".format(idx, num_sets, round((idx / num_sets) * 100)))
@@ -187,7 +183,7 @@ def update_bl_set_inventories(check_update=0):
             set_invs_to_scrape = []
             sleep(.5)
         # Insert Pieces
-        if idx > 0 and idx % 200 == 0:
+        if idx > 0 and len(set_invs_to_insert) >= 200:
             logger.info("Inserting {} pieces".format(len(set_invs_to_insert)))
 
             _process_colors(set_invs_to_insert, colors_dict)

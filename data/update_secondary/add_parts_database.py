@@ -17,11 +17,6 @@ import sys
 
 from system.logger import logger
 
-# Depending on the internet connection
-SLOWPOOL = 5
-FASTPOOL = 50
-RUNNINGPOOL = SLOWPOOL
-
 
 def add_part_to_database(part_num, type='bl'):
     """
@@ -54,7 +49,7 @@ def add_part_to_database(part_num, type='bl'):
     # 'INSERT OR IGNORE INTO parts(bricklink_id, brickowl_id, rebrickable_id, lego_id) VALUES (?,?,?,?)',
     # piece_data[:4])
     # return db.run_sql(
-    #     'UPDATE parts SET design_name=?, weight=?, bl_type=?, bl_category=? WHERE bricklink_id=?',
+    # 'UPDATE parts SET design_name=?, weight=?, bl_type=?, bl_category=? WHERE bricklink_id=?',
     #     (piece_data[4], piece_data[5], piece_data[6], piece_data[7], piece_data[0]))
 
 
@@ -70,7 +65,7 @@ def add_parts_to_database(part_id_list, type="bl"):
 
     parts_to_scrape = []
     parts_to_insert = []
-    pool = _pool(RUNNINGPOOL)
+    pool = _pool(LBEF.RUNNINGPOOL)
     bl_categories = info.read_bl_categories()  # To convert the category ids to table ids
 
     timer = LBEF.process_timer("Add parts to database")
@@ -85,7 +80,7 @@ def add_parts_to_database(part_id_list, type="bl"):
                 # parts_to_insert.extend(_parse_get_bl_pieceinfo(part)) #Todo this is a test just to see where an error is
 
             # Scrape
-            if idx > 0 and idx % 150 == 0:
+            if idx > 0 and idx % (LBEF.RUNNINGPOOL * 3) == 0:
                 parts_to_insert.extend(pool.map(_parse_get_bl_pieceinfo, parts_to_scrape))
 
                 logger.info("Running Pool {}".format(idx))
@@ -96,7 +91,7 @@ def add_parts_to_database(part_id_list, type="bl"):
                 sleep(.5)
 
             # Insert
-            if idx > 0 and idx % 1500 == 0:
+            if idx > 0 and len(parts_to_insert) >= 1500:
                 logger.info("Inserting {} pieces".format(len(parts_to_insert)))
                 parts_to_insert = _process_categories(parts_to_insert, bl_categories)
                 add_part_data_to_database(parts_to_insert)

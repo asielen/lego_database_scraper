@@ -18,6 +18,10 @@ from system import notes_file
 
 invalid_urls = 0
 
+SLOWPOOL = 5
+FASTPOOL = 35
+RUNNINGPOOL = SLOWPOOL
+
 
 def soupify(url):
     """
@@ -349,6 +353,7 @@ def input_part_num():
     """
     part_num = input("What part num? ")
     return part_num
+
 
 def list2string(list):
     return ', '.join(map(str, list))

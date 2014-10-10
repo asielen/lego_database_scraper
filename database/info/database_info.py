@@ -178,7 +178,7 @@ def read_bl_set_id_num():
 def read_bl_set_num_id():
     """
 
-    @return: a list in this format {set_num: is}
+    @return: a list in this format {set_num: id}
     """
     bl_set_list = db.run_sql('SELECT * FROM sets')
     return {b[1]: b[0] for b in bl_set_list}  # 1 is the position of the bricklink column

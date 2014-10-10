@@ -7,7 +7,7 @@ __author__ = 'andrew.sielen'
 # @ Download sets from Bricklink
 # @ Download sets from Rebrickable
 # * init_inventories()
-#         @ Download from Rebrickable Api and add to the database
+# @ Download from Rebrickable Api and add to the database
 # todo: need to implement this
 
 import data.bricklink.bricklink_api as blapi
@@ -40,6 +40,12 @@ def init_inventories():
     """
     blapi.update_bl_set_inventories(check_update=0)
     reapi.update_set_inventories(check_update=0)
+
+
+def run_secondary():
+    init_part_color_codes()
+    init_sets()
+    init_inventories()
 
 
 if __name__ == "__main__":

@@ -1,10 +1,7 @@
 __author__ = 'andrew.sielen'
 
 from database.info import database_info
-from public_api import daily_data
-
-
-# todo
+from data.update_ternary import daily_data
 
 
 def main():
@@ -15,7 +12,7 @@ def main():
     print("Please enter the start and end years you would like to update. "
           "If left blank, it will capture everything before/after the date")
     start_year = input("What year would you like to start with? ")
-    end_year = input("What year would you like to start with? ")
+    end_year = input("What year would you like to end with? ")
 
     database_year_range = database_info.get_set_year_range()
     if start_year is "": start_year = database_year_range[0]
@@ -26,3 +23,7 @@ def main():
         set_list = database_info.get_sets_between_years(start_year, end_year)
 
         daily_data.get_all_daily_set_data(set_list)
+
+
+if __name__ == "__main__":
+    main()

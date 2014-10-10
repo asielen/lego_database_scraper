@@ -2,7 +2,7 @@ __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
 
-import database.database as db
+import database as db
 
 
 def create_database():

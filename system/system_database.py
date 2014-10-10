@@ -1,12 +1,10 @@
 __author__ = 'Andrew'
 
 import os.path
-
+import sqlite3 as lite
 
 database = os.path.abspath('/Users/andrew.sielen/PycharmProjects/lego_database_scraper/system/system.sqlite')  # for mac
 # database = os.path.abspath('system.sqlite')
-
-import sqlite3 as lite
 
 
 def initiate_database():

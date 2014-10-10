@@ -9,9 +9,6 @@ import system.base_methods as LBEF
 # http://brickset.com/parts/[piece number] <-Gives you element number, element name, design number, color,
 
 
-
-
-
 def get_basestats(set_num_primary, set_num_secondary=1):
     """
         Return a dictionary of base stats pulled from brickset.com
@@ -111,7 +108,7 @@ def _parse_set_dimensions(d_string):
 # Finds the set name in the soup
 # """
 # parent_tags0 = soup.find("h1")
-#     if not parent_tags0:
+# if not parent_tags0:
 #         return ""
 #     return parent_tags0.string.strip()
 
@@ -441,9 +438,10 @@ def main():
     import pprint
 
     pp = pprint.PrettyPrinter(indent=4)
-    set = input("What is the set num? ")
-    pp.pprint(get_basestats(set))
-    pp.pprint(get_daily_data(set))
+    set = LBEF.input_set_num("What is the set num? ")
+    set_num, set_seq, set = LBEF.expand_set_num(set)
+    pp.pprint(get_basestats(set_num, set_seq))
+    pp.pprint(get_daily_data(set_num, set_seq))
     main()
 
 

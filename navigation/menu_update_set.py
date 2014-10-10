@@ -7,12 +7,15 @@ __author__ = 'andrew.sielen'
 #
 
 import navigation.menu
+from data import update_secondary as secondary
+from system.base_methods import LBEF as LBEF
+
 
 def main():
     options = {}
-    options['1'] = "Update Basestats", update_baseStats
-    options['2'] = "Update Prices", update_prices
-    options['3'] = "Manual Update", manual_Update
+    options['1'] = "Update Basestats", update_baseStats  # Todo: Check to see if this works
+    options['2'] = "Update Prices", update_prices  # Todo
+    options['3'] = "Manual Update", manual_Update  # Todo
     options['9'] = "Back", navigation.menu.back
 
     while True:
@@ -21,11 +24,20 @@ def main():
             break
     print("Run Update Set")
 
+
 def update_baseStats():
     print("Update Base Stats")
+    set_id = LBEF.input_set_num()
+    secondary.add_set_to_database(set_id)
+
 
 def update_prices():
     print("Update Prices")
 
+
 def manual_Update():
     print("Manual Update")
+
+
+if __name__ == "__main__":
+    main()

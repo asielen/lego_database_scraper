@@ -15,12 +15,6 @@ import system.base_methods as LBEF
 from system.logger import logger
 
 
-# Depending on the internet connection
-SLOWPOOL = 5
-FASTPOOL = 50
-RUNNINGPOOL = SLOWPOOL
-
-
 def update_parts():
     """
     Pull all parts from the database and update them it in the database.
@@ -76,7 +70,7 @@ def update_set_inventories(check_update=1):
     sets_to_skip = []
     rows_to_scrape = []
     parts_to_insert = []
-    pool = _pool(RUNNINGPOOL)
+    pool = _pool(LBEF.RUNNINGPOOL)
     for idx, row in enumerate(set_inventories):
         if row[0] == 'set_id': continue
         if row[0] in sets_to_skip: continue
@@ -86,7 +80,7 @@ def update_set_inventories(check_update=1):
                 continue
         print("2222 {} | {} SET {}".format(idx, len(parts_to_insert), row[0]))
         rows_to_scrape.append(row)
-        if idx > 0 and idx % 100 == 0:
+        if idx > 0 and idx % (LBEF.RUNNINGPOOL * 2) == 0:
             logger.info("Scraping {} rows".format(len(rows_to_scrape)))
             _process_data = partial(_process_data_for_inv_db, sets=sets, parts=parts, colors=colors)
             parts_to_insert.extend(pool.map(_process_data, rows_to_scrape))
@@ -94,7 +88,7 @@ def update_set_inventories(check_update=1):
             rows_to_scrape = []
             sleep(0.1)
 
-        if idx > 0 and idx % 300 == 0:
+        if idx > 0 and len(parts_to_insert) >= 300:
             parts_to_insert = list(filter(None, parts_to_insert))
             logger.info("Inserting rows >[{}]".format(len(parts_to_insert)))
             _add_re_inventories_to_database(parts_to_insert)

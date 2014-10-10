@@ -3,15 +3,17 @@ __author__ = 'andrew.sielen'
 import navigation.menu
 
 from database import setup
+from system.logger import logger
 
 
 def main():
     options = {}
-    options['1'] = "Backup Database", backup_database
-    options['2'] = "Database Stat Report", run_databaseReport
-    options['3'] = "Dump all set data", run_dumpSets
-    options['7'] = "Initiate New Database", init_new_database
-    options['8'] = "Initiate Primitives", insert_parts
+    options['1'] = "Backup Database", backup_database  # Todo
+    options['2'] = "Database Stat Report", run_databaseReport  # Todo
+    options['3'] = "Dump all set data", run_dumpSets  # Todo
+    options['6'] = "Initiate New Database", init_new_database  # Working 2014-10-5
+    options['7'] = "Initiate Primitives", menu_run_primitives  # Working 2014-10-5
+    options['8'] = "Build All", menu_build_all
     options['9'] = "Back", navigation.menu.back
 
     while True:
@@ -53,5 +55,18 @@ def init_new_database():
     setup.create_database()
 
 
-def insert_parts():
+def menu_run_primitives():
     setup.run_primitives()
+
+
+def menu_build_all():
+    logger.info("Creating Database")
+    setup.create_database()
+    logger.info("Creating Primitives")
+    setup.run_primitives()
+    logger.info("Creating Secondaries")
+    setup.run_secondary()
+
+
+if __name__ == "__main__":
+    main()

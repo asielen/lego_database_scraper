@@ -14,7 +14,7 @@
 # external
 from system.logger import logger
 
-#other module
+# other module
 from navigation import menu
 from system.base_methods import LBEF
 

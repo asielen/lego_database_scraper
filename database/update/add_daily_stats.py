@@ -2,47 +2,70 @@ __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
 
-from system.logger import logger
-from database import info
-import database.database as db
-import public_api
+import database as db
 import system.base_methods as LBEF
 from z_junk import get_daily
 
 
-def add_daily_set_data_to_database(set_num, prices, ratings):
+def add_daily_set_data_to_database(daily_data):
     """
 
-    @param set_num: in standard format xxxx-x
-    @param prices: list of all prices for the day
-    @param ratings: current ratings (and date available)
+    @param daily_data: in this format [{set_num: ((prices), (ratings))}, {set_num: ((prices), (ratings))}]
     @return:
     """
 
-    set_id = info.get_set_id(set_num)
+    # First format data
+    timestamp = LBEF.timestamp()
+    cprices_list_to_insert = []
+    cratings_list_to_insert = []
+    cdates_list_to_insert = []
 
-    if set_id is None:  # TODO: This isn't needed with new set_id lookup
-        public_api.get_basestats(set_num)
-        set_id = info.get_set_id(set_num)
-        if set_id is None:
-            logger.warning("Cannot get daily data because set [{}] is not loading".format(set_num))
-            return None
+    for s in daily_data:
+        cset_id = ""
+        for r in s: cset_id = r
+        #cset_id = info.get_set_id(cset_num)
+        if cset_id is None: continue
+        cdaily_data = s[r]
+        cprices = cdaily_data[0]
+        cratings = cdaily_data[1]
 
-    add_daily_prices_to_database(set_id, prices)
+        for price in cprices:
+            cprices_list_to_insert.append(
+                [cset_id, timestamp, price, cprices[price]['avg'], cprices[price]['lots'], cprices[price]['max'],
+                 cprices[price]['min'], cprices[price]['qty'], cprices[price]['qty_avg'], cprices[price]['piece_avg']])
 
-    add_daily_ratings_to_database(set_id, ratings)
+        cratings_list_to_insert.append(
+            [cset_id, cratings['bs_want'], cratings['bs_own'], cratings['bs_score'], timestamp])
 
-    con = lite.connect(db)
-    with con:  # Update the last date
-        c = con.cursor()
-        c.execute('UPDATE sets SET last_price_updated=? WHERE id=?',
-                  (LBEF.timestamp(), set_id))
+        cdates_list_to_insert.append([cratings['available_us'][0], cratings['available_us'][1],
+                                      cratings['available_uk'][0], cratings['available_uk'][1], timestamp, cset_id])
+
+    #Now add everything to the database
+
+    #Add prices
+    db.batch_update(
+        'INSERT OR IGNORE INTO historic_prices(set_id, record_date, price_type, avg, lots, max, min, qty, qty_avg, piece_avg) '
+        'VALUES (?,?,?,?,?,?,?,?,?,?)', cprices_list_to_insert)
+    #Add Raitings
+    db.batch_update(
+        'INSERT OR IGNORE INTO bs_ratings(set_id, want, own, rating, record_date) VALUES (?,?,?,?,?)',
+        cratings_list_to_insert)
+
+    #Update Availible Dates and updated date
+    db.batch_update(
+        'UPDATE sets SET '
+        'date_released_us=?,'
+        'date_ended_us=?,'
+        'date_released_uk=?,'
+        'date_ended_uk=?,'
+        'last_price_updated=?'
+        'WHERE id=?;', cdates_list_to_insert)
 
 
 def add_daily_prices_to_database(set_id, prices):
     current_date = LBEF.timestamp()
 
-    con = lite.connect(db)
+    con = lite.connect(db.database)
     with con:
         c = con.cursor()
 
@@ -70,7 +93,7 @@ def add_daily_ratings_to_database(set_id, ratings):
     @return:
     """
 
-    con = lite.connect(db)
+    con = lite.connect(db.database)
     with con:
         c = con.cursor()
         c.execute('INSERT OR IGNORE INTO bs_ratings(set_id, want, own, rating, record_date)'
@@ -94,7 +117,7 @@ def check_set_availability_dates(set_id, ratings):
     if 'available_uk' in ratings:
         set_dates['date_released_uk'], set_dates['date_ended_uk'] = ratings['available_uk']
 
-    con = lite.connect(db)
+    con = lite.connect(db.database)
     with con:
         c = con.cursor()
         c.execute('UPDATE sets SET '
