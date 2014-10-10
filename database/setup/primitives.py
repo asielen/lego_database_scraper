@@ -18,7 +18,7 @@ from system.logger import logger
 # @ Download parts from Rebrickable
 # * init_price_types()
 # @ Internal, no need to download
-#     * init_bl_categories()
+# * init_bl_categories()
 #         @ Download categories from Bricklink
 
 
@@ -45,12 +45,15 @@ def init_price_types():
     Create price_types table
     @return:
     """
+    logger.info("$$$ Updating Price Types")
     price_types = (('current_new',), ('current_used',), ('historic_new',), ('historic_used',))
     con = lite.connect(db.database)
 
     with con:
-        con.execute("DELETE FROM price_types")
+        con.execute(
+            "DELETE FROM price_types")  #This is okay because there are only 4 and they are always in the same order
         con.executemany("INSERT OR IGNORE INTO price_types(price_type) VALUES (?)", price_types)
+    logger.info("%%% Price Types Updated")
 
 
 def init_bl_categories():

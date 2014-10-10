@@ -4,7 +4,6 @@ import sqlite3 as lite
 
 import database as db
 import system.base_methods as LBEF
-from z_junk import get_daily
 
 
 def add_daily_set_data_to_database(daily_data):
@@ -133,11 +132,11 @@ def check_set_availability_dates(set_id, ratings):
                    set_id))
 
 
-def main():
-    SET = input("What is the set number?: ")
-    print(get_daily(SET))
-    main()
-
-
-if __name__ == "__main__":
-    main()
+        # def main():
+        # # SET = input("What is the set number?: ")
+        #     # print(get_daily(SET))
+        #     # main()
+        #
+        #
+        # if __name__ == "__main__":
+        #     main()

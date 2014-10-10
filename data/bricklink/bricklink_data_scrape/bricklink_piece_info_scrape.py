@@ -61,7 +61,7 @@ def add_part_design_alt(primary, alts):
     if primary_id is not None:
         for n in alts:
             n = n.strip()
-            db.run_sql("INSERT OR IGNORE INTO part_alternates(part_id, alternate_id) VALUES (?,?)", (primary_id[0], n))
+            db.run_sql("INSERT OR IGNORE INTO part_alternates(part_id, alternate_id) VALUES (?,?)", (primary_id, n))
 
 
 def get_blPieceInfo(design_num):
@@ -112,7 +112,7 @@ def get_blPieceInfo(design_num):
 
 
 
-    #Find Alternate Design IDs
+    # Find Alternate Design IDs
 
     parent_tags2 = soup.find("td", {"align": "RIGHT"})
     if parent_tags2 is None:
@@ -181,7 +181,7 @@ def _check_minifig(soup, design_num):
             type = _parse_type_category(str(types_links[1]))
             category = _parse_type_category(str(types_links[2]))
 
-    #Find Name
+    # Find Name
     name = None
     name_tag = soup.find("font", {"face": "Geneva,Arial,Helvetica"})
     if name_tag is not None:

@@ -28,12 +28,12 @@ class process_timer():
     def log_time(self, num_of_tasks, remaining_tasks=None):
         time_diff = self._get_run_time()
         self._update_tasks(num_of_tasks)
-        logger.info("@ Process Timer Report")
-        logger.info("@ Process Time: {} seconds FOR {} processed".format(time_diff, self.tasks))
+        logger.info("@ Process Time: {} seconds FOR {} objects processed".format(time_diff, self.tasks))
         tasks_per_second = self.tasks / max(1, time_diff)
         logger.info(
-            "@ Process Time: {} per min IS {} per second".format(round(60 * tasks_per_second), round(tasks_per_second)))
+            "@@ Process Time: {} per min IS {} objects per second".format(round(60 * tasks_per_second),
+                                                                          round(tasks_per_second)))
         if remaining_tasks is not None:
             logger.info(
-                "@ Process Time: ETR: {} mins FOR {} objects".format(round(remaining_tasks / (60 * tasks_per_second)),
-                                                                             remaining_tasks))
+                "@@ Process Time: ETR: {} mins FOR {} objects".format(round(remaining_tasks / (60 * tasks_per_second)),
+                                                                      remaining_tasks))

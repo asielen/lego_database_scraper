@@ -93,6 +93,7 @@ def add_set_data_to_database(set_data):
                'last_updated=?'
                'WHERE set_num=?', set_data_processed)
 
+
 def add_sets_to_database(set_id_list, id_col=0, update=1):
     """
     # Todo:  Make a single add
@@ -104,7 +105,7 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
     """
     set_dict = info.read_bl_sets()
 
-    logger.debug("Adding sets to the database")
+    logger.info("$$$ Adding sets to the database")
     sets_to_scrape = []
     sets_to_insert = []
     pool = _pool(LBEF.RUNNINGPOOL)
@@ -120,7 +121,7 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
         sets_to_scrape.append(row[id_col])
 
         if idx > 0 and idx % (LBEF.RUNNINGPOOL * 3) == 0:
-            logger.info("Running Pool {}".format(idx))
+            logger.info("@@@ Running Pool {}".format(idx))
             sets_to_insert.extend(pool.map(_parse_get_basestats, sets_to_scrape))
             timer.log_time(len(sets_to_scrape))
             sets_to_scrape = []
@@ -137,6 +138,7 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
     pool.join()
 
     add_sets_data_to_database(sets_to_insert)
+    logger.info("%%% Sets added to database")
 
 
 def add_sets_data_to_database(sets_to_insert):

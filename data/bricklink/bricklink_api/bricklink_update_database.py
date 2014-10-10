@@ -34,17 +34,19 @@ def update_sets(check_update=1):
 # Categories
 def init_categories():
     """
-    Pull categories from bricklink and insert them, no need for an update tage because it doesn't delete anything
+    Pull categories from bricklink and insert them, no need for an update tag because it doesn't delete anything
     @return:
     """
+    logger.info("$$$ Updating categories")
     categories = blapi.pull_categories()
     if categories is None:
-        logger.warning("Could not pull category data")
+        logger.critical("!!! Could not pull category data")
         return False
     # No Need for processing, it is in the right format [id, name]
     db.run_sql('INSERT OR IGNORE INTO bl_categories(bl_category_id, bl_category_name) VALUES (?,?)', (0, 'unknown'))
     db.batch_update('INSERT OR IGNORE INTO bl_categories(bl_category_id, bl_category_name) VALUES (?,?)', categories,
                     header_len=2)
+    logger.info("%%% Categories Updated")
 
 
 def _fix_part_data_order(pl):
@@ -58,7 +60,7 @@ def _fix_part_data_order(pl):
         return [pl[1], None, None, None, pl[2], pl[3], pl[4], pl[0]]
     else:
         LBEF.note("CAN'T CONVERT LIST: [{}]".format(LBEF.list2string(pl)))
-        logger.warning("CAN'T CONVERT LIST: [{}]".format(LBEF.list2string(pl)))
+        logger.warning("### CAN'T CONVERT LIST: [{}]".format(LBEF.list2string(pl)))
         return None
 
 
@@ -76,6 +78,7 @@ def init_parts():
     from a blank database - update all piece designs by pulling them from a master piece file on bricklink.com
     @return:
     """
+    logger.info("$$$ Building Parts Table")
     pieces = blapi.pull_part_catalog()
     category_dict = info.read_bl_categories()  # In format [bl_category_id, table_id]
     # Replace the category ID with the table ID for that category
@@ -85,7 +88,7 @@ def init_parts():
             if LBEF.int_null(row[0]) in category_dict:  # check to see if the category exists in the category table
                 row[0] = category_dict[int(row[0])]
             else:
-                logger.critical("#init_parts({})# - Missing {} from category table".format(row[2], row[0]))
+                logger.critical("!!! #init_parts({})# - Missing {} from category table".format(row[2], row[0]))
             row[4] = LBEF.float_zero(row[4])
             row.pop(1)  # remove the category name which is redundant with the cat_id
             row.append("P")  # Add the Piece tag
@@ -96,6 +99,7 @@ def init_parts():
 
     update.add_part_data_to_database(parts_to_insert,
                                      basics=1)  # needs to be in this format, basics one means it won't overwrite other ids
+    logger.info("%%% Parts Table Built")
 
 
 def init_minifigs():
@@ -103,6 +107,7 @@ def init_minifigs():
     from a blank database - update all minifig designs by pulling them from a master piece file on bricklink.com
     @return:
     """
+    logger.info("$$$ Getting Minifigs from BL to parts table")
     minifigs = blapi.pull_minifig_catalog()
     category_dict = info.read_bl_categories()  # In format [bl_category_id, table_id]
     # Replace the category ID with the table ID for that catefory
@@ -112,7 +117,7 @@ def init_minifigs():
             if LBEF.int_null(row[0]) in category_dict:
                 row[0] = category_dict[int(row[0])]
             else:
-                logger.critical("#init_minifigs({})# - Missing {} from category table".format(row[2], row[0]))
+                logger.critical("!!! #init_minifigs({})# - Missing {} from category table".format(row[2], row[0]))
             row[4] = LBEF.float_zero(row[4])
             row.pop(1)  # remove the category name which is redundant with the cat_id
             row.append("M")  # Add the Minifig tag
@@ -121,6 +126,7 @@ def init_minifigs():
     parts_to_insert = _prep_list(parts_to_insert)
 
     update.add_part_data_to_database(parts_to_insert, basics=1)
+    logger.info("%%% Minifigs added to Parts table")
 
 
 def init_part_color_codes():
@@ -128,6 +134,7 @@ def init_part_color_codes():
     Pull the color part codes from bricklink and insert them into the database
     @return:
     """
+    logger.info("$$$ Adding part color codes from BL")
     color_dict = info.read_bl_colors_name()
     part_dict = info.read_bl_parts()
     codes = blapi.pull_part_color_codes()
@@ -148,7 +155,7 @@ def init_part_color_codes():
     db.batch_update(
         'INSERT OR IGNORE INTO part_color_codes(part_id, color_id, element_color_code) VALUES (?,?,?)',
         codes_processed)
-    logger.debug("Added {} Color Codes to Database".format(len(codes_processed)))
+    logger.info("%%% Added {} Color Codes to Database".format(len(codes_processed)))
 
 
 def update_bl_set_inventories(check_update=0):
@@ -156,6 +163,7 @@ def update_bl_set_inventories(check_update=0):
     Go through all bricklink sets and get their inventories
     @return:
     """
+    logger.info("$$$ Adding BL inventories to database")
     sets = info.read_bl_set_id_num()
     last_updated = info.read_inv_update_date('last_inv_updated_bl')
     set_inv = info.read_bl_invs()
@@ -178,13 +186,13 @@ def update_bl_set_inventories(check_update=0):
             temp_list = [y for x in pool.map(_get_set_inventory, set_invs_to_scrape) for y in x]  # flattens the list
             set_invs_to_insert.extend(temp_list)
             logger.info(
-                "Running Pool {} of {} sets ({}% complete)".format(idx, num_sets, round((idx / num_sets) * 100)))
+                "@@@ Running Pool {} of {} sets ({}% complete)".format(idx, num_sets, round((idx / num_sets) * 100)))
             timer.log_time(len(set_invs_to_scrape), num_sets - idx)
             set_invs_to_scrape = []
             sleep(.5)
         # Insert Pieces
         if idx > 0 and len(set_invs_to_insert) >= 200:
-            logger.info("Inserting {} pieces".format(len(set_invs_to_insert)))
+            logger.info("@@@ Inserting {} pieces".format(len(set_invs_to_insert)))
 
             _process_colors(set_invs_to_insert, colors_dict)
             _add_bl_inventories_to_database(set_invs_to_insert)
@@ -201,6 +209,7 @@ def update_bl_set_inventories(check_update=0):
 
     timer.log_time(num_sets)
     timer.end()
+    logger.info("%%% Finished adding BL inventories to database")
 
 
 def add_bl_set_inventory_to_database(set_num):
@@ -227,9 +236,6 @@ def _add_bl_inventories_to_database(invs):
     @return:
     """
     set_ids_to_delete = set([n[0] for n in invs])  # list of just the set ids to remove them from the database
-    #
-    # LBEF.print4(set_ids_to_delete, 5)
-    # LBEF.print4(invs, 5)
 
     timestamp = LBEF.timestamp()
     for s in set_ids_to_delete:
@@ -267,7 +273,7 @@ def _get_set_inventory(set_dat=None):
     """
 
     if len(set_dat) != 2:
-        logger.warning("Missing Set Num or Set Id {}".format(set_dat))
+        logger.warning("### Missing Set Num or Set Id {}".format(set_dat))
 
     set_num = set_dat[0]
     set_id = set_dat[1]
@@ -276,7 +282,7 @@ def _get_set_inventory(set_dat=None):
 
     parts = blapi.pull_set_inventory(set_num)
     if parts is None:
-        logger.warning("Could not find set inventory for {}".format(set_num))
+        logger.warning("### Could not find set inventory for {}".format(set_num))
         return []
     parts_to_insert = []
     for row in parts:
@@ -303,8 +309,8 @@ def _get_set_inventory(set_dat=None):
             parts_to_insert.append(row)
 
     if len(parts_to_insert) == 0:
-        logger.warning("No inventory found for {}".format(set_num))
-    logger.info("{} Unique Parts in Set {}".format(len(parts_to_insert), set_num))
+        logger.warning("### No inventory found for {}".format(set_num))
+    logger.debug("Found {} Unique Parts in Set {}".format(len(parts_to_insert), set_num))
     return parts_to_insert
 
 

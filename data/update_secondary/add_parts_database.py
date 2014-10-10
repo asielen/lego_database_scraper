@@ -1,21 +1,16 @@
 __author__ = 'andrew.sielen'
 
 # external
-
+from time import sleep
 from multiprocessing import Pool as _pool
 
-from system import base_methods as LBEF
-
-
-
-# other modules
+# Internal
+import data
+import sys
 import database as db
 from database import info as info
-import data
-from time import sleep
-import sys
-
 from system.logger import logger
+from system import base_methods as LBEF
 
 
 def add_part_to_database(part_num, type='bl'):
@@ -25,6 +20,7 @@ def add_part_to_database(part_num, type='bl'):
     @param type: optional, bl should work for most
     @return:
     """
+    # Todo: Wrap this into the plural version 20141008
     bl_categories = info.read_bl_categories()
     if type == 'bl':
         part_database = info.read_bl_parts()
@@ -59,7 +55,7 @@ def add_parts_to_database(part_id_list, type="bl"):
     @param part_id_list: list of bl_part numbers to look up and add
     @return:
     """
-    logger.debug("Adding {} parts to the database".format(len(part_id_list)))
+    logger.info("$$$ Adding {} parts to the database from {}".format(len(part_id_list), type))
 
     part_database = {}
 
@@ -83,7 +79,7 @@ def add_parts_to_database(part_id_list, type="bl"):
             if idx > 0 and idx % (LBEF.RUNNINGPOOL * 3) == 0:
                 parts_to_insert.extend(pool.map(_parse_get_bl_pieceinfo, parts_to_scrape))
 
-                logger.info("Running Pool {}".format(idx))
+                logger.info("@@@ Running Pool {}".format(idx))
 
                 timer.log_time(len(parts_to_scrape), total_ids - idx)
 
@@ -92,7 +88,7 @@ def add_parts_to_database(part_id_list, type="bl"):
 
             # Insert
             if idx > 0 and len(parts_to_insert) >= 1500:
-                logger.info("Inserting {} pieces".format(len(parts_to_insert)))
+                logger.info("@@@ Inserting {} pieces".format(len(parts_to_insert)))
                 parts_to_insert = _process_categories(parts_to_insert, bl_categories)
                 add_part_data_to_database(parts_to_insert)
                 parts_to_insert = []
@@ -115,13 +111,13 @@ def add_parts_to_database(part_id_list, type="bl"):
                 parts_to_scrape.append(part)
                 # parts_to_insert.extend(_parse_get_re_pieceinfo(part)) #Todo this is a test just to see where an error is
             if idx > 0 and idx % 150 == 0:
-                logger.info("######################################## Running Pool {}".format(idx))
+                logger.info("@@@ Running Pool {}".format(idx))
                 parts_to_insert.extend(pool.map(_parse_get_re_pieceinfo, parts_to_scrape))
                 timer.log_time(len(parts_to_scrape), total_ids - idx)
                 parts_to_scrape = []
                 sleep(.5)
             if idx > 0 and idx % 1500 == 0:
-                logger.info("######################################## Inserting {} pieces".format(len(parts_to_insert)))
+                logger.info("@@@ Inserting {} pieces".format(len(parts_to_insert)))
                 parts_to_insert = _process_categories(parts_to_insert, bl_categories)
                 add_part_data_to_database(parts_to_insert)
                 parts_to_insert = []
@@ -131,6 +127,7 @@ def add_parts_to_database(part_id_list, type="bl"):
 
     timer.log_time(len(parts_to_scrape), 0)
     timer.end()
+    logger.info("%%% Finished adding parts to the database from {}".format(type))
 
 
 def _process_categories(parts_to_insert, bl_categories):
@@ -147,7 +144,7 @@ def _process_categories(parts_to_insert, bl_categories):
         except:
             import pprint as pp
 
-            logger.warning("Can't insert part_row {}".format(pp.pformat(part_row)))
+            logger.warning("### Can't insert part_row {}".format(pp.pformat(part_row)))
         if part_row is not None:
             parts_to_insert_processed.append(part_row)
     return parts_to_insert_processed
@@ -175,7 +172,7 @@ def add_part_data_to_database(insert_list, basics=0):
         elif row[3] is not None:
             lg_add.append(row)
 
-    logger.info("Inserting: {} BL [{}%] ; {} OL [{}%] ; {} RE [{}%] ; {} LG [{}%] ; Total {}".format(
+    logger.info("Inserting: {} BL [{}%] ; {} OL [{}%] ; {} RE [{}%] ; {} LG [{}%] Parts ; Total {}".format(
         len(bl_add), round(len(bl_add) / len(insert_list) * 100, 2),
         len(ol_add), round(len(ol_add) / len(insert_list) * 100, 2),
         len(re_add), round(len(re_add) / len(insert_list) * 100, 2),

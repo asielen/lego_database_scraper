@@ -18,7 +18,7 @@ from system import notes_file
 
 invalid_urls = 0
 
-SLOWPOOL = 5
+SLOWPOOL = 10
 FASTPOOL = 35
 RUNNINGPOOL = SLOWPOOL
 
@@ -48,7 +48,7 @@ def soupify(url):
     available = soup.find(text="System Unavailable")
     if available is not None:
         bold = soup.find('b').text[-10:-9]
-        logger.warning("bricklink down for maintenence, it will be back in {} minutes.".format(bold))
+        logger.info("Bricklink down for maintenance, it will be back in {} minutes.".format(bold))
         logger.info("Waiting to continue")
         for n in range(1, int_zero(bold)):
             sleep(60)
@@ -247,6 +247,7 @@ def expand_set_num(set_id):
     return set_num, set_seq, set_num + '-' + set_seq
 
 
+# Todo, I think i can trash this because all dates are now stored as timestamps 20141008
 def check_in_date_range(date, start, end):
     """
     @param date: the date to check
@@ -427,18 +428,6 @@ def read_json_from_url(url, params=None):
 
 def read_xml_from_url(url, params=None):
     return BeautifulSoup(requests.get(url, params=params, verify=False).text)
-
-
-def get_site_text(url, params, verify=False):
-    """
-    Todo impliment this
-    A modification of requests.get that checks for bricklink downtime
-    @return:
-    """
-    site_text = requests.get(url, params=params, verify=verify).text
-    if site is None: return None
-    if 'daily maintenance' in site_text:
-        pass
 
 
 def print4(list, n=4):

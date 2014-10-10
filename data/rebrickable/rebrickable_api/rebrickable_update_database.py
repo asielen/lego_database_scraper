@@ -17,15 +17,17 @@ from system.logger import logger
 
 def update_parts():
     """
-    Pull all parts from the database and update them it in the database.
+    Pull all parts from rebrickable and update them it in the database.
         this doesn't add them directly from the list, it first sees if the part is in the database, if it isn't add it
         from a bricklink scrape
     @return:
     """
+    logger.info("$$$ Get Rebrickable Part info")
     part_list = [x[0] for x in reapi.pull_all_pieces()]  # ['piece_id', 'descr', 'category')
     part_list.pop(0)  # Remove the header
     add_parts_to_database(part_list, type="re")
     # Todo: need to create a scraper for rebrickable piece num information
+    logger.info("%%% Rebrickable Part info added to parts table")
 
 
 def update_sets(check_update=1):
@@ -52,6 +54,7 @@ def update_set_inventories(check_update=1):
     Insert and update all set inventories from a master list of pieces - may not be as up to date as the api call
     @return:
     """
+    logger.info("$$$ Adding RE inventories to database")
     set_inventories = list(reapi.pull_all_set_parts())
     last_updated = info.read_inv_update_date('last_inv_updated_re')
     set_inv = info.read_re_invs()
@@ -81,7 +84,7 @@ def update_set_inventories(check_update=1):
         print("2222 {} | {} SET {}".format(idx, len(parts_to_insert), row[0]))
         rows_to_scrape.append(row)
         if idx > 0 and idx % (LBEF.RUNNINGPOOL * 2) == 0:
-            logger.info("Scraping {} rows".format(len(rows_to_scrape)))
+            logger.info("@@@ Scraping {} rows".format(len(rows_to_scrape)))
             _process_data = partial(_process_data_for_inv_db, sets=sets, parts=parts, colors=colors)
             parts_to_insert.extend(pool.map(_process_data, rows_to_scrape))
             # print("$[{}]".format(len(rows_to_scrape)))
@@ -90,7 +93,7 @@ def update_set_inventories(check_update=1):
 
         if idx > 0 and len(parts_to_insert) >= 300:
             parts_to_insert = list(filter(None, parts_to_insert))
-            logger.info("Inserting rows >[{}]".format(len(parts_to_insert)))
+            logger.info("@@@ Inserting rows >[{}]".format(len(parts_to_insert)))
             _add_re_inventories_to_database(parts_to_insert)
             timer.log_time(300, len(set_inventories) - idx)
             parts_to_insert = []
@@ -101,6 +104,7 @@ def update_set_inventories(check_update=1):
 
     pool.close()
     pool.join()
+    logger.info("%%% Finished RE inventories to database")
 
 
 def _process_data_for_inv_db(row=None, sets=None, parts=None, colors=None):
@@ -111,7 +115,7 @@ def _process_data_for_inv_db(row=None, sets=None, parts=None, colors=None):
     """
     # print("Getting data for row {}".format(row[0]))
     row[0] = update.get_set_id(row[0], sets=sets, add=True)  # Set Id
-    #print("Got ID {}".format(row[0]))
+    # print("Got ID {}".format(row[0]))
     if row[0] is not None:
         row[1] = get_re_piece_id(row[1], parts=parts, add=False)  # Re_piece Id
         #print("Got Piece {}".format(row[1]))
@@ -168,6 +172,7 @@ def get_re_piece_id(part_num, parts=None, add=False):
         update.add_part_to_database(part_num, type='re')
         return get_re_piece_id(part_num)
     return piece_id
+
 
 if __name__ == "__main__":
     import navigation.menu as menu

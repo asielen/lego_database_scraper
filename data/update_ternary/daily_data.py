@@ -43,7 +43,7 @@ def get_all_daily_set_data(set_list):
             temp_list = pool.map(_get_daily_set_data, set_daily_to_scrape)
             set_daily_to_insert.extend(temp_list)
             logger.info(
-                "Running Pool {} of {} sets ({}% complete)".format(idx, num_sets, round((idx / num_sets) * 100)))
+                "@@@ Running Pool {} of {} sets ({}% complete)".format(idx, num_sets, round((idx / num_sets) * 100)))
             timer.log_time(len(set_daily_to_scrape), num_sets - idx)
             set_daily_to_scrape = []
             sleep(.5)
@@ -51,7 +51,7 @@ def get_all_daily_set_data(set_list):
         # Insert Pieces
 
         if idx > 0 and len(set_daily_to_insert) >= 200:
-            logger.info("Inserting {} pieces".format(len(set_daily_to_insert)))
+            logger.info("@@@ Inserting {} pieces".format(len(set_daily_to_insert)))
             _add_daily_set_data_to_database(set_daily_to_insert)
             set_daily_to_insert = []
 
