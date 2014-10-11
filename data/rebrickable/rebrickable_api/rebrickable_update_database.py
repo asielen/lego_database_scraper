@@ -121,7 +121,7 @@ def _process_data_for_inv_db(row=None, sets=None, parts=None, colors=None):
         # print("Got Piece {}".format(row[1]))
         row[2] = LBEF.int_zero(row[2])  # Quantity
         row[3] = info.get_color_id(row[3], colors=colors)  # Color ID
-        #print("Got Color {}".format(row[3]))
+        # print("Got Color {}".format(row[3]))
 
         del row[-1]
         return row
@@ -142,7 +142,7 @@ def _add_re_inventories_to_database(invs):
     set_ids_to_delete = set(
         [n[0] for n in filter(None, invs)])  # list of just the set ids to remove them from the database
 
-    timestamp = LBEF.timestamp()
+    timestamp = LBEF.get_timestamp()
     for s in set_ids_to_delete:
         db.run_sql("DELETE FROM re_inventories WHERE set_id = ?", (s,))
         db.run_sql("UPDATE sets SET last_inv_updated_re = ? WHERE id = ?", (timestamp, s))

@@ -109,7 +109,7 @@ def _parse_set_dimensions(d_string):
 # """
 # parent_tags0 = soup.find("h1")
 # if not parent_tags0:
-#         return ""
+# return ""
 #     return parent_tags0.string.strip()
 
 def get_bs_want_own(set_num_primary, set_num_secondary=1):
@@ -190,7 +190,7 @@ def _parse_available_dates_make_string(l):
     """
         Takes a string in this format: ('10','Nov','12')
             #and returns 2012-11-10'
-            and returns the unix timestamp
+            and returns the unix get_timestamp
     """
     months = {'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
               'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'}

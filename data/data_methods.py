@@ -346,7 +346,7 @@ def get_basestats(o_set, type=1):
         logger.warning("No data for o_set: {}".format(o_set))
         return None
 
-    scrubbed_dic['last_update'] = LBEF.timestamp()
+    scrubbed_dic['last_update'] = LBEF.get_timestamp()
 
     if type == 1:  # Return a list instead of a dict
         return [scrubbed_dic['set_name'],

@@ -15,19 +15,21 @@ def add_daily_set_data_to_database(daily_data):
     """
 
     # First format data
-    timestamp = LBEF.timestamp()
+    timestamp = LBEF.get_timestamp()
     cprices_list_to_insert = []
     cratings_list_to_insert = []
     cdates_list_to_insert = []
 
     # Get list of price types
-    price_types = info.get_bl_piece_ids()
+    price_types = price_types = {'current_new': 1, 'current_used': 2, 'historic_new': 3,
+                                 'historic_used': 4}  # This is the same as what it is stored in the database
     assert len(price_types) == 4
 
     for s in daily_data:
         cset_id = ""
+
         for r in s: cset_id = r
-        #cset_id = info.get_set_id(cset_num) # not needed because the cset is passed and doesn't need to be looked up
+        # cset_id = info.get_set_id(cset_num) # not needed because the cset is passed and doesn't need to be looked up
         if cset_id is None: continue
         cdaily_data = s[r]
         cprices = cdaily_data[0]
@@ -45,7 +47,7 @@ def add_daily_set_data_to_database(daily_data):
         cdates_list_to_insert.append([cratings['available_us'][0], cratings['available_us'][1],
                                       cratings['available_uk'][0], cratings['available_uk'][1], timestamp, cset_id])
 
-    #Now add everything to the database
+    # Now add everything to the database
 
     #Add prices
     db.batch_update(
@@ -68,7 +70,7 @@ def add_daily_set_data_to_database(daily_data):
 
 
 def add_daily_prices_to_database(set_id, prices):
-    current_date = LBEF.timestamp()
+    current_date = LBEF.get_timestamp()
 
     con = lite.connect(db.database)
     with con:
@@ -104,7 +106,6 @@ def _convert_price_type_to_id(price_type, id_dict=None):
     return id_dict[price_type]
 
 
-
 def add_daily_ratings_to_database(set_id, ratings):
     """
 
@@ -122,7 +123,7 @@ def add_daily_ratings_to_database(set_id, ratings):
                    ratings['bs_want'],
                    ratings['bs_own'],
                    ratings['bs_score'],
-                   LBEF.timestamp()))
+                   LBEF.get_timestamp()))
 
     if 'available_us' in ratings or 'available_uk' in ratings:
         check_set_availability_dates(set_id, ratings)
@@ -155,7 +156,7 @@ def check_set_availability_dates(set_id, ratings):
 
         # def main():
         # # SET = input("What is the set number?: ")
-        #     # print(get_daily(SET))
+        # # print(get_daily(SET))
         #     # main()
         #
         #

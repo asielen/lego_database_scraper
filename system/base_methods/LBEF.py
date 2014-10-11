@@ -268,7 +268,7 @@ def check_in_date_range(date, start, end):
 def old_data(date, date_range=90):
     """
 
-    @param date: date in timestamp format
+    @param date: date in get_timestamp format
     @return: True if it is outside 90 days and needs to be updated, False otherwise
     """
     today = arrow.now()
@@ -306,9 +306,29 @@ def check_if_the_same_day(dateA, dateB):
     return False
 
 
-def timestamp():
-    return arrow.now('US/Pacific').timestamp
+def get_timestamp(date=None):
+    """
 
+    @param date: In the format: YYYY-MM-DD
+    @return:
+    """
+    if date is None:
+        return arrow.now('US/Pacific').timestamp
+    return arrow.get(date, 'YYYY-MM-DD')
+
+
+def get_date(timestamp=None):
+    """
+
+    @param timestamp: If get_timestamp is None, return the current date, else return the get_timestamp date
+    @return:
+    """
+    if timestamp is None:
+        return arrow.now('US/Pacific').format('YYYY-MM-DD')
+    elif timestamp != "":
+        return arrow.get(timestamp).format('YYYY-MM-DD')
+    else:
+        return None
 
 def flatten_list(l):
     """

@@ -67,4 +67,4 @@ def add_bl_inventory_to_database(set_id, set_dict):
     with con:  # Update the last date
         c = con.cursor()
         c.execute('UPDATE sets SET last_inv_updated_bl=? WHERE id=?',
-                  (LBEF.timestamp(), set_id))
+                  (LBEF.get_timestamp(), set_id))

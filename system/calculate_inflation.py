@@ -10,6 +10,14 @@ from system.system_database import database
 inflation_sheet = 'system/historic_cpi.csv'
 
 
+def get_cpis():
+    """
+    get a dict of all cpis to lookup
+    @return:
+    """
+    # Todo
+    pass
+
 def get_inflation_rate(year_start, year_end=2013):
     """
 

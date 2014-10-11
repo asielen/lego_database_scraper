@@ -27,6 +27,20 @@ def get_set_id(set_num=None):
     return set_id_raw
 
 
+def get_set_info(set_num=None):
+    """
+    @param set_num:
+    @param add: if True, Add the set if it is missing in the database
+    @return: the id column num of the set in the database, or a list of all set ids with set num if no set num is provided
+    """
+    if set_num is None:
+        set_id_raw = db.run_sql('SELECT * FROM sets')
+    else:
+        set_id_raw = db.run_sql('SELECT * WHERE set_num=?', (set_num.lower(),), one=True)
+
+    return set_id_raw
+
+
 # These three functions return lists of sets that need to be updated
 def get_all_set_years(set_num=None):
     """
@@ -307,7 +321,7 @@ def get_set_dump(set_num):
 
     set_info = db.run_sql("SELECT * FROM sets WHERE set_num=?", (set_num,))
     set_info = set_info[0]
-    # Todo, turn this into a class
+    # Todo, turn this into a class?
     set_id = set_info[0]
     set_name = set_info[5]
     set_theme = set_info[6]
@@ -316,20 +330,20 @@ def get_set_dump(set_num):
     set_figures = set_info[9]
     set_weight = set_info[10]
     set_year_released = set_info[11]
-    set_date_released_us = set_info[12]
-    set_date_ended_us = set_info[13]
-    set_date_released_uk = set_info[14]
-    set_date_ended_uk = set_info[15]
+    set_date_released_us = LBEF.get_date(set_info[12])
+    set_date_ended_us = LBEF.get_date(set_info[13])
+    set_date_released_uk = LBEF.get_date(set_info[14])
+    set_date_ended_uk = LBEF.get_date(set_info[15])
     set_original_price_us = set_info[16]
     set_original_price_uk = set_info[17]
     set_age_low = set_info[18]
     set_age_high = set_info[19]
     set_box_size = set_info[20]
     set_box_volume = set_info[21]
-    set_last_updated = set_info[22]
-    set_last_inv_updated_bl = set_info[24]
-    set_last_inv_updated_re = set_info[25]
-    set_last_price_updated = set_info[26]
+    set_last_updated = LBEF.get_date(set_info[22])
+    set_last_inv_updated_bl = LBEF.get_date(set_info[24])
+    set_last_inv_updated_re = LBEF.get_date(set_info[25])
+    set_last_price_updated = LBEF.get_date(set_info[26])
 
     set_calc_price = get_set_price(set_num, 2014)
     set_calc_pieces = get_piece_count(set_num, 'bricklink')

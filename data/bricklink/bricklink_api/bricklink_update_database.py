@@ -224,6 +224,7 @@ def add_bl_set_inventory_to_database(set_num):
         return None
 
     set_inv = _get_set_inventory((set_num, set_id))
+    _process_colors(set_inv)
     _add_bl_inventories_to_database(set_inv)
 
 
@@ -237,7 +238,7 @@ def _add_bl_inventories_to_database(invs):
     """
     set_ids_to_delete = set([n[0] for n in invs])  # list of just the set ids to remove them from the database
 
-    timestamp = LBEF.timestamp()
+    timestamp = LBEF.get_timestamp()
     for s in set_ids_to_delete:
         db.run_sql("DELETE FROM bl_inventories WHERE set_id = ?", (s,))
         db.run_sql("UPDATE sets SET last_inv_updated_bl = ? WHERE id = ?", (timestamp, s))
@@ -248,16 +249,17 @@ def _add_bl_inventories_to_database(invs):
     logger.debug("Added {} unique pieces to database for {}".format(len(invs), len(set_ids_to_delete)))
 
 
-def _process_colors(invs, colors):
+def _process_colors(invs, colors=None):
     """
 
     @param invs:
     @param colors:
     @return:
     """
+    if colors is None: colors = info.read_bl_colors()
     for inv in invs:
-        if LBEF.int_null(inv[2]) in colors:
-            inv[2] = colors[int(inv[2])]
+        if LBEF.int_null(inv[3]) in colors:
+            inv[3] = colors[int(inv[3])]
         else:
             logger.critical(
                 "Missing {} from color table".format(inv[2]))
