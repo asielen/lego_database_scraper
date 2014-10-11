@@ -355,14 +355,14 @@ def _get_set_id(set_num, add=False):
 
 def get_bl_piece_id(part_num, add=False):
     """
-    Wrapper for the get_bl_piece_id method in db.info
+    Wrapper for the get_bl_piece_ids method in db.info
     @param part_num: the number used by bricklink for pieces
     @return: the primary key for a piece in the database
     """
-    piece_id = info.get_bl_piece_id(part_num)
+    piece_id = info.get_bl_piece_ids(part_num)
     if piece_id is None and add:
         add_part_to_database(part_num)
-        return info.get_bl_piece_id(part_num)
+        return info.get_bl_piece_ids(part_num)
     return piece_id
 
 

@@ -3,6 +3,7 @@ __author__ = 'andrew.sielen'
 import sqlite3 as lite
 
 import database as db
+from database import info
 import system.base_methods as LBEF
 
 
@@ -19,10 +20,14 @@ def add_daily_set_data_to_database(daily_data):
     cratings_list_to_insert = []
     cdates_list_to_insert = []
 
+    # Get list of price types
+    price_types = info.get_bl_piece_ids()
+    assert len(price_types) == 4
+
     for s in daily_data:
         cset_id = ""
         for r in s: cset_id = r
-        #cset_id = info.get_set_id(cset_num)
+        #cset_id = info.get_set_id(cset_num) # not needed because the cset is passed and doesn't need to be looked up
         if cset_id is None: continue
         cdaily_data = s[r]
         cprices = cdaily_data[0]
@@ -30,7 +35,8 @@ def add_daily_set_data_to_database(daily_data):
 
         for price in cprices:
             cprices_list_to_insert.append(
-                [cset_id, timestamp, price, cprices[price]['avg'], cprices[price]['lots'], cprices[price]['max'],
+                [cset_id, timestamp, _convert_price_type_to_id(price, price_types), cprices[price]['avg'],
+                 cprices[price]['lots'], cprices[price]['max'],
                  cprices[price]['min'], cprices[price]['qty'], cprices[price]['qty_avg'], cprices[price]['piece_avg']])
 
         cratings_list_to_insert.append(
@@ -82,6 +88,21 @@ def add_daily_prices_to_database(set_id, prices):
                  prices[price]['qty'],
                  prices[price]['qty_avg'],
                  prices[price]['piece_avg']))
+
+
+def _convert_price_type_to_id(price_type, id_dict=None):
+    """
+    Take a price type (eg current_new) and convert it to the equivalent id
+    @param price_type:
+    @param id_dict:
+    @return:
+    """
+    if id_dict is None:
+        id_dict = info.get_bl_piece_ids()
+        assert len(id_dict) == 4
+
+    return id_dict[price_type]
+
 
 
 def add_daily_ratings_to_database(set_id, ratings):

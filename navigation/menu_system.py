@@ -4,6 +4,7 @@ import navigation.menu
 
 from database import setup
 from system.logger import logger
+from data.import_data import read_historic_prices_file as HPF
 
 
 def main():
@@ -11,6 +12,7 @@ def main():
     options['1'] = "Backup Database", backup_database  # Todo
     options['2'] = "Database Stat Report", run_databaseReport  # Todo
     options['3'] = "Dump all set data", run_dumpSets  # Todo
+    options['5'] = "Import Historic Price data", menu_import_price_data
     options['6'] = "Initiate New Database", init_new_database  # Working 2014-10-5
     options['7'] = "Initiate Primitives", menu_run_primitives  # Working 2014-10-5
     options['8'] = "Build All", menu_build_all
@@ -46,6 +48,14 @@ def run_dumpSets():
     """
     print("Dump Sets")
 
+
+def menu_import_price_data():
+    """
+    Import historic price data from Byond
+    @return:
+    """
+    csv_file = input("What is the name of the file?")
+    HPF.open_dm_csv(csv_file)
 
 def init_new_database():
     """

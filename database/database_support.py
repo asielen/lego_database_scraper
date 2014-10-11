@@ -44,6 +44,8 @@ def run_batch_sql(sql_text, values):
         except:
             LBEF.note("ERROR: {}".format(sys.exc_info()[0]))
             LBEF.note("Can't insert row: {} / {}".format(len(values), LBEF.list2string(values)))
+            logger.error("ERROR: {} | Can't insert row: {} / {}".format(sys.exc_info()[0], len(values),
+                                                                        LBEF.list2string(values)))
             for r in values:
                 LBEF.note("Can't insert row: {}".format(LBEF.list2string(r)))
 

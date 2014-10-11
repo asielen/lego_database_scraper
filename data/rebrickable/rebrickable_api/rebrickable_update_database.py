@@ -83,15 +83,15 @@ def update_set_inventories(check_update=1):
                 continue
         print("2222 {} | {} SET {}".format(idx, len(parts_to_insert), row[0]))
         rows_to_scrape.append(row)
-        if idx > 0 and idx % (LBEF.RUNNINGPOOL * 2) == 0:
+        if idx > 0 and idx % (LBEF.RUNNINGPOOL * 10) == 0:
             logger.info("@@@ Scraping {} rows".format(len(rows_to_scrape)))
             _process_data = partial(_process_data_for_inv_db, sets=sets, parts=parts, colors=colors)
             parts_to_insert.extend(pool.map(_process_data, rows_to_scrape))
             # print("$[{}]".format(len(rows_to_scrape)))
             rows_to_scrape = []
-            sleep(0.1)
+            sleep(0.01)
 
-        if idx > 0 and len(parts_to_insert) >= 300:
+        if idx > 0 and len(parts_to_insert) >= (LBEF.RUNNINGPOOL * 30):
             parts_to_insert = list(filter(None, parts_to_insert))
             logger.info("@@@ Inserting rows >[{}]".format(len(parts_to_insert)))
             _add_re_inventories_to_database(parts_to_insert)
@@ -118,7 +118,7 @@ def _process_data_for_inv_db(row=None, sets=None, parts=None, colors=None):
     # print("Got ID {}".format(row[0]))
     if row[0] is not None:
         row[1] = get_re_piece_id(row[1], parts=parts, add=False)  # Re_piece Id
-        #print("Got Piece {}".format(row[1]))
+        # print("Got Piece {}".format(row[1]))
         row[2] = LBEF.int_zero(row[2])  # Quantity
         row[3] = info.get_color_id(row[3], colors=colors)  # Color ID
         #print("Got Color {}".format(row[3]))
@@ -155,7 +155,7 @@ def _add_re_inventories_to_database(invs):
 
 def get_re_piece_id(part_num, parts=None, add=False):
     """
-    Wrapper for the get_bl_piece_id method in db.info
+    Wrapper for the get_bl_piece_ids method in db.info
     @param part_num: the number used by bricklink for pieces
     @return: the primary key for a piece in the database
     """

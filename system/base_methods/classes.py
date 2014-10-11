@@ -25,7 +25,7 @@ class process_timer():
         logger.info("Timer {} Ended".format(self.name))
         del self
 
-    def log_time(self, num_of_tasks, remaining_tasks=None):
+    def log_time(self, num_of_tasks, remaining_tasks=None):  # num_of_tasks is number of last completed tasks
         time_diff = self._get_run_time()
         self._update_tasks(num_of_tasks)
         logger.info("@ Process Time: {} seconds FOR {} objects processed".format(time_diff, self.tasks))

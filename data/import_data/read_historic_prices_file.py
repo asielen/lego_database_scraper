@@ -1,57 +1,65 @@
-from system.base_methods import LBEF
-
 __author__ = 'Andrew'
 
 import csv
-import sqlite3 as lite
-from system.logger import logger
 
 import arrow
-from profilehooks import profile
 
-import database.database as db
+import database as db
+from database import info
+from system.logger import logger
+from system import base_methods as LBEF
 
 
-BYOND_EVAL_FILE = 'Eval_Data.csv'
+def open_dm_csv(file_name='Eval_Data.csv'):
+    """
+    Takes a csv file, opens it, reads it and adds the data to the database
+    @param file_name:
+    @return:
+    """
+    logger.info("$$$ Adding historic prices from csv file")
+    set_id_dict = LBEF.list_to_dict(info.get_set_id())
 
+    total_rows = 0
 
-@profile
-def open_csv_file():
-    set_id_dict = get_all_set_ids()
+    with open(file_name, 'r') as csvfile:  # Read it through on
+        historic_prices = list(csv.reader(csvfile))
+        total_rows = len(historic_prices)
 
-    total = 0
-    with open(BYOND_EVAL_FILE, 'r') as csvfile:
-        historic_prices_generator = csv.reader(csvfile)
-        for i, l in enumerate(historic_prices_generator): pass
-        total = i
-    with open(BYOND_EVAL_FILE, 'r') as csvfile:
-        historic_prices_generator = csv.reader(csvfile)
-        price_rows_to_process = []
-        raiting_rows_to_process = []
+    assert total_rows > 0
+
+    price_rows_to_process = []
+    rating_rows_to_process = []
+    current_price_row = []
+    current_rating_row = ()
+
+    timer = LBEF.process_timer("Add historic data to database")
+
+    for idx, r in enumerate(historic_prices):
+
+        current_price_row, current_rating_row = get_rows(r, set_id_dict)
+        if current_price_row is None or current_rating_row is None: continue
+
+        price_rows_to_process.extend(current_price_row)
+        rating_rows_to_process.append(current_rating_row)
+
         current_price_row = []
-        current_raiting_row = ()
-        for idx, r in enumerate(historic_prices_generator):
+        current_rating_row = ()
 
-            current_price_row, current_raiting_row = get_rows(r, set_id_dict)
-            if current_price_row is None or current_raiting_row is None: continue
+        if idx % 1000 == 0:
+            logger.info("@@@ Inserting {} Rows".format(len(price_rows_to_process)))
+            add_daily_prices_to_database(price_rows_to_process)
+            add_daily_ratings_to_database(rating_rows_to_process)
+            timer.log_time(len(rating_rows_to_process), total_rows - idx)
 
-            price_rows_to_process.extend(current_price_row)
-            raiting_rows_to_process.append(current_raiting_row)
+            price_rows_to_process = []
+            rating_rows_to_process = []
 
-            current_price_row = []
-            current_raiting_row = ()
-            if idx % 100 == 0:
-                print("Inserting Rows")
-                print("[ {0}/{1} {2}% ] complete".format(idx, total, round((idx / total) * 100, 2)))
-                add_daily_prices_to_database(price_rows_to_process)
-                add_daily_ratings_to_database(raiting_rows_to_process)
-                price_rows_to_process = []
-                raiting_rows_to_process = []
+    print("Inserting Final Rows")
 
-        print("Inserting Final Rows")
+    add_daily_prices_to_database(price_rows_to_process)
+    add_daily_ratings_to_database(rating_rows_to_process)
 
-        add_daily_prices_to_database(price_rows_to_process)
-        add_daily_ratings_to_database(raiting_rows_to_process)
+    timer.end()
 
 
 def get_rows(row, set_id_dict):
@@ -73,7 +81,8 @@ def get_rows(row, set_id_dict):
 
 
 def scrub_row(set_id, date, row):
-    price_types = {'current_new': 1, 'current_used': 2, 'historic_new': 3, 'historic_used': 4}
+    price_types = {'current_new': 1, 'current_used': 2, 'historic_new': 3,
+                   'historic_used': 4}  # This is the same as what it is stored in the database
     price_list = [(set_id, date, price_types['current_new'], LBEF.float_null(row[12]), LBEF.float_null(row[11]),
                    LBEF.float_null(row[10]), LBEF.float_null(row[13]), LBEF.float_null(row[3])),
                   (set_id, date, price_types['current_used'], LBEF.float_null(row[20]), LBEF.float_null(row[19]),
@@ -83,9 +92,9 @@ def scrub_row(set_id, date, row):
                   (set_id, date, price_types['historic_used'], LBEF.float_null(row[16]), LBEF.float_null(row[15]),
                    LBEF.float_null(row[14]), LBEF.float_null(row[17]), LBEF.float_null(row[4]))]
 
-    raiting_list = (set_id, LBEF.int_null(row[1]), LBEF.int_null(row[0]), date)
+    rating_list = (set_id, LBEF.int_null(row[1]), LBEF.int_null(row[0]), date)
 
-    return price_list, raiting_list
+    return price_list, rating_list
 
     # price_dict = {'current_new': dict(set_id=None, date=None, avg=None, max=None, min=None, qty_avg=None, tot=None, qty=None, price_avg=None),
     # 'current_used': dict(set_id=None, date=None, avg=None, max=None, min=None, qty_avg=None, tot=None, qty=None, price_avg=None),
@@ -133,45 +142,49 @@ def add_daily_prices_to_database(prices):
     @param prices:
     @return:
     """
+    db.batch_update(
+        'INSERT OR IGNORE INTO historic_prices(set_id, record_date, price_type, avg, max, min, qty_avg, piece_avg) '
+        'VALUES (?,?,?,?,?,?,?,?)', prices)
+    # con = lite.connect(db)
+    # with con:
+    # c = con.cursor()
+    #
+    #     for price in prices:
+    #         c.executemany(
+    #             'INSERT OR IGNORE INTO historic_prices(set_id, record_date, price_type, avg, max, min, qty_avg, piece_avg)'
+    #             ' VALUES (?, ?, ?, ?, ?, ?, ?, ?)', prices)
 
-    con = lite.connect(db)
-    with con:
-        c = con.cursor()
 
-        for price in prices:
-            c.executemany(
-                'INSERT OR IGNORE INTO historic_prices(set_id, record_date, price_type, avg, max, min, qty_avg, piece_avg)'
-                ' VALUES (?, ?, ?, ?, ?, ?, ?, ?)', prices)
-
-
-def add_daily_ratings_to_database(raitings):
-    con = lite.connect(db)
-    with con:
-        c = con.cursor()
-        c.executemany('INSERT OR IGNORE INTO bs_ratings(set_id, want, own, record_date)'
-                      ' VALUES (?, ?, ?, ?)', raitings)
+def add_daily_ratings_to_database(ratings):
+    db.batch_update(
+        'INSERT OR IGNORE INTO bs_ratings(set_id, want, own, record_date) VALUES (?,?,?,?)',
+        ratings)
+    # con = lite.connect(db)
+    # with con:
+    # c = con.cursor()
+    #     c.executemany('INSERT OR IGNORE INTO bs_ratings(set_id, want, own, record_date)'
+    #                   ' VALUES (?, ?, ?, ?)', ratings)
 
 
 def parse_date(s):
     return arrow.get(s[:4] + "-" + s[4:6] + "-" + s[6:]).timestamp
 
-
-def get_all_set_ids():
-    con = lite.connect(db)
-    print(db)  # Todo: remove this print statement
-    with con:
-        c = con.cursor()
-
-        c.execute("SELECT set_num, id FROM sets")
-        set_id_list = LBEF.list_to_dict(c.fetchall())
-
-    return set_id_list
-
-
-def main():
-    set = input("Press Enter")
-    open_csv_file()
+#
+# def get_all_set_ids():
+    # con = lite.connect(db)
+    #     with con:
+    #         c = con.cursor()
+    #
+    #         c.execute("SELECT set_num, id FROM sets")
+    #         set_id_list = LBEF.list_to_dict(c.fetchall())
+    #
+    #     return set_id_list
 
 
-if __name__ == "__main__":
-    main()
+    # def main():
+    # set = input("Press Enter")
+    #     open_csv_file()
+    #
+    #
+    # if __name__ == "__main__":
+    #     main()

@@ -157,10 +157,18 @@ def read_bl_colors_name():
     return LBEF.list_to_dict(db.run_sql('SELECT bl_color_name, id FROM colors'))
 
 
+def read_bl_price_types():
+    """
+
+    @return: a dict in this format {price_id: id}
+    """
+    return LBEF.list_to_dict(db.run_sql('SELECT price_type, id FROM price_types'))
+
+
 def read_bl_sets():
     """
 
-    @return: a list in this format {set_num: [set]}
+    @return: a dict in this format {set_num: [set]}
     """
     bl_set_list = db.run_sql('SELECT * FROM sets')
     return {b[1]: b[:] for b in bl_set_list}  # 1 is the position of the bricklink column

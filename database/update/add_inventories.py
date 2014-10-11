@@ -3,7 +3,6 @@ __author__ = 'andrew.sielen'
 import sqlite3 as lite
 
 from system.logger import logger
-
 from database import database
 import database.info as info
 import data.bricklink.bricklink_api as blapi
@@ -52,7 +51,7 @@ def add_bl_inventory_to_database(set_id, set_dict):
         current_quantity = set_dict[e_set]
 
         # Check to see if the design is in the database
-        design_id = info.get_bl_piece_id(current_design)
+        design_id = info.get_bl_piece_ids(current_design)
 
         # If it isn't in the database yet, add it
         if design_id is None:

@@ -24,7 +24,7 @@ def get_color_id(color_num, colors=None, type='bl'):
     return color_id
 
 
-def get_bl_piece_id(bl_design_num=None):
+def get_bl_piece_ids(bl_design_num=None):
     """
     @param bl_design_num: the number used by bricklink for pieces
     @return: the primary key for a piece in the database or if bl_design_num is none, it returns a list of ids and bl
@@ -159,8 +159,8 @@ if __name__ == "__main__":
 
     def menu_get_bl_piece_id():
         part_num = base.input_part_num()
-        print(get_bl_piece_id(part_num))
-        base.print4(get_bl_piece_id())
+        print(get_bl_piece_ids(part_num))
+        base.print4(get_bl_piece_ids())
 
     def menu_get_re_piece_id():
         part_num = base.input_part_num()

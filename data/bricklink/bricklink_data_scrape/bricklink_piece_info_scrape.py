@@ -56,7 +56,7 @@ def add_part_design_alt(primary, alts):
     @param design_alt:
     @return:
     """
-    primary_id = info.get_bl_piece_id(primary)
+    primary_id = info.get_bl_piece_ids(primary)
     alts = alts.split(',')
     if primary_id is not None:
         for n in alts:
@@ -121,14 +121,14 @@ def get_blPieceInfo(design_num):
     else:
         design_ids = []
 
-        main_id_tags = soup.find("font", {"face": "Arial"})  #Find the _main design id
+        main_id_tags = soup.find("font", {"face": "Arial"})  # Find the _main design id
         main_design_id = main_id_tags.get_text().split(":")[-1].strip()
         if main_design_id is None:
             return None  # No proper design ID
 
         design_ids.append(main_design_id)  # Add the _main id
 
-        alt_id_tags = parent_tags2.find("td", {"align": "CENTER"})  #Find the alternative design id
+        alt_id_tags = parent_tags2.find("td", {"align": "CENTER"})  # Find the alternative design id
         if alt_id_tags is not None:
             design_id_text = alt_id_tags.get_text()
             design_id_tags0 = design_id_text.split(":")[1]

@@ -3,7 +3,6 @@ __author__ = 'andrew.sielen'
 import sqlite3 as lite
 
 from system import logger
-
 import database as db
 
 
@@ -110,8 +109,8 @@ def _initiate_database():
                     "piece_id INTEGER,"
                     "color_id INTEGER,"
                     "quantity INTEGER,"
-                    "FOREIGN KEY (set_id) REFERENCES sets(id),"
-                    "FOREIGN KEY (piece_id) REFERENCES parts(id)"
+                    "FOREIGN KEY (set_id) REFERENCES sets(id), "
+                    "FOREIGN KEY (piece_id) REFERENCES parts(id), "
                     "FOREIGN KEY (color_id) REFERENCES colors(id));")
 
         con.execute("CREATE TABLE IF NOT EXISTS bl_inventories(id INTEGER PRIMARY KEY,"
@@ -138,7 +137,7 @@ def _initiate_database():
         con.execute("CREATE TABLE IF NOT EXISTS historic_prices(id INTEGER PRIMARY KEY,"
                     "set_id INTEGER,"
                     "record_date INTEGER,"
-                    "price_type INTEGER,"  # current_new, current_used, historic_new, historic_used
+                    "price_type INTEGER,"  # 1,2,3,4 current_new, current_used, historic_new, historic_used
                     "avg REAL,"
                     "lots REAL,"
                     "max REAL,"
