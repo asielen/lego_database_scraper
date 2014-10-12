@@ -8,7 +8,7 @@ from multiprocessing import Pool as _pool
 import data
 import sys
 import database as db
-from database import info as info
+from database import info
 from system.logger import logger
 from system import base_methods as LBEF
 
@@ -46,7 +46,7 @@ def add_part_to_database(part_num, type='bl'):
     # piece_data[:4])
     # return db.run_sql(
     # 'UPDATE parts SET design_name=?, weight=?, bl_type=?, bl_category=? WHERE bricklink_id=?',
-    #     (piece_data[4], piece_data[5], piece_data[6], piece_data[7], piece_data[0]))
+    # (piece_data[4], piece_data[5], piece_data[6], piece_data[7], piece_data[0]))
 
 
 def add_parts_to_database(part_id_list, type="bl"):

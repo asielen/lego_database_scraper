@@ -7,6 +7,7 @@ from system.base_methods import LBEF
 import database as db
 from system import base_methods as base
 from system import logger
+# from data.update_secondary.add_sets_database import add_set_to_database
 
 
 
@@ -27,18 +28,23 @@ def get_set_id(set_num=None):
     return set_id_raw
 
 
-def get_set_info(set_num=None):
+def get_set_info(set_num=None, new=False):
     """
     @param set_num:
     @param add: if True, Add the set if it is missing in the database
     @return: the id column num of the set in the database, or a list of all set ids with set num if no set num is provided
     """
     if set_num is None:
-        set_id_raw = db.run_sql('SELECT * FROM sets')
+        set_info_raw = db.run_sql('SELECT * FROM sets')
     else:
-        set_id_raw = db.run_sql('SELECT * WHERE set_num=?', (set_num.lower(),), one=True)
+        set_info_raw = db.run_sql('SELECT * FROM sets WHERE set_num=?', (set_num.lower(),), one=True)
 
-    return set_id_raw
+    # Circular import
+    # if set_id_raw is None and new is True: #If there is no data, try to add it
+    # add_set_to_database(set_num)
+    #     set_id_raw = get_set_info(set_num)
+
+    return set_info_raw
 
 
 # These three functions return lists of sets that need to be updated
@@ -169,21 +175,20 @@ def get_re_update_years(set_num=None):
     return last_updated
 
 
-# #####
-
-
-
 # # Basic information
-def get_set_price(set_n=None, inf_year=None):
+def get_set_price(set_num=None, inf_year=None):
     """
     updated 20140908
-    @param set_n: set num in xxxx–x
+    @param set_num: set num in xxxx–x
     @param inf_year: if this is not None, then get the original price
-    @return: the price or list of prices if set_n is omitted
+    @return: the price or list of prices if set_num is omitted
     """
     price = None
-    if set_n is not None:
-        set_id = get_set_id(set_n)
+
+    # Single Set Lookup
+    if set_num is not None:
+
+        set_id = get_set_id(set_num)
         if set_id is None: return None
 
         price = db.run_sql("SELECT original_price_us FROM sets WHERE id=?;", (set_id,), one=True)
@@ -201,6 +206,7 @@ def get_set_price(set_n=None, inf_year=None):
         else:
             return price
 
+    # All Set lookup
     else:
         # if there is a an inflation year but no set specified. Get all sets from before this year and return their adjusted prices
         if inf_year is not None:
@@ -219,11 +225,8 @@ def get_set_price(set_n=None, inf_year=None):
 
 
 # #More Advanced Calculations
-# TODO: Make sure this works with the new database structure
 def get_piece_count(set_n=None, type=''):
     """
-
-
     Returns the piece count of a set by either getting it straight from the piece count column or by
     calculating it based on inventory
 
@@ -310,6 +313,40 @@ def get_set_weight(set_num=None, type=''):
 
     return weight
 
+# #Historic Info
+def get_historic_prices(set_num=None, set_id=None):
+    """
+    Get historic prices
+    @param set_num: in format xxxx-xx
+    @return: This format: id, set_num, record_date, price_type, lots, qty, min, max, avg, qty_avg, price_avg
+    """
+    if set_num is None and set_id is None: return None
+    if set_id is None:
+        set_id = get_set_id(set_num)
+    prices = db.run_sql("SELECT historic_prices.id, sets.set_num, historic_prices.record_date, price_types.price_type, "
+                        "historic_prices.lots, historic_prices.qty, historic_prices.min, historic_prices.max,"
+                        "historic_prices.avg, historic_prices.qty_avg, historic_prices.piece_avg "
+                        "FROM historic_prices "
+                        "JOIN sets ON (sets.id=historic_prices.set_id) "
+                        "JOIN price_types ON (price_types.id=historic_prices.price_type) "
+                        "WHERE historic_prices.set_id=?", (set_id,))
+    return prices
+
+
+def get_historic_data(set_num=None, set_id=None):
+    """
+    Get historic bs data
+    @param set_num: in format xxxx-xx
+    @return:
+    """
+    if set_num is None and set_id is None: return None
+    if set_id is None:
+        set_id = get_set_id(set_num)
+    ratings = db.run_sql(
+        "SELECT bs_ratings.id, sets.set_num, bs_ratings.record_date, want, own, rating FROM bs_ratings "
+        "JOIN sets ON (sets.id=bs_ratings.set_id) WHERE bs_ratings.set_id=?", (set_id,))
+    return ratings
+
 
 def get_set_dump(set_num):
     """
@@ -390,7 +427,9 @@ if __name__ == "__main__":
         options['7'] = "Get a set's piece count", menu_get_piece_count
         options['8'] = "Get a set's unique piece count", menu_get_unique_piece_count
         options['9'] = "Get a set's weight", menu_get_set_weight
-        options['A'] = "Get a quick overview of a set", menu_get_set_dump
+        options['A'] = "Get Historic Prices", menu_get_historic_prices
+        options['B'] = "Get Historic BS Data", menu_get_historic_data
+        options['Z'] = "Get a quick overview of a set", menu_get_set_dump
         options['Q'] = "Quit", menu.quit
 
         while True:
@@ -401,6 +440,7 @@ if __name__ == "__main__":
     def menu_get_set_id():
         set_num = base.input_set_num()
         print(get_set_id(set_num))
+        print(get_set_info(set_num))
         base.print4(get_set_id())
 
     def menu_get_all_set_years():
@@ -434,7 +474,7 @@ if __name__ == "__main__":
     def menu_get_set_price():
         set_num = base.input_set_num()
         print(get_set_price(set_num))
-        base.print4(get_set_price(set_num, 2013))
+        print(get_set_price(set_num, 2013))
         base.print4(get_set_price())
         base.print4(get_set_price(None, 2010))
 
@@ -456,6 +496,16 @@ if __name__ == "__main__":
         base.print4(get_set_weight(set_num))
         base.print4(get_set_weight(set_num, 'bricklink'))
         base.print4(get_set_weight())
+
+    def menu_get_historic_prices():
+        set_num = base.input_set_num()
+        prices = get_historic_prices(set_num)
+        base.print4(prices)
+
+    def menu_get_historic_data():
+        set_num = base.input_set_num()
+        data = get_historic_data(set_num)
+        base.print4(data)
 
     def menu_get_set_dump():
         set_num = base.input_set_num()

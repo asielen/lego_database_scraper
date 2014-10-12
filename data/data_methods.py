@@ -348,11 +348,14 @@ def get_basestats(o_set, type=1):
 
     scrubbed_dic['last_update'] = LBEF.get_timestamp()
 
+    scrubbed_dic['bo_set_num'] = None  # Todo, have this actually set the bo_set_num
+
     if type == 1:  # Return a list instead of a dict
-        return [scrubbed_dic['set_name'],
-                scrubbed_dic['set_num'],
+        return [scrubbed_dic['set_num'],
+                scrubbed_dic['bo_set_num'],
                 scrubbed_dic['item_num'],
                 scrubbed_dic['item_seq'],
+                scrubbed_dic['set_name'],
                 scrubbed_dic['theme'],
                 scrubbed_dic['subtheme'],
                 scrubbed_dic['piece_count'],

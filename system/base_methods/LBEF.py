@@ -20,7 +20,7 @@ invalid_urls = 0
 
 SLOWPOOL = 10
 FASTPOOL = 35
-RUNNINGPOOL = FASTPOOL
+RUNNINGPOOL = SLOWPOOL
 
 
 def soupify(url):
@@ -329,6 +329,7 @@ def get_date(timestamp=None):
         return arrow.get(timestamp).format('YYYY-MM-DD')
     else:
         return None
+
 
 def flatten_list(l):
     """

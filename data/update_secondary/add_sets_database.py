@@ -9,71 +9,84 @@ import system.base_methods as LBEF
 from system.logger import logger
 
 
-def add_set_to_database(set_data):
-    """
-    Adds a set to the database
-    @param set_data: either complete set data or a set id
-    @return:
-    """
-    if set_data is None: return None
-    if len(set_data) is 1:
-        set_data = data.get_basestats(set_data)
-        if set_data is None: return None
+# def add_set_to_database(set_data):
+# """
+#     Adds a set to the database
+#     @param set_data: either complete set data or a set id
+#     @return:
+#     """
+#     if set_data is None: return None
+#     if len(set_data) is 1:
+#         set_data = data.get_basestats(set_data)
+#         if set_data is None: return None
+#
+#     return db.run_sql(
+#         'INSERT OR IGNORE INTO sets('
+#         'set_num, '
+#         'bo_set_num, '
+#         'item_num, '
+#         'item_seq, '
+#         'set_name, '
+#         'theme, '
+#         'subtheme, '
+#         'piece_count, '
+#         'figures, '
+#         'set_weight, '
+#         'year_released, '
+#         'date_released_us, '
+#         'date_ended_us, '
+#         'date_released_uk, '
+#         'date_ended_uk, '
+#         'original_price_us, '
+#         'original_price_uk, '
+#         'age_low, '
+#         'age_high, '
+#         'box_size, '
+#         'box_volume, '
+#         'last_updated'
+#         ') VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', insert_list=tuple(set_data))
 
-    return db.run_sql(
-        'INSERT OR IGNORE INTO sets('
-        'set_name, '
-        'set_num, '
-        'item_num, '
-        'item_seq, '
-        'theme, '
-        'subtheme, '
-        'piece_count, '
-        'figures, '
-        'set_weight, '
-        'year_released, '
-        'date_released_us, '
-        'date_ended_us, '
-        'date_released_uk, '
-        'date_ended_uk, '
-        'original_price_us, '
-        'original_price_uk, '
-        'age_low, '
-        'age_high, '
-        'box_size, '
-        'box_volume, '
-        'last_updated'
-        ') VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', insert_list=tuple(set_data))
 
-
-def add_set_to_database(set_id):
+def add_set_to_database(set_num):
     """
     Single add
-    @param set_id:
-    @param update: Always update if this is called
+    @param set_num: xxxx-xx
     @return:
     """
-    set_to_insert = _parse_get_basestats(set_id)
+    set_to_insert = _parse_get_basestats(set_num)
     add_set_data_to_database(set_to_insert)
 
 
 def add_set_data_to_database(set_data):
     """
     Single set add to database
-    @param sets_to_insert:
+    @param sets_data: list of 22 or 27 values to insert (27 with dates from class)
     @return:
     """
     if set_data is None:
         return None
-    logger.info("Inserting Set: {}".format(set_data[1]))
-    db.run_sql('INSERT OR IGNORE INTO sets(set_num) VALUES (?)', (set_data[1],))
 
-    set_data_processed = tuple(set_data[:] + [set_data[1]])
+    # logger.info("Inserting Set: {}".format(set_data[1]))
+
+    # This is all for total update from a class
+    dates = []
+    if len(set_data) == 27:  #this is the total number of items in a class list
+        set_data = set_data[1:]  #remove the id
+        dates = list(set_data[-4:] + set_data[0])  # get the last four items of the list (dates)
+        set_data = set_data[:22]  # remove the last four items from the list
+
+    if len(set_data) != 22:
+        logger.error("Set Data list is not valid")
+
+    db.run_sql('INSERT OR IGNORE INTO sets(set_num) VALUES (?)', (set_data[0],))
+
+    set_data_processed = tuple(
+        set_data[1:] + [set_data[1]])  #Take set_num and move it to the back so i can use it to compare
     db.run_sql('UPDATE sets SET '
-               'set_name=?, '
-               'set_num=?, '
+               'bo_set_num=?,'
                'item_num=?, '
-               'item_seq=?, '
+               'item_seq=?,'
+               'set_name=?, '
                'theme=?, '
                'subtheme=?, '
                'piece_count=?, '
@@ -92,6 +105,57 @@ def add_set_data_to_database(set_data):
                'box_volume=?, '
                'last_updated=?'
                'WHERE set_num=?', set_data_processed)
+
+    if len(dates) == 4:
+        db.run_sql('UPDATE sets SET '
+                   'last_inv_updated_bo=?, '
+                   'last_inv_updated_bl=?, '
+                   'last_inv_updated_re=?, '
+                   'last_price_updated=?'
+                   'WHERE set_num=?', set_data_processed)
+
+
+# def add_or_update_set_from_class(set_data_list):
+# """
+#     Single set add to database from a complete data list (all 26 items)
+#     @param sets_to_insert:
+#     @return:
+#     """
+#     if set_data_list is None:
+#         return None
+#     assert len(set_data_list)==26
+#
+#
+#     db.run_sql('INSERT OR IGNORE INTO sets(set_num) VALUES (?)', (set_data_list[0],))
+#
+#     set_data_processed = tuple(set_data_list[1:] + [set_data_list[0]])
+#     db.run_sql('UPDATE sets SET '
+#                'bo_set_num=?,'
+#                'item_num=?, '
+#                'item_seq=?,'
+#                'set_name=?, '
+#                'theme=?, '
+#                'subtheme=?, '
+#                'piece_count=?, '
+#                'figures=?, '
+#                'set_weight=?, '
+#                'year_released=?, '
+#                'date_released_us=?, '
+#                'date_ended_us=?, '
+#                'date_released_uk=?, '
+#                'date_ended_uk=?, '
+#                'original_price_us=?, '
+#                'original_price_uk=?, '
+#                'age_low=?, '
+#                'age_high=?, '
+#                'box_size=?, '
+#                'box_volume=?, '
+#                'last_updated=?,'
+#                'last_inv_updated_bo=?,'
+#                'last_inv_updated_bl=?,'
+#                'last_inv_updated_re=?,'
+#                'last_price_updated=? '
+#                'WHERE set_num=?', set_data_processed)
 
 
 def add_sets_to_database(set_id_list, id_col=0, update=1):
@@ -151,14 +215,15 @@ def add_sets_data_to_database(sets_to_insert):
         return
     sets_to_insert = list(filter(None, sets_to_insert))
     logger.info("Adding {} sets to the database".format(len(sets_to_insert)))
+
     db.batch_update('INSERT OR IGNORE INTO sets(set_num) VALUES (?)', ((p[1],) for p in sets_to_insert))
 
-    sets_to_insert_processed = [tuple(p[:] + [p[1]]) for p in sets_to_insert]
+    sets_to_insert_processed = [tuple(p[1:] + [p[1]]) for p in sets_to_insert]
     db.batch_update('UPDATE sets SET '
-                    'set_name=?, '
-                    'set_num=?, '
+                    'bo_set_num=?,'
                     'item_num=?, '
-                    'item_seq=?, '
+                    'item_seq=?,'
+                    'set_name=?, '
                     'theme=?, '
                     'subtheme=?, '
                     'piece_count=?, '
@@ -230,4 +295,4 @@ def _parse_get_basestats(id):
     @param row:
     @return:
     """
-    return data.get_basestats(id, type=1)
+    return data.get_basestats(id)

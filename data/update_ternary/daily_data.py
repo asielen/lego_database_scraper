@@ -26,6 +26,7 @@ def get_all_daily_set_data(set_list):
 
     set_daily_to_scrape = []
     set_daily_to_insert = []
+    sets_missed = []
     pool = _pool(LBEF.RUNNINGPOOL)
     timer = LBEF.process_timer("Update Historic Prices")
 
@@ -40,7 +41,13 @@ def get_all_daily_set_data(set_list):
         # Scrape Pieces
 
         if idx > 0 and idx % (LBEF.RUNNINGPOOL) == 0:
-            temp_list = pool.map(_get_daily_set_data, set_daily_to_scrape)
+            try:
+                temp_list = pool.map(_get_daily_set_data, set_daily_to_scrape)
+            except AttributeError:
+                logger.error("Missed {} sets".format(len(set_daily_to_scrape)))
+                sets_missed.extend(set_daily_to_scrape)
+                temp_list = []
+
             set_daily_to_insert.extend(temp_list)
             logger.info(
                 "@@@ Running Pool {} of {} sets ({}% complete)".format(idx, num_sets, round((idx / num_sets) * 100)))
@@ -56,7 +63,12 @@ def get_all_daily_set_data(set_list):
             set_daily_to_insert = []
 
     # Final Scrape and insert
-    temp_list = pool.map(_get_daily_set_data, set_daily_to_scrape)
+    try:
+        temp_list = pool.map(_get_daily_set_data, set_daily_to_scrape)
+    except AttributeError:
+        logger.error("Missed {} sets".format(len(set_daily_to_scrape)))
+        sets_missed.extend(set_daily_to_scrape)
+        temp_list = []
     set_daily_to_insert.extend(temp_list)
     _add_daily_set_data_to_database(set_daily_to_insert)
 
@@ -65,6 +77,13 @@ def get_all_daily_set_data(set_list):
 
     timer.log_time(num_sets)
     timer.end()
+
+    if len(sets_missed) > 0:
+        # Missed Sets
+        logger.critical("MISSED {} SETS".format(len(sets_missed)))
+        run_again = input("Run Again?")
+        if run_again == "y":
+            get_all_daily_set_data(sets_missed)
 
 
 def _get_daily_set_data(set_tags):

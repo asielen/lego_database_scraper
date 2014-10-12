@@ -62,7 +62,7 @@ def run_sql(sql_text, insert_list=None, one=False):
             c.execute(sql_text)
         if one:
             result = c.fetchone()
-            if result is not None:
+            if result is not None and isinstance(result, tuple) and len(result) == 1:  # To keep from returning (xxx,)
                 result = result[0]
         else:
             result = c.fetchall()
