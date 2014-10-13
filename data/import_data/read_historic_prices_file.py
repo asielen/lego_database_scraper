@@ -7,7 +7,7 @@ import arrow
 import database as db
 from database import info
 from system.logger import logger
-from system import base_methods as LBEF
+from system import base
 
 
 def open_dm_csv(file_name='Eval_Data.csv'):
@@ -17,7 +17,7 @@ def open_dm_csv(file_name='Eval_Data.csv'):
     @return:
     """
     logger.info("$$$ Adding historic prices from csv file")
-    set_id_dict = LBEF.list_to_dict(info.get_set_id())
+    set_id_dict = base.list_to_dict(info.get_set_id())
 
     total_rows = 0
 
@@ -32,7 +32,7 @@ def open_dm_csv(file_name='Eval_Data.csv'):
     current_price_row = []
     current_rating_row = ()
 
-    timer = LBEF.process_timer("Add historic data to database")
+    timer = base.process_timer("Add historic data to database")
 
     for idx, r in enumerate(historic_prices):
 
@@ -68,7 +68,7 @@ def get_rows(row, set_id_dict):
         set_id = set_id_dict[row[0]]
     except:
         try:
-            set_id = set_id_dict[LBEF.expand_set_num(row[0])]
+            set_id = set_id_dict[base.expand_set_num(row[0])]
         except:
             if len(row) > 0:
                 logger.warning("Can't find set: {}".format(row[0]))
@@ -83,16 +83,16 @@ def get_rows(row, set_id_dict):
 def scrub_row(set_id, date, row):
     price_types = {'current_new': 1, 'current_used': 2, 'historic_new': 3,
                    'historic_used': 4}  # This is the same as what it is stored in the database
-    price_list = [(set_id, date, price_types['current_new'], LBEF.float_null(row[12]), LBEF.float_null(row[11]),
-                   LBEF.float_null(row[10]), LBEF.float_null(row[13]), LBEF.float_null(row[3])),
-                  (set_id, date, price_types['current_used'], LBEF.float_null(row[20]), LBEF.float_null(row[19]),
-                   LBEF.float_null(row[18]), LBEF.float_null(row[21]), LBEF.float_null(row[5])),
-                  (set_id, date, price_types['historic_new'], LBEF.float_null(row[8]), LBEF.float_null(row[7]),
-                   LBEF.float_null(row[6]), LBEF.float_null(row[9]), LBEF.float_null(row[2])),
-                  (set_id, date, price_types['historic_used'], LBEF.float_null(row[16]), LBEF.float_null(row[15]),
-                   LBEF.float_null(row[14]), LBEF.float_null(row[17]), LBEF.float_null(row[4]))]
+    price_list = [(set_id, date, price_types['current_new'], base.float_null(row[12]), base.float_null(row[11]),
+                   base.float_null(row[10]), base.float_null(row[13]), base.float_null(row[3])),
+                  (set_id, date, price_types['current_used'], base.float_null(row[20]), base.float_null(row[19]),
+                   base.float_null(row[18]), base.float_null(row[21]), base.float_null(row[5])),
+                  (set_id, date, price_types['historic_new'], base.float_null(row[8]), base.float_null(row[7]),
+                   base.float_null(row[6]), base.float_null(row[9]), base.float_null(row[2])),
+                  (set_id, date, price_types['historic_used'], base.float_null(row[16]), base.float_null(row[15]),
+                   base.float_null(row[14]), base.float_null(row[17]), base.float_null(row[4]))]
 
-    rating_list = (set_id, LBEF.int_null(row[1]), LBEF.int_null(row[0]), date)
+    rating_list = (set_id, base.int_null(row[1]), base.int_null(row[0]), date)
 
     return price_list, rating_list
 
@@ -104,32 +104,32 @@ def scrub_row(set_id, date, row):
     # raiting_dict = {'set_id': None, 'date': None, 'bs_want': None, 'bs_own': None}
     #
     #
-    # raiting_dict['bs_own'] = LBEF.int_null(row[0])
-    # raiting_dict['bs_want'] = LBEF.int_null(row[1])
+    # raiting_dict['bs_own'] = base.int_null(row[0])
+    # raiting_dict['bs_want'] = base.int_null(row[1])
     #
-    # price_dict['current_new']['min'] = LBEF.float_null(row[10])
-    # price_dict['current_new']['max'] = LBEF.float_null(row[11])
-    # price_dict['current_new']['avg'] = LBEF.float_null(row[12])
-    # price_dict['current_new']['qty_avg'] = LBEF.float_null(row[13])
-    # price_dict['current_new']['piece_avg'] = LBEF.float_null(row[3])
+    # price_dict['current_new']['min'] = base.float_null(row[10])
+    # price_dict['current_new']['max'] = base.float_null(row[11])
+    # price_dict['current_new']['avg'] = base.float_null(row[12])
+    # price_dict['current_new']['qty_avg'] = base.float_null(row[13])
+    # price_dict['current_new']['piece_avg'] = base.float_null(row[3])
     #
-    # price_dict['current_used']['min'] = LBEF.float_null(row[18])
-    # price_dict['current_used']['max'] = LBEF.float_null(row[19])
-    # price_dict['current_used']['avg'] = LBEF.float_null(row[20])
-    # price_dict['current_used']['qty_avg'] = LBEF.float_null(row[21])
-    # price_dict['current_used']['piece_avg'] = LBEF.float_null(row[5])
+    # price_dict['current_used']['min'] = base.float_null(row[18])
+    # price_dict['current_used']['max'] = base.float_null(row[19])
+    # price_dict['current_used']['avg'] = base.float_null(row[20])
+    # price_dict['current_used']['qty_avg'] = base.float_null(row[21])
+    # price_dict['current_used']['piece_avg'] = base.float_null(row[5])
     #
-    # price_dict['historic_new']['min'] = LBEF.float_null(row[6])
-    # price_dict['historic_new']['max'] = LBEF.float_null(row[7])
-    # price_dict['historic_new']['avg'] = LBEF.float_null(row[8])
-    # price_dict['historic_new']['qty_avg'] = LBEF.float_null(row[9])
-    # price_dict['historic_new']['piece_avg'] = LBEF.float_null(row[2])
+    # price_dict['historic_new']['min'] = base.float_null(row[6])
+    # price_dict['historic_new']['max'] = base.float_null(row[7])
+    # price_dict['historic_new']['avg'] = base.float_null(row[8])
+    # price_dict['historic_new']['qty_avg'] = base.float_null(row[9])
+    # price_dict['historic_new']['piece_avg'] = base.float_null(row[2])
     #
-    # price_dict['historic_used']['min'] = LBEF.float_null(row[14])
-    # price_dict['historic_used']['max'] = LBEF.float_null(row[15])
-    # price_dict['historic_used']['avg'] = LBEF.float_null(row[16])
-    # price_dict['historic_used']['qty_avg'] = LBEF.float_null(row[17])
-    # price_dict['historic_used']['piece_avg'] = LBEF.float_null(row[4])
+    # price_dict['historic_used']['min'] = base.float_null(row[14])
+    # price_dict['historic_used']['max'] = base.float_null(row[15])
+    # price_dict['historic_used']['avg'] = base.float_null(row[16])
+    # price_dict['historic_used']['qty_avg'] = base.float_null(row[17])
+    # price_dict['historic_used']['piece_avg'] = base.float_null(row[4])
     #
     # return price_dict, raiting_dict
 
@@ -149,7 +149,7 @@ def add_daily_prices_to_database(prices):
     # with con:
     # c = con.cursor()
     #
-    #     for price in prices:
+    # for price in prices:
     #         c.executemany(
     #             'INSERT OR IGNORE INTO historic_prices(set_id, record_date, price_type, avg, max, min, qty_avg, piece_avg)'
     #             ' VALUES (?, ?, ?, ?, ?, ?, ?, ?)', prices)
@@ -162,21 +162,21 @@ def add_daily_ratings_to_database(ratings):
     # con = lite.connect(db)
     # with con:
     # c = con.cursor()
-    #     c.executemany('INSERT OR IGNORE INTO bs_ratings(set_id, want, own, record_date)'
+    # c.executemany('INSERT OR IGNORE INTO bs_ratings(set_id, want, own, record_date)'
     #                   ' VALUES (?, ?, ?, ?)', ratings)
 
 
 def parse_date(s):
     return arrow.get(s[:4] + "-" + s[4:6] + "-" + s[6:]).timestamp
 
-#
-# def get_all_set_ids():
+    #
+    # def get_all_set_ids():
     # con = lite.connect(db)
-    #     with con:
+    # with con:
     #         c = con.cursor()
     #
     #         c.execute("SELECT set_num, id FROM sets")
-    #         set_id_list = LBEF.list_to_dict(c.fetchall())
+    #         set_id_list = base.list_to_dict(c.fetchall())
     #
     #     return set_id_list
 

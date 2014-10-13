@@ -8,7 +8,6 @@ __author__ = 'andrew.sielen'
 # @ Download sets from Rebrickable
 # * init_inventories()
 # @ Download from Rebrickable Api and add to the database
-# todo: need to implement this
 
 import data.bricklink.bricklink_api as blapi
 import data.rebrickable.rebrickable_api as reapi

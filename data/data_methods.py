@@ -2,7 +2,7 @@ __author__ = 'andrew.sielen'
 
 from system.logger import logger
 
-from system.base_methods import LBEF
+from system import base
 from data.bricklink import bricklink_data_scrape as blds
 from data.bricklink.bricklink_api import bricklink_api as blapi
 from data.brickset.brickset_api import brickset_set_data as BS
@@ -21,7 +21,7 @@ def get_colors():
         reapi.pull_colors())  # bl_color: [rebrickable ID, Name, hex, [ldraw color], [bricklink color]]
     peeron_colors = _filter_peeron_colors(
         perapi.pull_colors())  # [bl_name, bl_id, ldraw_id, ldraw_hex, lego_id, lego_name]
-    bricklink_colors = LBEF.list_to_dict(_filter_bl_colors(blapi.pull_colors()))
+    bricklink_colors = base.list_to_dict(_filter_bl_colors(blapi.pull_colors()))
 
     processed_colors = []
 
@@ -81,9 +81,9 @@ def _filter_peeron_colors(colors):
     processed_colors = []
     for c in colors:
         # Convert the text to ints
-        c[3] = LBEF.int_null(c[3])
-        c[4] = LBEF.int_null(c[4])
-        c[6] = LBEF.int_null(c[6])
+        c[3] = base.int_null(c[3])
+        c[4] = base.int_null(c[4])
+        c[6] = base.int_null(c[6])
         processed_colors.append(c[2:-4])
     return processed_colors
 
@@ -127,7 +127,7 @@ def _filter_rebrickable_colors(colors):
     for c in colors:
         if str(c[10][0]) not in processed_colors:
             processed_colors[str(c[10][0])] = []
-        processed_colors[str(c[10][0])].append([LBEF.int_null(c[1]), c[2], c[3], c[9][0], c[10][0]])
+        processed_colors[str(c[10][0])].append([base.int_null(c[1]), c[2], c[3], c[9][0], c[10][0]])
 
     return processed_colors
 
@@ -142,7 +142,7 @@ def _process_clist(clist):
     if isinstance(clist, list): return clist
     clist = clist.strip("{}")
     clist = clist.split(',')
-    clist = [LBEF.int_null(c) for c in clist]
+    clist = [base.int_null(c) for c in clist]
     return clist
 
 
@@ -195,7 +195,7 @@ def get_piece_info(bl_id=None, bo_id=None, re_id=None, lego_id=None, type=1):
                 logger.debug("Found bl_id {}".format(bl_piece_info['design_num']))
             else:
                 logger.debug("Couldn't Find bl_id adding as filler")
-                LBEF.note("Missing Piece Info: re_id={}".format(re_id))
+                base.note("Missing Piece Info: re_id={}".format(re_id))
 
     if bl_piece_info is not None:
         piece_info['bricklink_id'] = bl_piece_info['design_num']
@@ -228,7 +228,7 @@ def get_basestats(o_set, type=1):
         logger.warning("Trying to update a set but there is none to update")
         return None
 
-    set_num, set_seq, o_set = LBEF.expand_set_num(o_set)
+    set_num, set_seq, o_set = base.expand_set_num(o_set)
     if set_num is None:  # If it is an invalid setnum then return Num, this happens for rebrickable alternate sets that have multiple dashes in the setnum
         return None
 
@@ -254,15 +254,15 @@ def get_basestats(o_set, type=1):
     if 'set_num' in brickset_stats:
         # if brickset_stats['set_num'] == '':
         # return None
-        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = LBEF.expand_set_num(
+        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = base.expand_set_num(
             brickset_stats['set_num'])
     elif 'set_num' in bricklink_stats:
         # if bricklink_stats['set_num'] == '':
         # return None
-        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = LBEF.expand_set_num(
+        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = base.expand_set_num(
             bricklink_stats['set_num'])
     else:
-        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = LBEF.expand_set_num(
+        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = base.expand_set_num(
             o_set)
 
     if "theme" in brickset_stats:
@@ -346,7 +346,7 @@ def get_basestats(o_set, type=1):
         logger.warning("No data for o_set: {}".format(o_set))
         return None
 
-    scrubbed_dic['last_update'] = LBEF.get_timestamp()
+    scrubbed_dic['last_update'] = base.get_timestamp()
 
     scrubbed_dic['bo_set_num'] = None  # Todo, have this actually set the bo_set_num
 

@@ -1,4 +1,4 @@
-from system.base_methods import LBEF
+from system.base import LBEF
 
 __author__ = 'Andrew'
 
@@ -12,6 +12,7 @@ from profilehooks import profile
 
 from database.info.database_info import database
 
+# Todo, this whole file I think can be replaced with the rebrickable_api
 
 REBRICKABLE_COLORS = 'colors.csv'
 REBRICKABLE_PIECES = 'pieces.csv'

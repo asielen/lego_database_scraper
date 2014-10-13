@@ -9,7 +9,7 @@ __author__ = 'andrew.sielen'
 # external
 import re
 
-from system.base_methods import LBEF
+from system import base
 from database import info
 import database as db
 from system.logger import logger
@@ -104,7 +104,7 @@ def get_blPieceInfo(design_num):
     weight_tag = child_tags0[3].get_text().split(":")[1]
     # Pull the weight from the tag that contains the weight.
     # EX: <td width="20%"><font color="#666666">Weight (in grams):</font><br>0.45</td>
-    weight = LBEF.float_zero(weight_tag)
+    weight = base.float_zero(weight_tag)
 
     # Find Name
     name_tag = soup.find("font", {"face": "Geneva,Arial,Helvetica"})
@@ -169,7 +169,7 @@ def _check_minifig(soup, design_num):
     weight_tag = child_tags0[2].get_text().split(":")[1]
     # Pull the weight from the tag that contains the weight.
     # EX: <td width="20%"><font color="#666666">Weight (in grams):</font><br>0.45</td>
-    weight = LBEF.float_zero(weight_tag)
+    weight = base.float_zero(weight_tag)
 
     # Find Type and Categories
     type = "M"
@@ -220,7 +220,7 @@ def _search_piece(design_num, verbose=0):
 
 def _verify_valid_url(url, verbose=0):
     if verbose == 1: logger.debug(url)
-    soup = LBEF.soupify(url)
+    soup = base.soupify(url)
     if soup is not None:
         parent_tags0 = soup.find("font", {"size": "+2"})
         parent_tags1 = soup.find(text="Search Results")

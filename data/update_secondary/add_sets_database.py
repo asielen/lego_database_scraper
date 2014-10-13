@@ -2,10 +2,12 @@ __author__ = 'andrew.sielen'
 
 from multiprocessing import Pool as _pool
 
+# Todo: Need to test this file
+
 import data
 import database as db
 import database.info as info
-import system.base_methods as LBEF
+from system import base
 from system.logger import logger
 
 
@@ -172,9 +174,9 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
     logger.info("$$$ Adding sets to the database")
     sets_to_scrape = []
     sets_to_insert = []
-    pool = _pool(LBEF.RUNNINGPOOL)
+    pool = _pool(base.RUNNINGPOOL)
 
-    timer = LBEF.process_timer("Add Sets to Database")
+    timer = base.process_timer("Add Sets to Database")
     for idx, row in enumerate(set_id_list):
         if len(row) == 0:
             continue
@@ -184,7 +186,7 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
 
         sets_to_scrape.append(row[id_col])
 
-        if idx > 0 and idx % (LBEF.RUNNINGPOOL * 3) == 0:
+        if idx > 0 and idx % (base.RUNNINGPOOL * 3) == 0:
             logger.info("@@@ Running Pool {}".format(idx))
             sets_to_insert.extend(pool.map(_parse_get_basestats, sets_to_scrape))
             timer.log_time(len(sets_to_scrape))
@@ -275,7 +277,7 @@ def _check_set_completeness(set_data, level=1):
     """
     if level == -1: return True
     if level >= 0:
-        if LBEF.old_data(set_data[22]) is True:
+        if base.old_data(set_data[22]) is True:
             return False
     if level == 2:
         for n in set_data:

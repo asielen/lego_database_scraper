@@ -4,7 +4,7 @@ import sqlite3 as lite
 
 import database as db
 from database import info
-import system.base_methods as LBEF
+import system.base as LBEF
 
 
 def add_daily_set_data_to_database(daily_data):
@@ -49,7 +49,7 @@ def add_daily_set_data_to_database(daily_data):
 
     # Now add everything to the database
 
-    #Add prices
+    # Add prices
     db.batch_update(
         'INSERT OR IGNORE INTO historic_prices(set_id, record_date, price_type, avg, lots, max, min, qty, qty_avg, piece_avg) '
         'VALUES (?,?,?,?,?,?,?,?,?,?)', cprices_list_to_insert)
@@ -157,7 +157,7 @@ def check_set_availability_dates(set_id, ratings):
         # def main():
         # # SET = input("What is the set number?: ")
         # # print(get_daily(SET))
-        #     # main()
+        # # main()
         #
         #
         # if __name__ == "__main__":

@@ -4,7 +4,7 @@ import sqlite3 as lite
 import sys
 
 from database import database
-import system.base_methods as LBEF
+from system import base
 from system.logger import logger
 
 
@@ -42,12 +42,12 @@ def run_batch_sql(sql_text, values):
         try:
             c.executemany(sql_text, values)
         except:
-            LBEF.note("ERROR: {}".format(sys.exc_info()[0]))
-            LBEF.note("Can't insert row: {} / {}".format(len(values), LBEF.list2string(values)))
+            logger.note("ERROR: {}".format(sys.exc_info()[0]))
+            logger.note("Can't insert row: {} / {}".format(len(values), base.list2string(values)))
             logger.error("ERROR: {} | Can't insert row: {} / {}".format(sys.exc_info()[0], len(values),
-                                                                        LBEF.list2string(values)))
+                                                                        base.list2string(values)))
             for r in values:
-                LBEF.note("Can't insert row: {}".format(LBEF.list2string(r)))
+                logger.note("Can't insert row: {}".format(base.list2string(r)))
 
 
 def run_sql(sql_text, insert_list=None, one=False):

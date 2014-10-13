@@ -1,7 +1,9 @@
+# This isn't part of the project, but rather a side project to count lines of code.
+#
 # Database
 # objects:
 # name TEXT
-#     path TEXT
+# path TEXT
 #     type TEXT (file)
 #     parent ID
 #     line_count INT

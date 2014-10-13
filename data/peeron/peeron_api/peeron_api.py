@@ -5,7 +5,7 @@ __author__ = 'andrew.sielen'
 # peeron colors: http://www.peeron.com/inv/colors
 
 
-from system import base_methods as LBEF
+from system import base
 
 
 def pull_colors():
@@ -14,7 +14,7 @@ def pull_colors():
     note rebrickable ID is essentially the same as the ldraw id
     """
     url = 'http://www.peeron.com/inv/colors'
-    soup = LBEF.soupify(url)
+    soup = base.soupify(url)
     table_tags = soup.findAll('table')
     table = table_tags[1]
-    return LBEF.parse_html_table(table)
+    return base.parse_html_table(table)

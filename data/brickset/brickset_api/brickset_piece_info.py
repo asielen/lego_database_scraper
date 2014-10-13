@@ -2,7 +2,7 @@ __author__ = 'andrew.sielen'
 
 import pprint
 
-from system.base_methods.LBEF import *
+from system.base import *  # Change this to not using *
 
 
 # http://brickset.com/parts/473326 <-Piece lookup

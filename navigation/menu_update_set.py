@@ -8,7 +8,7 @@ __author__ = 'andrew.sielen'
 
 import navigation.menu
 from data import update_secondary as secondary
-from system.base_methods import LBEF as LBEF
+from system import base
 
 
 def main():
@@ -27,7 +27,7 @@ def main():
 
 def update_baseStats():
     print("Update Base Stats")
-    set_id = LBEF.input_set_num()
+    set_id = base.input_set_num()
     secondary.add_set_to_database(set_id)
 
 

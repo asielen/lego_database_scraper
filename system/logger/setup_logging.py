@@ -38,3 +38,8 @@ def setup_logging():
 
 
 logger = logging.getLogger('LBEF')
+
+
+def note(string):
+    with open(notes_file, 'a')  as text_file:
+        print(arrow.now('US/Pacific').format('YYYYMMDD HH:mm') + " @ " + string, file=text_file)

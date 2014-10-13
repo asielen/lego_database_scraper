@@ -1,7 +1,8 @@
 __author__ = 'andrew.sielen'
 
-# Probably no longer needed
-from system.base_methods import LBEF
+# File Probably no longer needed
+
+from system import base
 
 # http://brickset.com/inventories/21010-1 <-Set piece lookip
 
@@ -13,7 +14,7 @@ def get_setpieces(set_num_primary, set_num_secondary=1):
     """
     url = "http://brickset.com/inventories/{0}-{1}".format(set_num_primary, set_num_secondary)
     # print(url)
-    soup = LBEF.soupify(url)
+    soup = base.soupify(url)
 
     pieces = {}
     pieces = _parse_pieces(soup)
@@ -41,7 +42,7 @@ def _parse_pieces(soup):
     if parent_table0 is None:
         return None
 
-    pieces_array = LBEF.parse_html_table(parent_table0)
+    pieces_array = base.parse_html_table(parent_table0)
 
     pieces_array2 = []
 

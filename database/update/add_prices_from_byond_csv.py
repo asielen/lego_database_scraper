@@ -1,4 +1,4 @@
-from system.base_methods import LBEF
+from system.base import LBEF
 
 __author__ = 'Andrew'
 

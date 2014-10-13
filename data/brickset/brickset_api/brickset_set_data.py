@@ -2,7 +2,7 @@ __author__ = 'andrew.sielen'
 
 import arrow
 
-import system.base_methods as LBEF
+from system import base
 
 
 # http://brickset.com/inventories/[set-num]-[set-seq] <- THe set inventory
@@ -29,7 +29,7 @@ def get_basestats(set_num_primary, set_num_secondary=1):
 
     url = "http://brickset.com/sets/{0}-{1}".format(set_num_primary, set_num_secondary)
 
-    soup = LBEF.soupify(url)
+    soup = base.soupify(url)
 
     if soup is None: return {}
 
@@ -52,7 +52,7 @@ def get_daily_data(set_num_primary, set_num_secondary=1):
     """
     url = "http://brickset.com/sets/{0}-{1}".format(set_num_primary, set_num_secondary)
 
-    soup = LBEF.soupify(url)
+    soup = base.soupify(url)
 
     dic = {}
     # #These three should be updated every day
@@ -97,7 +97,7 @@ def _parse_set_dimensions(d_string):
     if 'cm' in d_string:
         # if 'cm' is in the second element of the list, use those numbers
         cm = str.split(d_string, "cm")[0]
-        return tuple([LBEF.zero_2_null(LBEF.only_numerics_float(s)) for s in str.split(cm, ' x ')])
+        return tuple([base.zero_2_null(base.only_numerics_float(s)) for s in str.split(cm, ' x ')])
     else:
         # if no cm dims in the string
         return (None, None, None)
@@ -110,12 +110,12 @@ def _parse_set_dimensions(d_string):
 # parent_tags0 = soup.find("h1")
 # if not parent_tags0:
 # return ""
-#     return parent_tags0.string.strip()
+# return parent_tags0.string.strip()
 
 def get_bs_want_own(set_num_primary, set_num_secondary=1):
     url = "http://brickset.com/sets/{0}-{1}".format(set_num_primary, set_num_secondary)
 
-    soup = LBEF.soupify(url)
+    soup = base.soupify(url)
 
     return _parse_want_own(soup)
 
@@ -146,7 +146,7 @@ def _parse_want_own(soup):
 def get_bs_avaiable_dates(set_num_primary, set_num_secondary=1):
     url = "http://brickset.com/sets/{0}-{1}".format(set_num_primary, set_num_secondary)
 
-    soup = LBEF.soupify(url)
+    soup = base.soupify(url)
 
     return _parse_avaiable_dates(soup)
 
@@ -206,7 +206,7 @@ def _parse_available_dates_make_string(l):
 def get_bs_rating(set_num_primary, set_num_secondary=1):
     url = "http://brickset.com/sets/{0}-{1}".format(set_num_primary, set_num_secondary)
 
-    soup = LBEF.soupify(url)
+    soup = base.soupify(url)
 
     return _parse_rating(soup)
 
@@ -275,11 +275,11 @@ def scrub_data(dic):
     if 'LEGO item numbers' in dic:
         scrubbed_dic['lego_item_num'] = dic['LEGO item numbers']
     if 'Minifigs' in dic:
-        scrubbed_dic['figures'] = LBEF.scrub_text2int(dic['Minifigs'])
+        scrubbed_dic['figures'] = base.scrub_text2int(dic['Minifigs'])
     if 'Dimensions' in dic:
         scrubbed_dic['dimensions'], scrubbed_dic['volume'] = bs_scrub_dimensions(dic['Dimensions'])
     if 'Pieces' in dic:
-        scrubbed_dic['pieces'] = LBEF.scrub_text2int(dic['Pieces'])
+        scrubbed_dic['pieces'] = base.scrub_text2int(dic['Pieces'])
     if 'Price per piece' in dic:
         scrubbed_dic['price_per_piece'] = bs_scrub_price(dic['Price per piece'])
     if 'RRP' in dic:
@@ -298,9 +298,9 @@ def scrub_data(dic):
     if 'United States' in dic:
         scrubbed_dic['available_us'] = dic['United States']
     if 'people own this set' in dic:
-        scrubbed_dic['bs_own'] = LBEF.only_numerics_int(dic['people own this set'])
+        scrubbed_dic['bs_own'] = base.only_numerics_int(dic['people own this set'])
     if 'want this set' in dic:
-        scrubbed_dic['bs_want'] = LBEF.only_numerics_int(dic['want this set'])
+        scrubbed_dic['bs_want'] = base.only_numerics_int(dic['want this set'])
     if 'bs_score' in dic:
         scrubbed_dic['bs_score'] = dic['bs_score']
 
@@ -360,11 +360,11 @@ def scrub_daily_data(dic):
     else:
         scrubbed_dic['available_us'] = (None, None)
     if 'people own this set' in dic:
-        scrubbed_dic['bs_own'] = LBEF.only_numerics_int(dic['people own this set'])
+        scrubbed_dic['bs_own'] = base.only_numerics_int(dic['people own this set'])
     else:
         scrubbed_dic['bs_own'] = None
     if 'want this set' in dic:
-        scrubbed_dic['bs_want'] = LBEF.only_numerics_int(dic['want this set'])
+        scrubbed_dic['bs_want'] = base.only_numerics_int(dic['want this set'])
     else:
         scrubbed_dic['bs_want'] = None
     if 'bs_score' in dic:
@@ -386,10 +386,10 @@ def bs_scrub_price(s):
     for p in price_list:
         if '\u00A3' in p or 'p' in p:
             #searches for the pound sign or pence
-            price_dic['uk'] = LBEF.zero_2_null(LBEF.only_numerics_float(p))
+            price_dic['uk'] = base.zero_2_null(base.only_numerics_float(p))
         elif '$' in p or 'c' in p:
             #searches for the dollar sign or c for cents
-            price_dic['us'] = LBEF.zero_2_null(LBEF.only_numerics_float(p))
+            price_dic['us'] = base.zero_2_null(base.only_numerics_float(p))
     return price_dic
 
 
@@ -401,7 +401,7 @@ def bs_scrub_age_range(s):
             returns (7,)
     """
     ages = s.split('-')
-    ages_list = tuple([LBEF.zero_2_null(LBEF.only_numerics_int(s)) for s in ages])
+    ages_list = tuple([base.zero_2_null(base.only_numerics_int(s)) for s in ages])
     if len(ages_list) < 2:
         ages_list = (ages_list[0], None)
     return ages_list
@@ -422,7 +422,7 @@ def bs_scrub_weight(s):
             and returns 400.0
     """
     weight = s.split('Kg')[0]
-    weight = LBEF.only_numerics_float(weight) * 1000  #Kg to grams conversion
+    weight = base.only_numerics_float(weight) * 1000  #Kg to grams conversion
     if weight == 0: return None
     return weight
 
@@ -431,15 +431,15 @@ def bs_scrub_year(s):
     """
         Takes a year as '2012' and returns '2012-1-1'
     """
-    return LBEF.zero_2_null(LBEF.only_numerics_int(s))
+    return base.zero_2_null(base.only_numerics_int(s))
 
 
 def main():
     import pprint
 
     pp = pprint.PrettyPrinter(indent=4)
-    set = LBEF.input_set_num("What is the set num? ")
-    set_num, set_seq, set = LBEF.expand_set_num(set)
+    set = base.input_set_num("What is the set num? ")
+    set_num, set_seq, set = base.expand_set_num(set)
     pp.pprint(get_basestats(set_num, set_seq))
     pp.pprint(get_daily_data(set_num, set_seq))
     main()

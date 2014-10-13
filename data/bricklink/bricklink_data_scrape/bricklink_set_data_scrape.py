@@ -5,7 +5,7 @@ __author__ = 'andrew.sielen'
 
 # http://www.bricklink.com/catalogItem.asp?P=[piece number] <- gives you weight
 
-from system.base_methods import LBEF
+from system import base
 
 # Get base stats
 def get_basestats(set_num_primary, set_num_secondary=1):
@@ -22,7 +22,7 @@ def get_basestats(set_num_primary, set_num_secondary=1):
     """
     url = "http://www.bricklink.com/catalogItem.asp?S={0}-{1}".format(set_num_primary, set_num_secondary)
 
-    soup = LBEF.soupify(url)
+    soup = base.soupify(url)
     if soup is None: return {}
 
     # Get the set name
@@ -30,7 +30,7 @@ def get_basestats(set_num_primary, set_num_secondary=1):
     if parent_tags0 == None: return {}
     set_name = parent_tags0.string.strip()
 
-    #Get figures and parts
+    # Get figures and parts
     parent_tags1 = soup.find("td", {"width": "25%", "valign": "TOP", "class": "fv"})
     if not parent_tags1: return {}
     children_tags_text = parent_tags1.get_text()
@@ -45,7 +45,7 @@ def get_basestats(set_num_primary, set_num_secondary=1):
             start = children_tags_text.index("Set", 0, end) + 4
         else:
             start = children_tags_text.index("Of:", 0, end) + 3
-        piece_count = LBEF.scrub_text2int(children_tags_text[start:end])
+        piece_count = base.scrub_text2int(children_tags_text[start:end])
         children_tags_text = children_tags_text[end:]
         #This line makes finding the minifigure count easier by removing the data for pieces
     if "Minifig" in children_tags_text:
@@ -60,7 +60,7 @@ def get_basestats(set_num_primary, set_num_secondary=1):
         if start is None:
             figures_count = 0
         else:
-            figures_count = LBEF.scrub_text2int(children_tags_text[start:end])
+            figures_count = base.scrub_text2int(children_tags_text[start:end])
 
 
 
@@ -76,7 +76,7 @@ def get_basestats(set_num_primary, set_num_secondary=1):
             dic[i.contents[0].string.strip()] = _parse_dimensions(i.contents[-1].string.strip())
         elif "Weight" in i.contents[0].string.strip():
             #Makes the weight a float instead of a string
-            dic[i.contents[0].string.strip()] = LBEF.float_null(i.contents[-1].string.strip())
+            dic[i.contents[0].string.strip()] = base.float_null(i.contents[-1].string.strip())
         else:
             dic[i.contents[0].string.strip()] = i.contents[-1].string.strip()
             #i.contents[0] is the title tag / i.contents[-1] is the innermost tag
@@ -90,7 +90,7 @@ def _parse_dimensions(s):
     """
     if s == '?':
         return None
-    return tuple([LBEF.float_null(s) for s in str.split(s, u'\xa0x\xa0')])
+    return tuple([base.float_null(s) for s in str.split(s, u'\xa0x\xa0')])
 
 
 def _scrub_base_data(dic):
@@ -133,7 +133,7 @@ def _scrub_base_data(dic):
     if 'Weight (in grams):' in dic:
         scrubbed_dic['weight'] = dic['Weight (in grams):']
     if 'Year Released:' in dic:
-        scrubbed_dic['year_released'] = LBEF.int_null(dic['Year Released:'])
+        scrubbed_dic['year_released'] = base.int_null(dic['Year Released:'])
 
     return scrubbed_dic
 

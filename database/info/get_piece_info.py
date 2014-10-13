@@ -1,9 +1,8 @@
 __author__ = 'andrew.sielen'
 
 from system import logger
-from system import base_methods as base
+from system import base
 import database as db
-import system.base_methods as LBEF
 
 # Todo: 20140908 Add type
 def get_color_id(color_num, colors=None, type='bl'):
@@ -15,7 +14,7 @@ def get_color_id(color_num, colors=None, type='bl'):
     @return:
     """
     color_id = 9999
-    color_num = LBEF.int_null(color_num)
+    color_num = base.int_null(color_num)
     if colors is not None:
         try:
             color_id = colors[color_num]

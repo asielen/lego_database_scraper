@@ -1,11 +1,9 @@
-from system.base_methods import LBEF
-
 __author__ = 'andrew.sielen'
 
 import sqlite3 as lite
 
 import database as db
-
+from system import base
 
 
 # Todo: Make this all work with the new database structure
@@ -33,7 +31,7 @@ def get_sets_between_years(start_year, end_year=None):
         c = con.cursor()
         c.execute("SELECT set_num FROM sets WHERE year_released BETWEEN ? AND ?;", (start_year, end_year))
         sets_raw = c.fetchall()
-        sets = LBEF.flatten_list(sets_raw)
+        sets = base.flatten_list(sets_raw)
 
     return sets
 
@@ -130,7 +128,7 @@ def read_bl_categories():
 
     @return: a list in this format [category_id, id]
     """
-    return LBEF.list_to_dict(db.run_sql('SELECT bl_category_id, id FROM bl_categories'))
+    return base.list_to_dict(db.run_sql('SELECT bl_category_id, id FROM bl_categories'))
 
 
 def read_bl_colors():
@@ -138,7 +136,7 @@ def read_bl_colors():
 
     @return: a list in this format {color_id, id}
     """
-    return LBEF.list_to_dict(db.run_sql('SELECT bl_color_id, id FROM colors'))
+    return base.list_to_dict(db.run_sql('SELECT bl_color_id, id FROM colors'))
 
 
 def read_re_colors():
@@ -146,7 +144,7 @@ def read_re_colors():
 
     @return: a list in this format {color_id, id}
     """
-    return LBEF.list_to_dict(db.run_sql('SELECT re_color_id, id FROM colors'))
+    return base.list_to_dict(db.run_sql('SELECT re_color_id, id FROM colors'))
 
 
 def read_bl_colors_name():
@@ -154,7 +152,7 @@ def read_bl_colors_name():
 
     @return: a list in this format {color_name, id}
     """
-    return LBEF.list_to_dict(db.run_sql('SELECT bl_color_name, id FROM colors'))
+    return base.list_to_dict(db.run_sql('SELECT bl_color_name, id FROM colors'))
 
 
 def read_bl_price_types():
@@ -162,7 +160,7 @@ def read_bl_price_types():
 
     @return: a dict in this format {price_id: id}
     """
-    return LBEF.list_to_dict(db.run_sql('SELECT price_type, id FROM price_types'))
+    return base.list_to_dict(db.run_sql('SELECT price_type, id FROM price_types'))
 
 
 def read_bl_sets():
@@ -242,7 +240,7 @@ def read_bl_parts():
 
     @return: a dict in this format {part_num: id, }
     """
-    return LBEF.list_to_dict(db.run_sql('SELECT bricklink_id, id FROM parts'))
+    return base.list_to_dict(db.run_sql('SELECT bricklink_id, id FROM parts'))
 
 
 def read_re_parts():
@@ -250,4 +248,4 @@ def read_re_parts():
 
     @return: a dict in this format {part_num: id, }
     """
-    return LBEF.list_to_dict(db.run_sql('SELECT rebrickable_id, id FROM parts'))
+    return base.list_to_dict(db.run_sql('SELECT rebrickable_id, id FROM parts'))

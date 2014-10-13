@@ -5,7 +5,7 @@ from system.logger import logger
 # other modules
 import database as db
 import database.info as info
-import system.base_methods as LBEF
+from system import base
 from multiprocessing import Pool as _pool
 from time import sleep
 
@@ -59,8 +59,8 @@ def _fix_part_data_order(pl):
     if len(pl) == 5:
         return [pl[1], None, None, None, pl[2], pl[3], pl[4], pl[0]]
     else:
-        LBEF.note("CAN'T CONVERT LIST: [{}]".format(LBEF.list2string(pl)))
-        logger.warning("### CAN'T CONVERT LIST: [{}]".format(LBEF.list2string(pl)))
+        base.note("CAN'T CONVERT LIST: [{}]".format(base.list2string(pl)))
+        logger.warning("### CAN'T CONVERT LIST: [{}]".format(base.list2string(pl)))
         return None
 
 
@@ -85,11 +85,11 @@ def init_parts():
     parts_to_insert = []
     for row in pieces:
         if len(row) > 1:  # some rows are empty, ignore them
-            if LBEF.int_null(row[0]) in category_dict:  # check to see if the category exists in the category table
+            if base.int_null(row[0]) in category_dict:  # check to see if the category exists in the category table
                 row[0] = category_dict[int(row[0])]
             else:
                 logger.critical("!!! #init_parts({})# - Missing {} from category table".format(row[2], row[0]))
-            row[4] = LBEF.float_zero(row[4])
+            row[4] = base.float_zero(row[4])
             row.pop(1)  # remove the category name which is redundant with the cat_id
             row.append("P")  # Add the Piece tag
 
@@ -114,11 +114,11 @@ def init_minifigs():
     parts_to_insert = []
     for row in minifigs:
         if len(row) > 1:
-            if LBEF.int_null(row[0]) in category_dict:
+            if base.int_null(row[0]) in category_dict:
                 row[0] = category_dict[int(row[0])]
             else:
                 logger.critical("!!! #init_minifigs({})# - Missing {} from category table".format(row[2], row[0]))
-            row[4] = LBEF.float_zero(row[4])
+            row[4] = base.float_zero(row[4])
             row.pop(1)  # remove the category name which is redundant with the cat_id
             row.append("M")  # Add the Minifig tag
         parts_to_insert.append(_fix_part_data_order(row))
@@ -173,16 +173,16 @@ def update_bl_set_inventories(check_update=0):
 
     set_invs_to_scrape = []
     set_invs_to_insert = []
-    pool = _pool(LBEF.RUNNINGPOOL)
-    timer = LBEF.process_timer("Upadate Bricklink Inventories")
+    pool = _pool(base.RUNNINGPOOL)
+    timer = base.process_timer("Upadate Bricklink Inventories")
     for idx, s in enumerate(sets):
         if s in set_inv:
-            if check_update == 0 or not LBEF.old_data(last_updated[s]):
+            if check_update == 0 or not base.old_data(last_updated[s]):
                 continue
         set_invs_to_scrape.append((sets[s], s))
 
         # Scrape Pieces
-        if idx > 0 and idx % LBEF.RUNNINGPOOL == 0:
+        if idx > 0 and idx % base.RUNNINGPOOL == 0:
             temp_list = [y for x in pool.map(_get_set_inventory, set_invs_to_scrape) for y in x]  # flattens the list
             set_invs_to_insert.extend(temp_list)
             logger.info(
@@ -238,7 +238,7 @@ def _add_bl_inventories_to_database(invs):
     """
     set_ids_to_delete = set([n[0] for n in invs])  # list of just the set ids to remove them from the database
 
-    timestamp = LBEF.get_timestamp()
+    timestamp = base.get_timestamp()
     for s in set_ids_to_delete:
         db.run_sql("DELETE FROM bl_inventories WHERE set_id = ?", (s,))
         db.run_sql("UPDATE sets SET last_inv_updated_bl = ? WHERE id = ?", (timestamp, s))
@@ -258,7 +258,7 @@ def _process_colors(invs, colors=None):
     """
     if colors is None: colors = info.read_bl_colors()
     for inv in invs:
-        if LBEF.int_null(inv[3]) in colors:
+        if base.int_null(inv[3]) in colors:
             inv[3] = colors[int(inv[3])]
         else:
             logger.critical(
@@ -332,11 +332,11 @@ def add_part_to_database(part_num):
     # bl_categories = info.read_bl_categories()  # To convert the category ids to table ids
     #
     # part_row = data.get_piece_info(bl_id=part_num)
-    # part_row[7] = bl_categories[LBEF.int_zero(part_row[7])]  # Adjust the category
+    # part_row[7] = bl_categories[base.int_zero(part_row[7])]  # Adjust the category
     #
     # update.add_part_to_database(part_row)
     #
-    # logger.debug("Adding {} to part db (Values: {})".format(part_num, LBEF.list2string(part_row)))
+    # logger.debug("Adding {} to part db (Values: {})".format(part_num, base.list2string(part_row)))
 
     return get_bl_piece_id(part_num)
 
@@ -419,7 +419,7 @@ if __name__ == "__main__":
 
 
     def menu_add_bl_set_inventory_to_database():
-        set_num = LBEF.input_set_num()
+        set_num = base.input_set_num()
         add_bl_set_inventory_to_database(set_num)
 
 

@@ -16,7 +16,7 @@ from system.logger import logger
 
 # other module
 from navigation import menu
-from system.base_methods import LBEF
+from system import base
 
 
 url = "http://www.bricklink.com/catalogDownload.asp"
@@ -37,7 +37,7 @@ def pull_set_catalog():
                   'selDim': 'Y',
                   'itemTypeInv': 'S',
                   'downloadType': 'T'}
-    return LBEF.read_csv_from_url(url, params=parameters)
+    return base.read_csv_from_url(url, params=parameters)
 
 
 def pull_part_catalog():
@@ -55,7 +55,7 @@ def pull_part_catalog():
                   'selWeight': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return LBEF.read_csv_from_url(url, params=parameters)
+    return base.read_csv_from_url(url, params=parameters)
 
 
 def pull_minifig_catalog():
@@ -73,7 +73,7 @@ def pull_minifig_catalog():
                   'selWeight': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return LBEF.read_csv_from_url(url, params=parameters)
+    return base.read_csv_from_url(url, params=parameters)
 
 
 def pull_book_catalog():
@@ -91,7 +91,7 @@ def pull_book_catalog():
                   'selWeight': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return LBEF.read_csv_from_url(url, params=parameters)
+    return base.read_csv_from_url(url, params=parameters)
 
 
 def pull_gear_catalog():
@@ -108,7 +108,7 @@ def pull_gear_catalog():
                   'selDim': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return LBEF.read_csv_from_url(url, params=parameters)
+    return base.read_csv_from_url(url, params=parameters)
 
 
 def pull_catalogs_catalog():
@@ -125,7 +125,7 @@ def pull_catalogs_catalog():
                   'selDim': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return LBEF.read_csv_from_url(url, params=parameters)
+    return base.read_csv_from_url(url, params=parameters)
 
 
 def pull_instructions_catalog():
@@ -142,7 +142,7 @@ def pull_instructions_catalog():
                   'selDim': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return LBEF.read_csv_from_url(url, params=parameters)
+    return base.read_csv_from_url(url, params=parameters)
 
 
 def pull_boxes_catalog():
@@ -159,7 +159,7 @@ def pull_boxes_catalog():
                   'selDim': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return LBEF.read_csv_from_url(url, params=parameters)
+    return base.read_csv_from_url(url, params=parameters)
 
 
 def pull_item_types():
@@ -176,7 +176,7 @@ def pull_item_types():
                   'selDim': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return LBEF.read_csv_from_url(url, params=parameters)
+    return base.read_csv_from_url(url, params=parameters)
 
 
 def pull_categories():
@@ -192,7 +192,7 @@ def pull_categories():
                   'itemTypeInv': 'S',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return LBEF.read_csv_from_url(url, params=parameters)
+    return base.read_csv_from_url(url, params=parameters)
 
 
 def pull_colors():
@@ -206,7 +206,7 @@ def pull_colors():
                   'itemTypeInv': 'S',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return LBEF.read_csv_from_url(url, params=parameters)
+    return base.read_csv_from_url(url, params=parameters)
 
 
 def pull_part_color_codes():
@@ -220,7 +220,7 @@ def pull_part_color_codes():
                   'itemTypeInv': 'S',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return LBEF.read_csv_from_url(url, params=parameters)
+    return base.read_csv_from_url(url, params=parameters)
 
 
 def pull_set_inventory(set_num):
@@ -236,7 +236,7 @@ def pull_set_inventory(set_num):
                   'itemTypeInv': 'S',
                   'itemNo': set_num,
                   'downloadType': 'T'}
-    return LBEF.read_csv_from_url(url, params=parameters)
+    return base.read_csv_from_url(url, params=parameters)
 
 
 if __name__ == "__main__":
@@ -267,43 +267,43 @@ if __name__ == "__main__":
 
     def menu_pull_set_catalog():
         csvfile = pull_set_catalog()
-        LBEF.print4(csvfile)
+        base.print4(csvfile)
 
 
     def menu_pull_part_catalog():
         csvfile = pull_part_catalog()
-        LBEF.print4(csvfile)
+        base.print4(csvfile)
 
 
     def menu_pull_minifig_catalog():
         csvfile = pull_part_catalog()
-        LBEF.print4(csvfile)
+        base.print4(csvfile)
 
 
     def menu_pull_item_types():
         csvfile = pull_item_types()
-        LBEF.print4(csvfile)
+        base.print4(csvfile)
 
 
     def menu_pull_categories():
         csvfile = pull_categories()
-        LBEF.print4(csvfile)
+        base.print4(csvfile)
 
 
     def menu_pull_colors():
         csvfile = pull_colors()
-        LBEF.print4(csvfile)
+        base.print4(csvfile)
 
 
     def menu_pull_part_color_codes():
         csvfile = pull_part_color_codes()
-        LBEF.print4(csvfile)
+        base.print4(csvfile)
 
 
     def menu_pull_set_inventory():
-        set_num = LBEF.input_set_num()
+        set_num = base.input_set_num()
         csvfile = pull_set_inventory(set_num)
-        LBEF.print4(csvfile)
+        base.print4(csvfile)
 
 
     if __name__ == "__main__":

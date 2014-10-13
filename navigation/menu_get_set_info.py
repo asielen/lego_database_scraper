@@ -3,7 +3,7 @@ __author__ = 'andrew.sielen'
 
 import navigation.menu
 import database.info as info
-from system import base_methods as LBEF
+from system import base
 
 
 def main():
@@ -21,7 +21,7 @@ def main():
 
 
 def quick_info():
-    set_num = LBEF.input_set_num()
+    set_num = base.input_set_num()
     info.get_set_dump(set_num)
 
 

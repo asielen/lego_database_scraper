@@ -1,11 +1,11 @@
-from system.base_methods import LBEF
-
 __author__ = 'Andrew'
 
 import csv
 import sqlite3 as lite
 
+from system import base
 from system.system_database import database
+
 
 inflation_sheet = 'system/historic_cpi.csv'
 
@@ -53,7 +53,7 @@ def update_inflation_database():
     """
     with open(inflation_sheet, 'r') as csvfile:
         inflation_chart = csv.reader(csvfile)
-        inflation_chart = LBEF.list_to_dict(inflation_chart)
+        inflation_chart = base.list_to_dict(inflation_chart)
 
     con = lite.connect(database)
 

@@ -13,14 +13,16 @@ from bs4 import BeautifulSoup
 import arrow
 
 from system.logger import logger
-from system import notes_file
 
-
-invalid_urls = 0
 
 SLOWPOOL = 10
 FASTPOOL = 35
 RUNNINGPOOL = SLOWPOOL
+
+# #
+# Web
+##
+invalid_urls = 0
 
 
 def soupify(url):
@@ -57,6 +59,87 @@ def soupify(url):
     return soup
 
 
+def parse_html_table(table_tags):
+    """
+        Tables in html are in the following format:
+            <table> #attributes about the table are in this tag
+                <tbody>
+                    <tr>    #tr tags indicate a row
+                        <td> </td>  #td tags indicate a cell in a row
+                        <td> </td>
+                    </tr>
+                    <tr>
+                        <td> </td>
+                        <td> </td>
+                    </tr>
+                </tbody>
+            </table>
+
+        This would be a 2x2 table
+
+    @param table_tags: an html table
+    @return: a 2d list (table_array)
+    """
+    # Todo: Pretty sure this isn't used at all
+    if table_tags is None: return None
+    table_array = []  # initiate the array
+    try:
+        table_body = table_tags.find("tbody")  # find the table body
+        line_tags = table_body.findAll("tr")  # make a list of all the rows
+    except:
+        line_tags = table_tags.findAll("tr")
+
+    for k in line_tags:
+        table_array.append([x.get_text().strip() for x in
+                            k.findAll("td")])  # add a list of cells to the table array - strip out tags and whitespace
+
+    return table_array
+
+
+def read_csv_in_memory(csv_string, delimiter='\t'):
+    """
+    takes a csv string and returns a csv object
+    @param csv_string:
+    @return:
+    """
+    string_object = StringIO(csv_string)
+    return csv.reader(string_object, delimiter=delimiter)
+
+
+def read_gzip_csv_from_url(url):
+    """
+    Takes a url like: http://rebrickable.com/files/set_pieces.csv.gz
+    and returns just a csv.reader object
+    @param url:
+    @return:
+    """
+    gzip_bytes = gzip.decompress(requests.get(url).content)
+    return read_csv_in_memory(gzip_bytes.decode("utf-8"), ",")
+
+
+def read_csv_from_url(url, params=None, delimiter='\t'):
+    """
+    Wrapper to make syntax simpler
+    also handles errors
+    @param url:
+    @param parameters:
+    @return:
+    """
+    h = html.parser.HTMLParser()
+    return read_csv_in_memory(h.unescape(requests.get(url, params=params, verify=False).text), delimiter)
+
+
+def read_json_from_url(url, params=None):
+    return json.loads(requests.get(url, params=params, verify=False).text)
+
+
+def read_xml_from_url(url, params=None):
+    return BeautifulSoup(requests.get(url, params=params, verify=False).text)
+
+
+# #
+# Data Methods
+##
 def is_number(s):
     """
 
@@ -169,6 +252,33 @@ def in2cm(n):
     return n * 2.54
 
 
+def flatten_list(l):
+    """
+    usefull for lists returned by sqlite
+    @param l: a list of lists ie [(a),(b),(c))
+    @return: [a,b,c]
+    """
+    return [i for sublist in l for i in sublist]
+
+
+def list_to_dict(l):
+    """
+    usefull for lists returned by sqlite
+    @param l: a list of lists ie [(a,b),(c,d),(e,f))
+    @return: {a:b,c:d,e:f}
+    """
+    dict = {}
+    for n in l:
+        if len(n) > 2:
+            dict[n[0]] = n[1:]
+        else:
+            dict[n[0]] = n[1]
+    return dict
+
+
+def list2string(list):
+    return ', '.join(map(str, list))
+
 # ## Data Scrubers ####
 def scrub_text2int(s):
     """
@@ -189,43 +299,9 @@ def scrub_text2float(s):
     return only_numerics_float(s)
 
 
-def parse_html_table(table_tags):
-    """
-        Tables in html are in the following format:
-            <table> #attributes about the table are in this tag
-                <tbody>
-                    <tr>    #tr tags indicate a row
-                        <td> </td>  #td tags indicate a cell in a row
-                        <td> </td>
-                    </tr>
-                    <tr>
-                        <td> </td>
-                        <td> </td>
-                    </tr>
-                </tbody>
-            </table>
-
-        This would be a 2x2 table
-
-    @param table_tags: an html table
-    @return: a 2d list (table_array)
-    """
-
-    if table_tags is None: return None
-    table_array = []  # initiate the array
-    try:
-        table_body = table_tags.find("tbody")  # find the table body
-        line_tags = table_body.findAll("tr")  # make a list of all the rows
-    except:
-        line_tags = table_tags.findAll("tr")
-
-    for k in line_tags:
-        table_array.append([x.get_text().strip() for x in
-                            k.findAll("td")])  # add a list of cells to the table array - strip out tags and whitespace
-
-    return table_array
-
-
+# #
+# Set Methods - Todo: Move to SetInfo Class?
+##
 def expand_set_num(set_id):
     """
 
@@ -265,6 +341,9 @@ def check_in_date_range(date, start, end):
         return False
 
 
+# #
+# Time Methods - Todo: Also maybe put in SetInfo
+##
 def old_data(date, date_range=90):
     """
 
@@ -331,28 +410,7 @@ def get_date(timestamp=None):
         return None
 
 
-def flatten_list(l):
-    """
-    usefull for lists returned by sqlite
-    @param l: a list of lists ie [(a),(b),(c))
-    @return: [a,b,c]
-    """
-    return [i for sublist in l for i in sublist]
 
-
-def list_to_dict(l):
-    """
-    usefull for lists returned by sqlite
-    @param l: a list of lists ie [(a,b),(c,d),(e,f))
-    @return: {a:b,c:d,e:f}
-    """
-    dict = {}
-    for n in l:
-        if len(n) > 2:
-            dict[n[0]] = n[1:]
-        else:
-            dict[n[0]] = n[1]
-    return dict
 
 
 def input_set_num(type=0):
@@ -377,11 +435,6 @@ def input_part_num():
     return part_num
 
 
-def list2string(list):
-    return ', '.join(map(str, list))
-
-
-# source http://stackoverflow.com/questions/1165352/fast-comparison-between-two-python-dictionary
 class DictDiffer(object):
     """
     Calculate the difference between two dictionaries as:
@@ -389,8 +442,11 @@ class DictDiffer(object):
     (2) items removed
     (3) keys same in both but changed values
     (4) keys same in both and unchanged values
-    """
 
+    source http://stackoverflow.com/questions/1165352/fast-comparison-between-two-python-dictionary
+
+    """
+    #Todo: I don't think this is used
     def __init__(self, current_dict, past_dict):
         self.current_dict, self.past_dict = current_dict, past_dict
         self.set_current, self.set_past = set(current_dict.keys()), set(past_dict.keys())
@@ -409,48 +465,6 @@ class DictDiffer(object):
     def unchanged(self):
         return set(o for o in self.intersect if self.past_dict[o] == self.current_dict[o])
 
-
-def read_csv_in_memory(csv_string, delimiter='\t'):
-    """
-    takes a csv string and returns a csv object
-    @param csv_string:
-    @return:
-    """
-    string_object = StringIO(csv_string)
-    return csv.reader(string_object, delimiter=delimiter)
-
-
-def read_gzip_csv_from_url(url):
-    """
-    Takes a url like: http://rebrickable.com/files/set_pieces.csv.gz
-    and returns just a csv.reader object
-    @param url:
-    @return:
-    """
-    gzip_bytes = gzip.decompress(requests.get(url).content)
-    return read_csv_in_memory(gzip_bytes.decode("utf-8"), ",")
-
-
-def read_csv_from_url(url, params=None, delimiter='\t'):
-    """
-    Wrapper to make syntax simpler
-    also handles errors
-    @param url:
-    @param parameters:
-    @return:
-    """
-    h = html.parser.HTMLParser()
-    return read_csv_in_memory(h.unescape(requests.get(url, params=params, verify=False).text), delimiter)
-
-
-def read_json_from_url(url, params=None):
-    return json.loads(requests.get(url, params=params, verify=False).text)
-
-
-def read_xml_from_url(url, params=None):
-    return BeautifulSoup(requests.get(url, params=params, verify=False).text)
-
-
 def print4(list, n=4):
     """
     Print the first four items of a list or iterable
@@ -467,7 +481,5 @@ def print4(list, n=4):
         print(list)
 
 
-def note(string):
-    with open(notes_file, 'a')  as text_file:
-        print(arrow.now('US/Pacific').format('YYYYMMDD HH:mm') + " @ " + string, file=text_file)
+
 

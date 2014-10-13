@@ -10,7 +10,7 @@ import sys
 import database as db
 from database import info
 from system.logger import logger
-from system import base_methods as LBEF
+from system import base
 
 
 def add_part_to_database(part_num, type='bl'):
@@ -61,10 +61,10 @@ def add_parts_to_database(part_id_list, type="bl"):
 
     parts_to_scrape = []
     parts_to_insert = []
-    pool = _pool(LBEF.RUNNINGPOOL)
+    pool = _pool(base.RUNNINGPOOL)
     bl_categories = info.read_bl_categories()  # To convert the category ids to table ids
 
-    timer = LBEF.process_timer("Add parts to database")
+    timer = base.process_timer("Add parts to database")
     total_ids = len(part_id_list)
     if type == "bl":  # TODO need to update this with all the changes to the re side of things
         part_database = info.read_bl_parts()
@@ -76,7 +76,7 @@ def add_parts_to_database(part_id_list, type="bl"):
                 # parts_to_insert.extend(_parse_get_bl_pieceinfo(part)) #Todo this is a test just to see where an error is
 
             # Scrape
-            if idx > 0 and idx % (LBEF.RUNNINGPOOL * 3) == 0:
+            if idx > 0 and idx % (base.RUNNINGPOOL * 3) == 0:
                 parts_to_insert.extend(pool.map(_parse_get_bl_pieceinfo, parts_to_scrape))
 
                 logger.info("@@@ Running Pool {}".format(idx))
@@ -104,7 +104,7 @@ def add_parts_to_database(part_id_list, type="bl"):
             if part in part_database:
                 continue
             if "-" in part:
-                LBEF.note("Set in part list? {}".format(part))
+                base.note("Set in part list? {}".format(part))
                 logger.warning("Set in part list? {}".format(part))
                 continue
             else:
@@ -134,12 +134,12 @@ def _process_categories(parts_to_insert, bl_categories):
     parts_to_insert_processed = []
     for part_row in parts_to_insert:
         try:
-            current_cat = LBEF.int_null(part_row[7])
+            current_cat = base.int_null(part_row[7])
             if current_cat in bl_categories:
                 part_row[7] = bl_categories[current_cat]
             else:
                 part_row[7] = None
-                LBEF.note("Missing Category: Category {} could not be found. For set bl_id={}".format(current_cat,
+                base.note("Missing Category: Category {} could not be found. For set bl_id={}".format(current_cat,
                                                                                                       part_row[0]))
         except:
             import pprint as pp
@@ -193,10 +193,10 @@ def add_part_data_to_database(insert_list, basics=0):
                     'UPDATE parts SET brickowl_id=?, rebrickable_id=?, lego_id=?, design_name=?, weight=?, bl_type=?, bl_category=? '
                     'WHERE bricklink_id=?', (tuple(p[1:] + [p[0]]) for p in bl_add))
         except:
-            LBEF.note("ERROR: {}".format(sys.exc_info()[0]))
-            LBEF.note("Can't insert BL row: {} / {}".format(len(bl_add), LBEF.list2string(bl_add)))
+            base.note("ERROR: {}".format(sys.exc_info()[0]))
+            base.note("Can't insert BL row: {} / {}".format(len(bl_add), base.list2string(bl_add)))
             for r in bl_add:
-                LBEF.note("Can't insert row: {}".format(LBEF.list2string(r)))
+                base.note("Can't insert row: {}".format(base.list2string(r)))
 
     if len(ol_add) > 0:  # If BrickOwl Id is set and not bricklink
         try:
@@ -208,10 +208,10 @@ def add_part_data_to_database(insert_list, basics=0):
                 'WHERE bricklink_id=? AND brickowl_id=?', (tuple(p[2:] + p[0:2]) for p in ol_add))
         except:
             logger.critical("Add BO failed, check notes")
-            LBEF.note("ERROR: {}".format(sys.exc_info()[0]))
-            LBEF.note("Can't insert BO row: {} / {}".format(len(ol_add), LBEF.list2string(ol_add)))
+            base.note("ERROR: {}".format(sys.exc_info()[0]))
+            base.note("Can't insert BO row: {} / {}".format(len(ol_add), base.list2string(ol_add)))
             for r in ol_add:
-                LBEF.note("Can't insert row: {}".format(LBEF.list2string(r)))
+                base.note("Can't insert row: {}".format(base.list2string(r)))
 
     if len(re_add) > 0:  # If rebrickable ID is set and not brickowl or bricklink
         try:
@@ -224,10 +224,10 @@ def add_part_data_to_database(insert_list, basics=0):
                 'WHERE bricklink_id=? AND brickowl_id=? AND rebrickable_id=?', (tuple(p[3:] + p[0:3]) for p in re_add))
         except:
             logger.critical("Add RE failed, check notes")
-            LBEF.note("ERROR: {}".format(sys.exc_info()[0]))
-            LBEF.note("Can't insert RE row: {} / {}".format(len(re_add), LBEF.list2string(re_add)))
+            base.note("ERROR: {}".format(sys.exc_info()[0]))
+            base.note("Can't insert RE row: {} / {}".format(len(re_add), base.list2string(re_add)))
             for r in re_add:
-                LBEF.note("Can't insert row: {}".format(LBEF.list2string(r)))
+                base.note("Can't insert row: {}".format(base.list2string(r)))
 
     if len(lg_add) > 0:  # only lego ID is set
         try:
@@ -241,10 +241,10 @@ def add_part_data_to_database(insert_list, basics=0):
                 (tuple(p[4:] + p[0:4]) for p in lg_add))
         except:
             logger.critical("Add LG failed, check notes")
-            LBEF.note("ERROR: {}".format(sys.exc_info()[0]))
-            LBEF.note("Can't insert LG row: {} / {}".format(len(lg_add), LBEF.list2string(lg_add)))
+            base.note("ERROR: {}".format(sys.exc_info()[0]))
+            base.note("Can't insert LG row: {} / {}".format(len(lg_add), base.list2string(lg_add)))
             for r in lg_add:
-                LBEF.note("Can't insert row: {}".format(LBEF.list2string(r)))
+                base.note("Can't insert row: {}".format(base.list2string(r)))
 
 
 def _parse_get_bl_pieceinfo(part_num):

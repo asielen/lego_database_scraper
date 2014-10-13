@@ -3,9 +3,8 @@ __author__ = 'andrew.sielen'
 import arrow
 
 from system.calculate_inflation import get_inflation_rate
-from system.base_methods import LBEF
 import database as db
-from system import base_methods as base
+from system import base
 from system import logger
 # from data.update_secondary.add_sets_database import add_set_to_database
 
@@ -42,7 +41,7 @@ def get_set_info(set_num=None, new=False):
     # Circular import
     # if set_id_raw is None and new is True: #If there is no data, try to add it
     # add_set_to_database(set_num)
-    #     set_id_raw = get_set_info(set_num)
+    # set_id_raw = get_set_info(set_num)
 
     return set_info_raw
 
@@ -82,7 +81,7 @@ def get_last_updated_for_daily_stats(set_num=None):
         update = []
         for s in last_updated_raw:
             update.append((s[0], base.check_if_the_same_day(today, s[1])))
-        update = LBEF.list_to_dict(update)
+        update = base.list_to_dict(update)
     else:
         last_updated_raw = db.run_sql("SELECT last_price_updated FROM sets WHERE set_num=?", (set_num,), one=True)
 
@@ -144,7 +143,7 @@ def get_bl_update_years(set_num=None):
 # confirmed 20140904
 # @return: a list of all the sets in the database that need to be updated with brickset inventory
 # """
-#     last_updated = None
+# last_updated = None
 #     if set_num is None:
 #         last_updated = db.run_sql("SELECT set_num, last_inv_updated_bs FROM sets;")
 #         last_updated = base.list_to_dict(last_updated)
@@ -313,6 +312,7 @@ def get_set_weight(set_num=None, type=''):
 
     return weight
 
+
 # #Historic Info
 def get_historic_prices(set_num=None, set_id=None):
     """
@@ -367,20 +367,20 @@ def get_set_dump(set_num):
     set_figures = set_info[9]
     set_weight = set_info[10]
     set_year_released = set_info[11]
-    set_date_released_us = LBEF.get_date(set_info[12])
-    set_date_ended_us = LBEF.get_date(set_info[13])
-    set_date_released_uk = LBEF.get_date(set_info[14])
-    set_date_ended_uk = LBEF.get_date(set_info[15])
+    set_date_released_us = base.get_date(set_info[12])
+    set_date_ended_us = base.get_date(set_info[13])
+    set_date_released_uk = base.get_date(set_info[14])
+    set_date_ended_uk = base.get_date(set_info[15])
     set_original_price_us = set_info[16]
     set_original_price_uk = set_info[17]
     set_age_low = set_info[18]
     set_age_high = set_info[19]
     set_box_size = set_info[20]
     set_box_volume = set_info[21]
-    set_last_updated = LBEF.get_date(set_info[22])
-    set_last_inv_updated_bl = LBEF.get_date(set_info[24])
-    set_last_inv_updated_re = LBEF.get_date(set_info[25])
-    set_last_price_updated = LBEF.get_date(set_info[26])
+    set_last_updated = base.get_date(set_info[22])
+    set_last_inv_updated_bl = base.get_date(set_info[24])
+    set_last_inv_updated_re = base.get_date(set_info[25])
+    set_last_price_updated = base.get_date(set_info[26])
 
     set_calc_price = get_set_price(set_num, 2014)
     set_calc_pieces = get_piece_count(set_num, 'bricklink')

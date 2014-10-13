@@ -1,7 +1,7 @@
 __author__ = 'andrew.sielen'
 
 from database import info
-from system.base_methods import LBEF
+from system import base
 from data import update_secondary
 import navigation as menu
 from system import logger
@@ -24,7 +24,7 @@ class SetInfo(object):
 
     # ###
     # #Basic Properties
-    ###
+    # ##
     @property
     def db_id(self):
         """
@@ -42,7 +42,7 @@ class SetInfo(object):
     @set_num.setter
     def set_num(self, set_id):
         assert isinstance(set_id, str)
-        self.set_info_list[3], self.set_info_list[4], self.set_info_list[1] = LBEF.expand_set_num(set_id)
+        self.set_info_list[3], self.set_info_list[4], self.set_info_list[1] = base.expand_set_num(set_id)
 
     @property
     def bo_id(self):
@@ -148,13 +148,13 @@ class SetInfo(object):
 
     @property
     def date_released_us(self):
-        return LBEF.get_date(self.set_info_list[12])
+        return base.get_date(self.set_info_list[12])
 
     @date_released_us.setter
     def date_released_us(self, value):
         """ @param value: In the format YYYY-MM-DD"""
         assert isinstance(value, str) or value is None
-        self.set_info_list[12] = LBEF.get_timestamp(value)
+        self.set_info_list[12] = base.get_timestamp(value)
 
     @property
     def ts_date_ended_us(self):
@@ -167,13 +167,13 @@ class SetInfo(object):
 
     @property
     def date_ended_us(self):
-        return LBEF.get_date(self.set_info_list[13])
+        return base.get_date(self.set_info_list[13])
 
     @date_ended_us.setter
     def date_ended_us(self, value):
         """ @param value: In the format YYYY-MM-DD"""
         assert isinstance(value, str) or value is None
-        self.set_info_list[13] = LBEF.get_timestamp(value)
+        self.set_info_list[13] = base.get_timestamp(value)
 
     @property
     def ts_date_released_uk(self):
@@ -186,13 +186,13 @@ class SetInfo(object):
 
     @property
     def date_released_uk(self):
-        return LBEF.get_date(self.set_info_list[14])
+        return base.get_date(self.set_info_list[14])
 
     @date_released_uk.setter
     def date_released_uk(self, value):
         """ @param value: In the format YYYY-MM-DD"""
         assert isinstance(value, str) or value is None
-        self.set_info_list[14] = LBEF.get_timestamp(value)
+        self.set_info_list[14] = base.get_timestamp(value)
 
     @property
     def ts_date_ended_uk(self):
@@ -205,13 +205,13 @@ class SetInfo(object):
 
     @property
     def date_ended_uk(self):
-        return LBEF.get_date(self.set_info_list[15])
+        return base.get_date(self.set_info_list[15])
 
     @date_ended_uk.setter
     def date_ended_uk(self, value):
         """ @param value: In the format YYYY-MM-DD"""
         assert isinstance(value, str) or value is None
-        self.set_info_list[15] = LBEF.get_timestamp(value)
+        self.set_info_list[15] = base.get_timestamp(value)
 
     @property
     def original_price_us(self):
@@ -281,13 +281,13 @@ class SetInfo(object):
 
     @property
     def last_updated(self):
-        return LBEF.get_date(self.set_info_list[22])
+        return base.get_date(self.set_info_list[22])
 
     @last_updated.setter
     def last_updated(self, value):
         """ @param value: In the format YYYY-MM-DD"""
         assert isinstance(value, str) or value is None
-        self.set_info_list[22] = LBEF.get_timestamp(value)
+        self.set_info_list[22] = base.get_timestamp(value)
 
     @property
     def ts_last_inv_updated_bo(self):
@@ -300,13 +300,13 @@ class SetInfo(object):
 
     @property
     def last_inv_updated_bo(self):
-        return LBEF.get_date(self.set_info_list[23])
+        return base.get_date(self.set_info_list[23])
 
     @last_inv_updated_bo.setter
     def last_inv_updated_bo(self, value):
         """ @param value: In the format YYYY-MM-DD"""
         assert isinstance(value, str) or value is None
-        self.set_info_list[23] = LBEF.get_timestamp(value)
+        self.set_info_list[23] = base.get_timestamp(value)
 
     @property
     def ts_last_inv_updated_bl(self):
@@ -319,13 +319,13 @@ class SetInfo(object):
 
     @property
     def last_inv_updated_bl(self):
-        return LBEF.get_date(self.set_info_list[24])
+        return base.get_date(self.set_info_list[24])
 
     @last_inv_updated_bl.setter
     def last_inv_updated_bl(self, value):
         """ @param value: In the format YYYY-MM-DD"""
         assert isinstance(value, str) or value is None
-        self.set_info_list[24] = LBEF.get_timestamp(value)
+        self.set_info_list[24] = base.get_timestamp(value)
 
     @property
     def ts_last_inv_updated_re(self):
@@ -338,13 +338,13 @@ class SetInfo(object):
 
     @property
     def last_inv_updated_re(self):
-        return LBEF.get_date(self.set_info_list[25])
+        return base.get_date(self.set_info_list[25])
 
     @last_inv_updated_re.setter
     def last_inv_updated_re(self, value):
         """ @param value: In the format YYYY-MM-DD"""
         assert isinstance(value, str) or value is None
-        self.set_info_list[25] = LBEF.get_timestamp(value)
+        self.set_info_list[25] = base.get_timestamp(value)
 
     @property
     def ts_last_daily_update(self):
@@ -357,13 +357,13 @@ class SetInfo(object):
 
     @property
     def last_daily_update(self):
-        return LBEF.get_date(self.set_info_list[26])
+        return base.get_date(self.set_info_list[26])
 
     @last_daily_update.setter
     def last_daily_update(self, value):
         """ @param value: In the format YYYY-MM-DD"""
         assert isinstance(value, str) or value is None
-        self.set_info_list[26] = LBEF.get_timestamp(value)
+        self.set_info_list[26] = base.get_timestamp(value)
 
     ####
     ## Calculated Properties
@@ -581,7 +581,7 @@ if __name__ == "__main__":
 
     def menu_create_set_db():
         global test_set
-        set_num = LBEF.input_set_num()
+        set_num = base.input_set_num()
         test_set = SetInfo(set_num)
 
     def menu_get_base_info():
@@ -614,9 +614,9 @@ if __name__ == "__main__":
             menu_create_set_db()
         price_history, rating_history = test_set.test_historic()
         print("Price History")
-        LBEF.print4(price_history)
+        base.print4(price_history)
         print("Rating History")
-        LBEF.print4(rating_history)
+        base.print4(rating_history)
 
     def menu_test_all_output():
         global test_set

@@ -6,7 +6,7 @@ from system.logger import logger
 from database import database
 import database.info as info
 import data.bricklink.bricklink_api as blapi
-import system.base_methods as LBEF
+import system.base as LBEF
 
 
 def add_bl_set_pieces_to_database(set_num, bricklink_pieces):
