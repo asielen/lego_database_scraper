@@ -9,16 +9,39 @@ from system import calculate_inflation as inf
 
 
 class SetInfo(object):
-    def __init__(self, set_num=None):
-        set_info_list = []
+    """
+    Used for an individual set
+    """
 
-        if set_num is not None:
-            set_info_list = info.get_set_info(
-                set_num)  # , new=True) # Todo: Cant add set with this function here because it causes a circular import
+    def __init__(self, set_info=None):
+        """
 
-        if set_info_list is None or len(set_info_list) < 27:
-            self.set_info_list = [None] * 27  # New Set
-            if set_num: self.set_info_list[1] = set_num
+        @param set_info: Can either be a string of the set_num or a list
+        @return:
+        """
+        set_info_list = None
+        s_num = None
+        if set_info is not None:
+            if isinstance(set_info, list) or isinstance(set_info, tuple):
+                # If init with a list
+                if len(set_info) == 27:
+                    set_info_list = list(set_info)
+                elif len(set_info) > 2 and isinstance(set_info[1], str):
+                    # If the list is the wrong size, it still trys to find a set_num
+                    s_num = base.expand_set_num(set_info[1])[2]
+            else:
+                if isinstance(set_info, str):
+                    # If init with a string
+                    s_num = base.expand_set_num(set_info)[2]
+
+        if s_num is not None:
+            # Todo: Cant add set with this function here because it causes a circular import
+            set_info_list = info.get_set_info(set_info)  # , new=True)
+
+        if set_info_list is None:
+            self.set_info_list = [None] * 27  # New Empty Set
+            if s_num is not None:
+                self.set_info_list[1] = s_num
         else:
             self.set_info_list = set_info_list
 
@@ -473,10 +496,10 @@ class SetInfo(object):
 
     def __repr__(self):
         """The representation of the class"""
-        return self.set_info_list
+        return "{} | {}".format(self.set_num, self.name)
 
     def __str__(self):
-        return self.test_base_info()
+        return "{} | {}".format(self.set_num, self.name)
 
     def __len__(self):
         return len(self.set_info_list)
@@ -564,12 +587,13 @@ if __name__ == "__main__":
         options = {}
 
         options['1'] = "Create Set from DB", menu_create_set_db
-        options['2'] = "Test Base Info", menu_get_base_info
-        options['3'] = "Test Basic Calcs", menu_get_basic_calcs
-        options['4'] = "Test Inflation", menu_test_inflation
-        options['5'] = "Test SQL Data", menu_test_sql_data
-        options['6'] = "Test Historic", menu_test_historic
-        options['7'] = "Test all Output", menu_test_all_output
+        options['2'] = "Create Set from List", menu_create_set_lst
+        options['3'] = "Test Base Info", menu_get_base_info
+        options['4'] = "Test Basic Calcs", menu_get_basic_calcs
+        options['5'] = "Test Inflation", menu_test_inflation
+        options['6'] = "Test SQL Data", menu_test_sql_data
+        options['7'] = "Test Historic", menu_test_historic
+        options['8'] = "Test all Output", menu_test_all_output
         options['9'] = "Quit", menu.quit
 
         while True:
@@ -583,6 +607,12 @@ if __name__ == "__main__":
         global test_set
         set_num = base.input_set_num()
         test_set = SetInfo(set_num)
+
+    def menu_create_set_lst():
+        global test_set
+        set_num = base.input_set_num()
+        set_info_list = info.get_set_info(set_num)
+        test_set = SetInfo(set_info_list)
 
     def menu_get_base_info():
         global test_set

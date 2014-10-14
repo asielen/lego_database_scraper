@@ -17,11 +17,11 @@ from system.logger import logger
 
 SLOWPOOL = 10
 FASTPOOL = 35
-RUNNINGPOOL = SLOWPOOL
+RUNNINGPOOL = FASTPOOL
 
 # #
 # Web
-##
+# #
 invalid_urls = 0
 
 
@@ -279,6 +279,7 @@ def list_to_dict(l):
 def list2string(list):
     return ', '.join(map(str, list))
 
+
 # ## Data Scrubers ####
 def scrub_text2int(s):
     """
@@ -396,21 +397,21 @@ def get_timestamp(date=None):
     return arrow.get(date, 'YYYY-MM-DD')
 
 
-def get_date(timestamp=None):
+def get_date(timestamp=None, default=None):
     """
 
     @param timestamp: If get_timestamp is None, return the current date, else return the get_timestamp date
     @return:
     """
     if timestamp is None:
-        return arrow.now('US/Pacific').format('YYYY-MM-DD')
+        if default is None:
+            return None
+        else:
+            return arrow.now('US/Pacific').format('YYYY-MM-DD')
     elif timestamp != "":
         return arrow.get(timestamp).format('YYYY-MM-DD')
     else:
         return None
-
-
-
 
 
 def input_set_num(type=0):
@@ -464,6 +465,7 @@ class DictDiffer(object):
 
     def unchanged(self):
         return set(o for o in self.intersect if self.past_dict[o] == self.current_dict[o])
+
 
 def print4(list, n=4):
     """
