@@ -1,6 +1,9 @@
 __author__ = 'andrew.sielen'
 
+import arrow
+
 from database import info
+import database as db
 from system import base
 from data import update_secondary
 import navigation as menu
@@ -470,12 +473,89 @@ class SetInfo(object):
     def get_price_history(self):
         return info.get_historic_prices(set_id=self.db_id)
 
+    def get_historic_price_trends(self, select_filter=None, type="standard", price="standard", date=None,
+                                  inflation=None):
+        """
+        @param select_filter: List:
+                            [select statement, where statement, group?] See the end of this doc for examples
+        @param type: Options:
+                            standard - actual numbers (overrides all others)
+                            relative - percent change from beginning date
+                            delta - price change *day over day*
+        @param price: Options:
+                                standard - compare price against historic prices
+                            These can only be used with relative and delta [type]
+                                original_us - compare price against us original
+                                original_uk - compare price against uk original
+        @param date: Options:
+                            a date to start on
+                            start - list prices with start date as the focus
+                            end - list prices with end date as the focus
+        @param inflation: Options:
+                            a year to get inflation based on
+                            None - no changes
+
+        All this is done in the lists and not with sql
+        @return:
+             {data:{year:price,year:price},settings:{price_type:"",type:"",price:"",date:"",inflation:""}}
+        """
+        if isinstance(select_filter, list) and len(select_filter) >= 2:
+            sql_query = self._build_historic_data_sql(*select_filter)
+        else:
+            return self.get_price_history()
+
+        working_data = self.sql(sql_query)
+
+        base_date = None
+        base_price = None
+        if type != "standard":
+            if date is not None:
+                if date is "start":
+                    base_date = self.date_released_us
+                elif date is "end":
+                    base_date = self.date_ended_us
+                else:
+                    base_date = arrow.get(date)
+        if price != "standard":
+            if price == "original_us":
+                base_price = self.original_price_us
+            elif price == "original_uk":
+                base_price = self.original_price_uk
+
+        return working_data
+
+    def _build_historic_data_sql(self, select_=None, where_=None, group=True):
+        """Takes what we got in the starter filter (either a complete filter string or a dict of filter options
+            and returns a built out sql statement
+        """
+        h_select = "SELECT sets.set_num, historic_prices.record_date"
+        if select_ is not None:
+            h_select += ", " + select_
+        h_joins = " FROM historic_prices JOIN sets ON (sets.id=historic_prices.set_id) JOIN price_types ON (price_types.id=historic_prices.price_type)"
+        h_filter = " WHERE sets.set_num='{}'".format(self.set_num)
+        if where_ is not None:
+            h_filter += " and " + where_
+        if group:
+            h_filter += " GROUP BY historic_prices.record_date"
+        h_end = ";"
+        h_sql = h_select + h_joins + h_filter + h_end
+        return h_sql
+
+
+
+
+
+
     def get_rating_history(self):
         return info.get_historic_data(set_id=self.db_id)
 
     ####
     ##House keeping
     ###
+    def sql(self, sql_statement):
+        """Not safe to have publicly exposed, but very handy for my own personal project"""
+        return db.run_sql(sql_statement)
+
     def push_updates_to_db(self):
         """Push Updates to the database"""
         update_secondary.add_set_data_to_database(self.set_info_list)
@@ -594,6 +674,7 @@ if __name__ == "__main__":
         options['6'] = "Test SQL Data", menu_test_sql_data
         options['7'] = "Test Historic", menu_test_historic
         options['8'] = "Test all Output", menu_test_all_output
+        options['S'] = "Test SQL Historic", menu_test_sql_historic
         options['9'] = "Quit", menu.quit
 
         while True:
@@ -616,31 +697,31 @@ if __name__ == "__main__":
 
     def menu_get_base_info():
         global test_set
-        if not bool(test_set):
+        while not bool(test_set):
             menu_create_set_db()
         print(test_set)
 
     def menu_get_basic_calcs():
         global test_set
-        if not bool(test_set):
+        while not bool(test_set):
             menu_create_set_db()
         print(test_set.test_basic_calcs())
 
     def menu_test_inflation():
         global test_set
-        if not bool(test_set):
+        while not bool(test_set):
             menu_create_set_db()
         print(test_set.test_inflation())
 
     def menu_test_sql_data():
         global test_set
-        if not bool(test_set):
+        while not bool(test_set):
             menu_create_set_db()
         print(test_set.test_sql_data())
 
     def menu_test_historic():
         global test_set
-        if not bool(test_set):
+        while not bool(test_set):
             menu_create_set_db()
         price_history, rating_history = test_set.test_historic()
         print("Price History")
@@ -650,7 +731,7 @@ if __name__ == "__main__":
 
     def menu_test_all_output():
         global test_set
-        if not bool(test_set):
+        while not bool(test_set):
             menu_create_set_db()
         menu_get_base_info()
         menu_get_basic_calcs()
@@ -658,8 +739,65 @@ if __name__ == "__main__":
         menu_test_sql_data()
         menu_test_historic()
 
+    def menu_test_sql_historic():
+        global test_set
+        while not bool(test_set):
+            menu_create_set_db()
+        c_result = test_set.get_historic_price_trends()
+        base.print4(c_result, 5)
+        c_result = test_set.get_historic_price_trends(
+            select_filter=["(historic_prices.min+historic_prices.max)/2", None, False])
+        base.print4(c_result, 5)
+        c_result = test_set.get_historic_price_trends(select_filter=["(historic_prices.min+historic_prices.max)",
+                                                                     "(price_types.price_type='historic_used' OR price_types.price_type='historic_new')",
+                                                                     False])
+        base.print4(c_result, 5)
+        c_result = test_set.get_historic_price_trends(select_filter=["SUM(historic_prices.min+historic_prices.max)",
+                                                                     "(price_types.price_type='historic_used' OR price_types.price_type='historic_new')",
+                                                                     True])
+        base.print4(c_result, 5)
+
+
     if __name__ == "__main__":
         main_menu()
 
 
-
+# Historic SQL Exmples
+# BASE
+# SELECT sets.set_num, historic_prices.record_date, price_types.price_type,
+# historic_prices.lots, historic_prices.qty, historic_prices.min, historic_prices.max,
+#   historic_prices.avg, historic_prices.qty_avg, historic_prices.piece_avg
+# FROM historic_prices
+#   JOIN sets ON (sets.id=historic_prices.set_id)
+#   JOIN price_types ON (price_types.id=historic_prices.price_type)
+# WHERE sets.set_num='10501-1';
+#
+# AVERAGE 2+ fields
+# SELECT sets.set_num, historic_prices.record_date, price_types.price_type, (historic_prices.min+historic_prices.max)/2 # The 2 needs to be flexible
+# FROM historic_prices
+#   JOIN sets ON (sets.id=historic_prices.set_id)
+#   JOIN price_types ON (price_types.id=historic_prices.price_type)
+# WHERE sets.set_num='10501-1';
+#
+# SUM
+# SELECT sets.set_num, historic_prices.record_date, price_types.price_type, (historic_prices.min+historic_prices.max) # Same thing, no division
+# FROM historic_prices
+#   JOIN sets ON (sets.id=historic_prices.set_id)
+#   JOIN price_types ON (price_types.id=historic_prices.price_type)
+# WHERE sets.set_num='10501-1';
+#
+# COMBINE PRICE TYPES - AVERAGE THEM
+# SELECT sets.set_num, historic_prices.record_date, price_types.price_type, AVG(historic_prices.min+historic_prices.max)
+# FROM historic_prices
+#   JOIN sets ON (sets.id=historic_prices.set_id)
+#   JOIN price_types ON (price_types.id=historic_prices.price_type)
+# WHERE sets.set_num='10501-1' and (price_types.price_type='historic_used' OR price_types.price_type='historic_new')
+# GROUP BY historic_prices.record_date;
+#
+# COMBINE PRICE TYPES - SUM THEM (ALSO CAN DO MIN AND MAX)
+# SELECT sets.set_num, historic_prices.record_date, price_types.price_type, SUM(historic_prices.min+historic_prices.max)
+# FROM historic_prices
+#   JOIN sets ON (sets.id=historic_prices.set_id)
+#   JOIN price_types ON (price_types.id=historic_prices.price_type)
+# WHERE sets.set_num='10501-1' and (price_types.price_type='historic_used' OR price_types.price_type='historic_new')
+# GROUP BY historic_prices.record_date;

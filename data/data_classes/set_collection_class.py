@@ -25,9 +25,9 @@ class SetCollection(object):
         if filter_text is not None:
             set_filters = "(" + filter_text + ")" + set_filters
 
-        set_data = _set_info_creator(self._run_query(filter_text=set_filters))
+        # set_data = _set_info_creator(self._run_query(filter_text=set_filters))
 
-        self.set_info_list = set_data  # The actual SetInfo class objects
+        self.set_info_list = None  #set_data  # The actual SetInfo class objects
         self.filter_text = set_filters  # The filter used to reconstruct the collection
         self.recent_query = []
         self.recent_query.append(self._query_builder(
@@ -35,7 +35,7 @@ class SetCollection(object):
 
     def _run_query(self, base_text=None, filter_text=None, one=False):
         query = self._query_builder(base_text, filter_text)
-        self.recent_query.append(query)  # Todo, this should add to the front so we can keep is to a limited history
+        self.recent_query.insert(0, query)  # Todo, this should add to the front so we can keep is to a limited history
         return db.run_sql(query, one=one)
 
     def _query_builder(self, base_text=None, filter_text=None):
@@ -174,16 +174,32 @@ class SetCollection(object):
     ##
     # Advanced Data
     ##
-    def historic_price_trends(self):
+    def historic_price_trends(self, type="standard", price="standard", date="", inflation=None):
         """
-        Should be able to return a few options:
-            -All historic data for all the lists
-            -ALl historic data for all the lists relative to the first point (percent change from first point)
-            -All historic data for all the lists relative to a entered point
-            -All historic data for all the lists relative to the release date
-            -All historic data for all the lists relative to the end date
-            -All historic data relative to the original price (should date have an effect?)
+        @param type: Options:
+                            standard - actual numbers
+                            relative - percent change
+                            delta - price change
+        @param type: Options:
+                                standard - compare price against historic prices
+                            These can only be used with relative and delta [type]
+                                original_us - compare price against us original
+                                original_uk - compare price against uk original
+        @param date: Options:
+                            a date to start on
+                            release date - list prices with start date as the focus
+                            end date - list prices with end date as the focus
+        @param inflation: Options:
+                            a year to get inflation based on
+                            None - no changes
+
+        All this is done in the lists and not with sql
         """
+
+        # First make SetInfos for each set if they don't exists
+        self.set_info_list = _set_info_creator(self._run_query(filter_text=self.filter_text))
+        for s in self.set_info_list:
+            pass
         pass
 
     def historic_data_trends(self):
