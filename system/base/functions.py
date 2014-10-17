@@ -414,6 +414,25 @@ def get_date(timestamp=None, default=None):
         return None
 
 
+def get_closest_list(num, num_list):
+    assert isinstance(num, int)
+    return min(num_list, key=lambda x: abs(x - num))
+
+
+def get_days_between(dateA, dateB):
+    """
+    Return the number of days between two dates
+    @param dateA:
+    @param dateB:
+    @return:
+    """
+    if dateA is None or dateB is None:
+        return False
+    dateAA = arrow.get(dateA)
+    dateBA = arrow.get(dateB)
+    date_dif = dateAA.date() - dateBA.date()
+    return date_dif.days
+
 def input_set_num(type=0):
     """
     @param type: 0 or 1

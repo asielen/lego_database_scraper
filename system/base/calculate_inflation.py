@@ -3,7 +3,9 @@ __author__ = 'Andrew'
 import csv
 import sqlite3 as lite
 
-from system import base
+import arrow
+
+from system.base import functions as base
 from system.system_database import database
 
 
@@ -15,8 +17,38 @@ def get_cpis():
     get a dict of all cpis to lookup
     @return:
     """
-    # Todo
-    pass
+    result = None
+    con = lite.connect(database)
+    with con:
+        c = con.cursor()
+        c.execute("SELECT year, cpi FROM inflation")
+        result = base.list_to_dict(c.fetchall())
+    return result
+
+
+def adj_dict_for_inf(price_dict, inf_year=None):
+    """
+
+    @param price_dict: In the format {date_ts:price,date_ts:price}
+    @param inf_year: the year to adjust to
+    @return:
+    """
+    if not isinstance(inf_year, int):
+        inf_year = arrow.get().year
+    cpi_dict = get_cpis()
+    inf_year = min(inf_year, max(cpi_dict.keys()))
+    for pd in price_dict:
+        rate = _get_inflation_rate(cpi_dict[min(arrow.get(pd).year, inf_year)], cpi_dict[inf_year])
+        price_dict[pd] = _get_adjusted_price(price_dict[pd], rate)
+    return price_dict
+
+
+def _get_inflation_rate(start_cpi, end_cpi):
+    return ((end_cpi - start_cpi) / start_cpi)
+
+
+def _get_adjusted_price(price, inflation_rate):
+    return (price * inflation_rate) + price
 
 def get_inflation_rate(year_start, year_end=2013):
     """

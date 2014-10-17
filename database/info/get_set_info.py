@@ -2,7 +2,7 @@ __author__ = 'andrew.sielen'
 
 import arrow
 
-from system.calculate_inflation import get_inflation_rate
+from system.base.calculate_inflation import get_inflation_rate
 import database as db
 from system import base
 from system import logger
@@ -144,7 +144,7 @@ def get_bl_update_years(set_num=None):
 # @return: a list of all the sets in the database that need to be updated with brickset inventory
 # """
 # last_updated = None
-#     if set_num is None:
+# if set_num is None:
 #         last_updated = db.run_sql("SELECT set_num, last_inv_updated_bs FROM sets;")
 #         last_updated = base.list_to_dict(last_updated)
 #

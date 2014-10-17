@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="DataSourceManagerImpl" format="xml" hash="1631738360">
+  <component name="DataSourceManagerImpl" format="xml" hash="616050053">
     <data-source source="LOCAL" name="lego_eval" uuid="9072e813-1e74-4929-9356-72da6703e465">
       <driver-ref>sqlite.xerial</driver-ref>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
       <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/database/lego_eval.sqlite</jdbc-url>
+      <libraries />
+    </data-source>
+    <data-source source="LOCAL" name="system" uuid="5d122e1b-9c67-4d2b-a549-775d17507fcd">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/system/system.sqlite</jdbc-url>
       <libraries />
     </data-source>
   </component>

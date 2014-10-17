@@ -1,7 +1,7 @@
 __author__ = 'andrew.sielen'
 
 import database as db
-from data.data_classes.set_info_class import SetInfo
+from data.data_classes.SetInfo_class import SetInfo
 from system import base
 
 
@@ -27,7 +27,7 @@ class SetCollection(object):
 
         # set_data = _set_info_creator(self._run_query(filter_text=set_filters))
 
-        self.set_info_list = None  #set_data  # The actual SetInfo class objects
+        self.set_info_list = None  # set_data  # The actual SetInfo class objects
         self.filter_text = set_filters  # The filter used to reconstruct the collection
         self.recent_query = []
         self.recent_query.append(self._query_builder(
@@ -53,7 +53,7 @@ class SetCollection(object):
 
     # #
     # Basic Info
-    ##
+    # #
     @property
     def num_sets(self):
         """ Number of sets in the collection """
@@ -104,16 +104,16 @@ class SetCollection(object):
         if calc:
             if calc:
                 query = (
-                "SELECT set_num, SUM(bl_inventories.quantity) FROM bl_inventories JOIN sets ON (bl_inventories.set_id=sets.id)",
-                "GROUP BY sets.set_num")
+                    "SELECT set_num, SUM(bl_inventories.quantity) FROM bl_inventories JOIN sets ON (bl_inventories.set_id=sets.id)",
+                    "GROUP BY sets.set_num")
             if type == "total":
                 query = (
-                "SELECT SUM(bl_inventories.quantity) FROM bl_inventories JOIN sets ON (bl_inventories.set_id=sets.id)",
-                None)
+                    "SELECT SUM(bl_inventories.quantity) FROM bl_inventories JOIN sets ON (bl_inventories.set_id=sets.id)",
+                    None)
             elif type == "average":
                 query = (
-                "SELECT AVG(bl_inventories.quantity) FROM bl_inventories JOIN sets ON (bl_inventories.set_id=sets.id)",
-                None)
+                    "SELECT AVG(bl_inventories.quantity) FROM bl_inventories JOIN sets ON (bl_inventories.set_id=sets.id)",
+                    None)
             return self._run_query(query[0], query[1])
         else:
             return self._get_num_value(field="piece_count", type=type)
@@ -130,16 +130,16 @@ class SetCollection(object):
     def weights(self, type=None, calc=False):
         if calc:
             query = (
-            "SELECT sets.set_num, SUM(bl_inventories.quantity * parts.weight) FROM bl_inventories JOIN parts ON bl_inventories.piece_id = parts.id JOIN sets ON bl_inventories.set_id = sets.id",
-            "GROUP BY sets.set_num")
+                "SELECT sets.set_num, SUM(bl_inventories.quantity * parts.weight) FROM bl_inventories JOIN parts ON bl_inventories.piece_id = parts.id JOIN sets ON bl_inventories.set_id = sets.id",
+                "GROUP BY sets.set_num")
             if type == "total":
                 query = (
-                "SELECT SUM(bl_inventories.quantity * parts.weight) FROM bl_inventories JOIN parts ON bl_inventories.piece_id = parts.id",
-                None)
+                    "SELECT SUM(bl_inventories.quantity * parts.weight) FROM bl_inventories JOIN parts ON bl_inventories.piece_id = parts.id",
+                    None)
             elif type == "average":
                 query = (
-                "SELECT AVG(bl_inventories.quantity * parts.weight) FROM bl_inventories JOIN parts ON bl_inventories.piece_id = parts.id",
-                None)
+                    "SELECT AVG(bl_inventories.quantity * parts.weight) FROM bl_inventories JOIN parts ON bl_inventories.piece_id = parts.id",
+                    None)
             return self._run_query(query[0], query[1])
         else:
             return self._get_num_value(field="set_weight", type=type)
