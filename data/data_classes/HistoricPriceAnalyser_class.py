@@ -86,7 +86,7 @@ class HistoricPriceAnalyser(object):
                 for n in range(1, days_between):
                     # next_date = arrow.get(arrow.get(dp_list[idx-1][0]).replace(days=+n).timestamp).format("YYYY-MM-DD")
                     dp_list_to_add.append([arrow.get(dp_list[idx - 1][0]).replace(days=+n).timestamp,
-                                           (base.float_zero(dp_list[idx - 1][1]) + (increment * n))])
+                                           round((base.float_zero(dp_list[idx - 1][1]) + (increment * n)), ndigits=2)])
         dp_list.extend(dp_list_to_add)
         return dp_list
 
@@ -147,7 +147,7 @@ class HistoricPriceAnalyser(object):
                 self.base_date = self.si.ts_date_released_us
 
             if self.base_date is None or self.base_date == "":
-                raise AssertionError("Can't run report on missing 'start' date")
+                self.base_date = max(self.original_data.keys())
             self.base_price = self._get_price_from_date(self.base_date)
         elif date == "end":
             if region == "uk":
@@ -155,7 +155,7 @@ class HistoricPriceAnalyser(object):
             else:
                 self.base_date = self.si.ts_date_ended_us
             if self.base_date is None or self.base_date == "":
-                raise AssertionError("Can't run report on missing 'end' date")
+                self.base_date = max(self.original_data.keys())
             self.base_price = self._get_price_from_date(self.base_date)
         else:
             self.base_date = base.get_timestamp(date)
@@ -164,10 +164,10 @@ class HistoricPriceAnalyser(object):
         if self.base_date is None:
             self.base_date = min(self.original_data.keys())
         if self.base_price is None:
-            self.base_price = self.original_data[self.base_date]
+            self.base_price = max(self.original_data.keys())
 
 
-    def run(self, clear=True):
+    def run(self, by_date=False, clear=True):
         """
 
         @param clear: Default is to re-run from base. Can also set to False to rerun from existing
@@ -182,9 +182,10 @@ class HistoricPriceAnalyser(object):
         if isinstance(self.inf_year, int):
             self.working_data = base.adj_dict_for_inf(self.working_data, self.inf_year)
         self._process_change_list()
-        return self.get()
+        return self.get(by_date)
 
-    def run_all(self, types=None):
+
+    def run_all(self, types=None, by_date=False):
         self.working_data = copy.deepcopy(self.original_data)
         results_dict = collections.defaultdict()
         in_progress = []
@@ -194,7 +195,7 @@ class HistoricPriceAnalyser(object):
         for n in range_types:
             self.set_report_type(n)
             self._process_change_list()
-            in_progress.append(self.get())
+            in_progress.append(self.get(by_date))
 
         for n in in_progress[0]:
             next_row = []
@@ -227,7 +228,10 @@ class HistoricPriceAnalyser(object):
                 new_dict[db] = base.float_zero(self.working_data[db]) - self.base_price
         elif self.type == self.RELATIVE:
             for db in self.working_data:
-                new_dict[db] = (base.float_zero(self.working_data[db]) / self.base_price) - 1
+                try:
+                    new_dict[db] = (base.float_zero(self.working_data[db]) / base.float_zero(self.base_price)) - 1
+                except ZeroDivisionError:
+                    new_dict[db] = 0
         elif self.type == self.DELTA_DAY:
             for idx, db in enumerate(self.working_data.keys()):
                 if idx == 0:
@@ -266,8 +270,12 @@ class HistoricPriceAnalyser(object):
                 "base_date_ts": self.base_date, "inflation_year": self.inf_year, "base_price": self.base_price,
                 "report_type": self.type, "records": len(self.working_data)}
 
-    def get(self):
-        return self.working_data
+    def get(self, by_date=False):
+        if by_date:
+            return_dict = OrderedDictV2({d: self.working_data[d] for d in self.working_data if d >= self.base_date})
+            return return_dict
+        else:
+            return self.working_data
 
     def _get_price_from_date(self, date=None):
         """
@@ -397,9 +405,11 @@ if __name__ == "__main__":
         base.print4(result.items(), 10)
         try:
             test_HPA.clear()
+
             test_HPA.set_inflation_year(2014)
             test_HPA.set_base_price_date(date="end")
-            result = test_HPA.run_all([0, 1])
+            result = test_HPA.run_all([0, 1], by_date=True)
+            base.print4(test_HPA.get_def().items(), 20)
             base.print4(result.items(), 10)
         except AssertionError:
             print("No End Date")

@@ -1,8 +1,12 @@
 __author__ = 'andrew.sielen'
 
+import collections
+
 import database as db
 from data.data_classes.SetInfo_class import SetInfo
+from data.data_classes.HistoricPriceAnalyser_class import HistoricPriceAnalyser
 from system import base
+import navigation as menu
 
 
 class SetCollection(object):
@@ -35,7 +39,7 @@ class SetCollection(object):
 
     def _run_query(self, base_text=None, filter_text=None, one=False):
         query = self._query_builder(base_text, filter_text)
-        self.recent_query.insert(0, query)  # Todo, this should add to the front so we can keep is to a limited history
+        self.recent_query.insert(0, query)
         return db.run_sql(query, one=one)
 
     def _query_builder(self, base_text=None, filter_text=None):
@@ -82,7 +86,8 @@ class SetCollection(object):
 
     def set_nums(self):
         """List of all set nums"""
-        nums_list = self._run_query(base_text="SELECT set_num FROM sets", filter_text=self.filter_text)
+        nums_list = self._run_query(base_text="SELECT set_num FROM sets", filter_text=None)
+        nums_list = [n[0] for n in nums_list]
         return nums_list
 
     def _get_num_value(self, field="", type=None):
@@ -176,31 +181,23 @@ class SetCollection(object):
     ##
     def historic_price_trends(self, type="standard", price="standard", date="", inflation=None):
         """
-        @param type: Options:
-                            standard - actual numbers
-                            relative - percent change
-                            delta - price change
-        @param type: Options:
-                                standard - compare price against historic prices
-                            These can only be used with relative and delta [type]
-                                original_us - compare price against us original
-                                original_uk - compare price against uk original
-        @param date: Options:
-                            a date to start on
-                            release date - list prices with start date as the focus
-                            end date - list prices with end date as the focus
-        @param inflation: Options:
-                            a year to get inflation based on
-                            None - no changes
 
-        All this is done in the lists and not with sql
+
         """
 
-        # First make SetInfos for each set if they don't exists
-        self.set_info_list = _set_info_creator(self._run_query(filter_text=self.filter_text))
-        for s in self.set_info_list:
-            pass
-        pass
+        historic_data_sets = collections.defaultdict()
+        sfilter = ["AVG(historic_prices.qty_avg)",
+                   "(price_types.price_type='historic_new' OR price_types.price_type='historic_used')", True]
+        for snum in self.set_nums():
+            print("Getting snum {}".format(snum))
+            tHPA = HistoricPriceAnalyser(si=SetInfo(snum), select_filter=sfilter)
+            tHPA.set_base_price_date(date="end")
+            historic_data_sets[snum] = tHPA.run_all([0, 1], by_date=True)
+
+        print("Check")
+        return historic_data_sets
+
+
 
     def historic_data_trends(self):
         pass
@@ -239,3 +236,34 @@ def _validate_set_list(set_list, allow_set_nums=False):
     elif allow_set_nums is True and isinstance(set_list, str):
         return set_list
     return False
+
+
+if __name__ == "__main__":
+    test_SC = None
+
+
+    def main_menu():
+
+        options = {}
+
+        options['1'] = "Create Set Collection", menu_createSC
+        options['2'] = "Test Historic", menu_test_historic
+        options['9'] = "Quit", menu.quit
+
+        while True:
+            result = menu.options_menu(options)
+            if result is 'kill':
+                exit()
+
+    def menu_createSC():
+        global test_SC
+        filter_text = "(year_released BETWEEN 2008 AND 2014)"
+        test_SC = SetCollection(filter_text=filter_text)
+
+    def menu_test_historic():
+        global test_SC
+
+        historic_data_sets = test_SC.historic_price_trends()
+        base.print4(historic_data_sets.items(), 20)
+
+    main_menu()
