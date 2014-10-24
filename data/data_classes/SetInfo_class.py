@@ -1,13 +1,17 @@
 __author__ = 'andrew.sielen'
 
+import arrow
+
 from database import info
 import database as db
 from system import base
 from data import update_secondary
 import navigation as menu
 from system import logger
+
 # from data.data_classes.HistoricPriceAnalyser_class import HistoricPriceAnalyser
-# from system.base import calculate_inflation as inf
+from system.base import calculate_inflation as inf
+
 
 class SetInfo(object):
     """
@@ -447,13 +451,35 @@ class SetInfo(object):
     def get_calc_weight(self):
         return info.get_set_weight(self.set_num, 'bricklink')
 
+    def get_avg_piece_weight(self, calc=False):
+        if calc is False:
+            if self.weight is None or self.piece_count is None or self.piece_count == 0:
+                return None
+            else:
+                return self.weight / self.piece_count
+        else:
+            calc_weight = self.get_calc_weight()
+            calc_piece_count = self.get_calc_piece_count()
+            if calc_weight is None or calc_piece_count is None or calc_piece_count == 0:
+                return None
+            else:
+                return self.get_calc_weight() / self.get_calc_piece_count()
+
+    def get_unique_piece_ratio(self):
+        unique_pieces = self.get_calc_unique_pieces()
+        calc_pieces = self.get_calc_piece_count()
+        if unique_pieces is None or calc_pieces is None or calc_pieces == 0:
+            return None
+        else:
+            return self.get_calc_unique_pieces() / self.get_calc_piece_count()
+
     def get_ppp_adj(self, year=None, calc=False):
 
         piece_count = self.piece_count
         if calc is True:
             piece_count = self.get_calc_piece_count()
 
-        if piece_count is None or self.original_price_us is None:
+        if piece_count is None or self.original_price_us is None or piece_count == 0:
             return self.__missing_data()
 
         return self.get_price(year) / piece_count
@@ -463,17 +489,69 @@ class SetInfo(object):
         if calc is True:
             weight = self.get_calc_weight()
 
-        if weight is None or self.original_price_us is None:
+        if weight is None or self.original_price_us is None or weight == 0:
             return self.__missing_data()
 
         return self.get_price(year) / weight
 
-    def get_price_history(self, select_filter=None):
-        self.price_history = HistoricPriceAnalyser(si=self, select_filter=select_filter)
-        return self.price_history
+    # def get_price_history(self, select_filter=None):
+    #     self.price_history = HistoricPriceAnalyser(si=self, select_filter=select_filter)
+    #     return self.price_history
 
     def get_rating_history(self):
         return info.get_historic_data(set_id=self.db_id)
+
+    def get_relative_end_date(self, date):
+        """
+        Return the position of date to the comparison date (end date in this case)
+        @param date:
+        @return:
+        Simply date - end-date = relative date
+        """
+        if date is None or self.date_ended_us is None: return None
+        dif_date = arrow.get(date) - arrow.get(self.date_ended_us)
+        return dif_date.days
+
+
+    def get_relative_end_date_range(self):
+        """
+        6/30/14 = 1372550400 # The first possible date in the db
+        @return:
+        """
+        d1 = self.get_date_min(type="end")
+        if d1 is not None:
+            d1 = -d1
+        d2 = self.get_date_max(type="end")
+        return d1, d2
+
+    def get_date_min(self, type="end"):
+        """
+
+        @param type: start or end
+        @return: The number of values it has before the [type] date
+        6/30/14 = 1372550400 # The first possible date in the db
+        """
+        comp_date = self.date_ended_us
+        if type == "start":
+            comp_date = self.date_ended_us
+        if comp_date is None: return None
+        date_min = arrow.get(comp_date) - arrow.get(1372550400)
+        return date_min.days
+
+    def get_date_max(self, type="end"):
+        """
+
+        @param type: start or end
+        @return: The number of values it has before the [type] date
+        6/30/14 = 1372550400 # The first possible date in the db
+        """
+        comp_date = self.date_ended_us
+        if type == "start":
+            comp_date = self.date_ended_us
+        if comp_date is None: return None
+        date_max = arrow.now('US/Pacific') - arrow.get(1372550400)
+        date_max = date_max.days
+        return date_max - self.get_date_min(type)
 
     ####
     ##House keeping
@@ -521,6 +599,59 @@ class SetInfo(object):
 
     def __missing_data(self):
         return None
+
+    def set_dump(self):
+        """
+        "id, set_num, set_name, set_theme, piece_count, figures, set_weight, year_released, date_released_us, date_ended_us,
+        date_released_uk, date_ended_uk, original_price_us, original_price_uk, age_low, age_high, box_size, box_volume,
+        last_updated, last_inv_updated_bl, last_inv_updated_re, last_daily_update, BASE CALC, ppp, ppp_uk, ppg, ppg_uk,
+        avg_piece_weight,INFLATION, price_inf, ppp_inf, ppg_inf, CALC PIECE/WEIGHT, calc_piece_count, calc_unique_piece_count,
+        calc_unique_to_total_piece_count, calc_weight, calc_avg_piece_weight, CALC INFLATION, calc_ppp_inf, calc_ppg_inf\n"
+        """
+        test_string = ""
+        test_string += "{},".format(self.db_id)
+        test_string += "{},".format(self.set_num)
+        test_string += "{},".format(self.name)
+        test_string += "{},".format(self.theme)
+        test_string += "{},".format(self.piece_count)
+        test_string += "{},".format(self.figures)
+        test_string += "{},".format(self.weight)
+        test_string += "{},".format(self.year_released)
+        test_string += "{},".format(self.date_released_us)
+        test_string += "{},".format(self.date_ended_us)
+        test_string += "{},".format(self.date_released_uk)
+        test_string += "{},".format(self.date_ended_uk)
+        test_string += "{},".format(self.original_price_us)
+        test_string += "{},".format(self.original_price_uk)
+        test_string += "{},".format(self.age_low)
+        test_string += "{},".format(self.age_high)
+        test_string += "{},".format(self.box_size)
+        test_string += "{},".format(self.box_volume)
+        test_string += "{},".format(self.last_updated)
+        test_string += "{},".format(self.last_inv_updated_bl)
+        test_string += "{},".format(self.last_inv_updated_re)
+        test_string += "{},".format(self.last_daily_update)
+        test_string += "BASE CALC,"
+        test_string += "{},".format(self.ppp)
+        test_string += "{},".format(self.ppp_uk)
+        test_string += "{},".format(self.ppg)
+        test_string += "{},".format(self.ppg_uk)
+        test_string += "{},".format("WP")  #self.get_avg_piece_weight())
+        test_string += "INFLATION,"
+        test_string += "{},".format(self.get_price(year=2014))
+        test_string += "{},".format(self.get_ppp_adj(year=2014))
+        test_string += "{},".format(self.get_ppg_adj(year=2014))
+        test_string += "CALC PIECE/WEIGHT,"
+        test_string += "{},".format(self.get_calc_piece_count())
+        test_string += "{},".format(self.get_calc_unique_pieces())
+        test_string += "{},".format("UT")  #self.get_unique_piece_ratio())
+        test_string += "{},".format(self.get_calc_weight())
+        test_string += "{},".format("WCP")  #self.get_avg_piece_weight(calc=True))
+        test_string += "CALC INFLATION,"
+        test_string += "{},".format(self.get_ppp_adj(year=2014, calc=True))
+        test_string += "{},".format(self.get_ppg_adj(year=2014, calc=True))
+        test_string += "\n"
+        return test_string
 
     # For testing
     def test_base_info(self):
@@ -600,7 +731,8 @@ if __name__ == "__main__":
         options['6'] = "Test SQL Data", menu_test_sql_data
         options['7'] = "Test Historic", menu_test_historic
         options['8'] = "Test all Output", menu_test_all_output
-        options['S'] = "Test SQL Historic", menu_test_sql_historic
+        #options['S'] = "Test SQL Historic", menu_test_sql_historic
+        options['D'] = "Get Date Min", menu_test_date_range
         options['9'] = "Quit", menu.quit
 
         while True:
@@ -639,6 +771,12 @@ if __name__ == "__main__":
             menu_create_set_db()
         print(test_set.test_inflation())
 
+    def menu_test_date_range():
+        global test_set
+        while not bool(test_set):
+            menu_create_set_db()
+        print(test_set.get_relative_end_date_range())
+
     def menu_test_sql_data():
         global test_set
         while not bool(test_set):
@@ -664,23 +802,23 @@ if __name__ == "__main__":
         menu_test_historic()
 
 
-    def menu_test_sql_historic():
-        global test_set
-        while not bool(test_set):
-            menu_create_set_db()
-        c_result = test_set.get_historic_price_trends()
-        base.print4(c_result, 5)
-        c_result = test_set.get_historic_price_trends(
-            select_filter=["(historic_prices.min+historic_prices.max)/2", None, False])
-        base.print4(c_result, 5)
-        c_result = test_set.get_historic_price_trends(select_filter=["(historic_prices.min+historic_prices.max)",
-                                                                     "(price_types.price_type='historic_used' OR price_types.price_type='historic_new')",
-                                                                     False])
-        base.print4(c_result, 5)
-        c_result = test_set.get_historic_price_trends(select_filter=["SUM(historic_prices.min+historic_prices.max)",
-                                                                     "(price_types.price_type='historic_used' OR price_types.price_type='historic_new')",
-                                                                     True])
-        base.print4(c_result, 5)
+    # def menu_test_sql_historic():
+    #     global test_set
+    #     while not bool(test_set):
+    #         menu_create_set_db()
+    #     c_result = test_set.get_historic_price_trends()
+    #     base.print4(c_result, 5)
+    #     c_result = test_set.get_historic_price_trends(
+    #         select_filter=["(historic_prices.min+historic_prices.max)/2", None, False])
+    #     base.print4(c_result, 5)
+    #     c_result = test_set.get_historic_price_trends(select_filter=["(historic_prices.min+historic_prices.max)",
+    #                                                                  "(price_types.price_type='historic_used' OR price_types.price_type='historic_new')",
+    #                                                                  False])
+    #     base.print4(c_result, 5)
+    #     c_result = test_set.get_historic_price_trends(select_filter=["SUM(historic_prices.min+historic_prices.max)",
+    #                                                                  "(price_types.price_type='historic_used' OR price_types.price_type='historic_new')",
+    #                                                                  True])
+    #     base.print4(c_result, 5)
 
 
     if __name__ == "__main__":

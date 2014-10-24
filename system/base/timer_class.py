@@ -19,6 +19,10 @@ class process_timer():
     def _update_tasks(self, num_of_tasks):
         self.tasks += num_of_tasks
 
+    @property
+    def tasks_completed(self):
+        return self.tasks
+
     def end(self):
         time_diff = self._get_run_time()
         logger.info("@ Run Time: {} seconds".format(time_diff))

@@ -139,7 +139,7 @@ def read_xml_from_url(url, params=None):
 
 # #
 # Data Methods
-##
+# #
 def is_number(s):
     """
 
@@ -386,14 +386,18 @@ def check_if_the_same_day(dateA, dateB):
     return False
 
 
-def get_timestamp(date=None):
+def get_timestamp(date=None, day=False):
     """
 
     @param date: In the format: YYYY-MM-DD
     @return:
     """
     if date is None:
-        return arrow.now('US/Pacific').timestamp
+        dte = arrow.now('US/Pacific')
+        if day is True:
+            return dte.floor('day').timestamp
+        else:
+            return dte.timestamp
     return arrow.get(date, 'YYYY-MM-DD')
 
 
@@ -414,6 +418,15 @@ def get_date(timestamp=None, default=None):
         return None
 
 
+def get_ts_day(timestamp):
+    """
+    Strip out the time part of a date
+    @param timestamp:
+    @return:
+    """
+    return arrow.get(timestamp).floor('day').timestamp
+
+
 def get_closest_list(num, num_list):
     assert isinstance(num, int)
     return min(num_list, key=lambda x: abs(x - num))
@@ -432,6 +445,7 @@ def get_days_between(dateA, dateB):
     dateBA = arrow.get(dateB)
     date_dif = dateAA.date() - dateBA.date()
     return date_dif.days
+
 
 def input_set_num(type=0):
     """

@@ -52,8 +52,10 @@ class HistoricPriceAnalyser(object):
             self.original_data = OrderedDictV2(sorted(base_dict.items(), key=lambda t: t[0]))
             # for rebuilding data
             self.sql_query = sql_query
-            #Same as clear - but needs to be defined in __init__
+            # Same as clear - but needs to be defined in __init__
             self.working_data = copy.deepcopy(self.original_data)
+            #Working_data_format:
+            #
             self.base_date = min(self.original_data.keys())  #), key=self.original_data.get)
             self.base_price = self.original_data[self.base_date]
             self.type = self.STANDARD
@@ -64,6 +66,10 @@ class HistoricPriceAnalyser(object):
 
     def __bool__(self):
         return bool(self.si)
+
+    @property
+    def dates(self):
+        return self.working_data.keys()
 
     def _process_date_price_list(self, dp_list):
         """
@@ -155,16 +161,17 @@ class HistoricPriceAnalyser(object):
             else:
                 self.base_date = self.si.ts_date_ended_us
             if self.base_date is None or self.base_date == "":
-                self.base_date = max(self.original_data.keys())
-            self.base_price = self._get_price_from_date(self.base_date)
+                self.base_date = None
+            else:
+                self.base_price = self._get_price_from_date(self.base_date)
         else:
             self.base_date = base.get_timestamp(date)
             self.base_price = self._get_price_from_date(self.base_date)
 
-        if self.base_date is None:
-            self.base_date = min(self.original_data.keys())
-        if self.base_price is None:
-            self.base_price = max(self.original_data.keys())
+            # if self.base_date is None:
+            # self.base_date = min(self.original_data.keys())
+            # if self.base_price is None:
+            #     self.base_price = max(self.original_data.keys())
 
 
     def run(self, by_date=False, clear=True):
@@ -194,6 +201,8 @@ class HistoricPriceAnalyser(object):
             range_types = types
         for n in range_types:
             self.set_report_type(n)
+            self.set_base_price_date(date="end")
+            self.set_base_price_date(price="original")
             self._process_change_list()
             in_progress.append(self.get(by_date))
 
@@ -201,7 +210,11 @@ class HistoricPriceAnalyser(object):
             next_row = []
             for m in range(len(in_progress)):
                 next_row.append(in_progress[m][n])
-            results_dict[n] = next_row
+            if by_date is True:
+                results_dict[n] = next_row
+            else:
+                results_dict[base.get_ts_day(n)] = next_row
+                # Note this returns a list not just a value, if you have one value (one price) you need to pull it out later
 
         return results_dict
 
@@ -225,7 +238,7 @@ class HistoricPriceAnalyser(object):
             return self.working_data  # standard type no change
         elif self.type == self.DELTA:
             for db in self.working_data:
-                new_dict[db] = base.float_zero(self.working_data[db]) - self.base_price
+                new_dict[db] = base.float_zero(self.working_data[db]) - base.float_zero(self.base_price)
         elif self.type == self.RELATIVE:
             for db in self.working_data:
                 try:
@@ -264,16 +277,26 @@ class HistoricPriceAnalyser(object):
         self.type = self.STANDARD
         self.inf_year = None
 
-    def get_def(self):
-        return {"set_num": self.si.set_num, "date_release": self.si.date_released_us,
-                "original_price": self.si.original_price_us, "base_date": base.get_date(self.base_date),
-                "base_date_ts": self.base_date, "inflation_year": self.inf_year, "base_price": self.base_price,
-                "report_type": self.type, "records": len(self.working_data)}
+    def get_def(self, type="dict"):
+        if type == "list":
+            return [self.si.set_num, self.si.theme, self.si.year_released, self.si.original_price_us,
+                    self.si.date_released_us, self.si.date_ended_us]
+        else:
+            return {"set_num": self.si.set_num, "theme": self.si.theme, "date_release": self.si.date_released_us,
+                    "original_price": self.si.original_price_us, "base_date": base.get_date(self.base_date),
+                    "base_date_ts": self.base_date, "inflation_year": self.inf_year, "base_price": self.base_price,
+                    "report_type": self.type, "records": len(self.working_data)}
+
 
     def get(self, by_date=False):
         if by_date:
-            return_dict = OrderedDictV2({d: self.working_data[d] for d in self.working_data if d >= self.base_date})
-            return return_dict
+            raw_dict = OrderedDictV2({self.si.get_relative_end_date(d): self.working_data[d] for d in
+                                      self.working_data})  # if d >= self.base_date})
+            # return_dict = OrderedDictV2()
+            # dates = sorted(raw_dict.keys())
+            # for i, dte in enumerate(dates):
+            # return_dict[i] = raw_dict[dte]
+            return raw_dict
         else:
             return self.working_data
 
@@ -309,6 +332,27 @@ class HistoricPriceAnalyser(object):
     def sql(self, sql_statement):
         """Not safe to have publicly exposed, but very handy for my own personal project"""
         return db.run_sql(sql_statement)
+
+    def eval_report(self):
+        """
+        Returns two lists that can be turned into csv files
+
+        Set List
+        Set_num, theme, year_released, original_price, start_date, end_date
+
+        Price List
+        set_num, date(price), date(price), date(price), date(price)
+        @param year_start:
+        @param year_end:
+        @return:
+        """
+        set_prices = []
+        # set_defs = [["SET_NUM", "THEME", "YEAR_RELEASED", "ORIGINAL_PRICE", "DATE_START", "DATE_END"]]
+        set_defs = self.get_def(type="list")
+        self.clear()
+        set_prices = self.run_all(types=[1], by_date=True)  #By date will start with the date ended
+
+        return set_prices, set_defs
 
 
 if __name__ == "__main__":
@@ -419,7 +463,7 @@ if __name__ == "__main__":
     #
     # def get_historic_price_trends(self, select_filter=None, type="standard", price="standard", date=None,
     # inflation=None):
-    #     """
+    # """
     #     @param select_filter: List:
     #                         [select statement, where statement, group?] See the end of this doc for examples
     #
