@@ -610,9 +610,9 @@ class SetInfo(object):
         """
         test_string = ""
         test_string += "{},".format(self.db_id)
-        test_string += "{},".format(self.set_num)
-        test_string += "{},".format(self.name)
-        test_string += "{},".format(self.theme)
+        test_string += "{},".format(replace_comma(self.set_num))
+        test_string += "{},".format(replace_comma(self.name))
+        test_string += "{},".format(replace_comma(self.theme))
         test_string += "{},".format(self.piece_count)
         test_string += "{},".format(self.figures)
         test_string += "{},".format(self.weight)
@@ -625,7 +625,7 @@ class SetInfo(object):
         test_string += "{},".format(self.original_price_uk)
         test_string += "{},".format(self.age_low)
         test_string += "{},".format(self.age_high)
-        test_string += "{},".format(self.box_size)
+        test_string += "{},".format(replace_comma(self.box_size))
         test_string += "{},".format(self.box_volume)
         test_string += "{},".format(self.last_updated)
         test_string += "{},".format(self.last_inv_updated_bl)
@@ -652,6 +652,7 @@ class SetInfo(object):
         test_string += "{},".format(self.get_ppg_adj(year=2014, calc=True))
         test_string += "\n"
         return test_string
+
 
     # For testing
     def test_base_info(self):
@@ -711,6 +712,9 @@ class SetInfo(object):
         return self.get_price_history(), self.get_rating_history()
 
 
+def replace_comma(text):
+    return str(text).replace(',', "/")
+
 if __name__ == "__main__":
     test_set = SetInfo()
 
@@ -733,6 +737,7 @@ if __name__ == "__main__":
         options['8'] = "Test all Output", menu_test_all_output
         #options['S'] = "Test SQL Historic", menu_test_sql_historic
         options['D'] = "Get Date Min", menu_test_date_range
+        options['C'] = "GET CSV DUMP", menu_text_csv_dump
         options['9'] = "Quit", menu.quit
 
         while True:
@@ -801,6 +806,11 @@ if __name__ == "__main__":
         menu_test_sql_data()
         menu_test_historic()
 
+    def menu_text_csv_dump():
+        global test_set
+        while not bool(test_set):
+            menu_create_set_db()
+        print(test_set.set_dump())
 
     # def menu_test_sql_historic():
     #     global test_set
