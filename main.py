@@ -40,6 +40,7 @@ def run_get_inv():
 def validate_database():
     if os.path.isfile(database):
         logger.info("Database Found")
+
     else:
         logger.warning("No Database Found. Please locate it or create one in the system menu")
 
