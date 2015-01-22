@@ -12,7 +12,7 @@ update_history = {}
 
 SLOWPOOL = 10
 FASTPOOL = 35
-RUNNINGPOOL = FASTPOOL
+RUNNINGPOOL = SLOWPOOL
 
 
 def init_lookups():

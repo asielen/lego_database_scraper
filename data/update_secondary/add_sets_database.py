@@ -174,13 +174,15 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
     logger.info("$$$ Adding sets to the database")
     sets_to_scrape = []
     sets_to_insert = []
+    set_id_list = list(set_id_list)
+    set_list_len = len(set_id_list)
     pool = _pool(base.RUNNINGPOOL)
 
-    timer = base.process_timer("Add Sets to Database")
+    timer = base.process_timer("Add Sets to Database {}".format(update))
     for idx, row in enumerate(set_id_list):
         if len(row) == 0:
             continue
-        if row[id_col] in set_dict:
+        if row[id_col] in set_dict:  # If the row is already in the database
             if _check_set_completeness(set_dict[row[id_col]], level=update) is True:
                 continue
 
@@ -189,7 +191,7 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
         if idx > 0 and idx % (base.RUNNINGPOOL * 3) == 0:
             logger.info("@@@ Running Pool {}".format(idx))
             sets_to_insert.extend(pool.map(_parse_get_basestats, sets_to_scrape))
-            timer.log_time(len(sets_to_scrape))
+            timer.log_time(len(sets_to_scrape), set_list_len - idx)
             sets_to_scrape = []
 
         if idx > 0 and len(sets_to_insert) >= 600:
@@ -197,7 +199,7 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
             sets_to_insert = []
 
     sets_to_insert.extend(pool.map(_parse_get_basestats, sets_to_scrape))
-    timer.log_time(len(sets_to_scrape))
+    timer.log_time(len(sets_to_scrape), 0)
     timer.end()
 
     pool.close()
@@ -213,14 +215,18 @@ def add_sets_data_to_database(sets_to_insert):
 
     @return:
     """
+    # import pprint
+    # print("inserting sets")
+    # pprint.pprint([tuple(p[1:] + [p[0]]) for p in sets_to_insert])
     if sets_to_insert is None or len(sets_to_insert) == 0:
         return
     sets_to_insert = list(filter(None, sets_to_insert))
     logger.info("Adding {} sets to the database".format(len(sets_to_insert)))
 
-    db.batch_update('INSERT OR IGNORE INTO sets(set_num) VALUES (?)', ((p[1],) for p in sets_to_insert))
+    db.batch_update('INSERT OR IGNORE INTO sets(set_num) VALUES (?)',
+                    ((p[0],) for p in sets_to_insert))  # 0 is the position of the set_num
 
-    sets_to_insert_processed = [tuple(p[1:] + [p[1]]) for p in sets_to_insert]
+    sets_to_insert_processed = [tuple(p[1:] + [p[0]]) for p in sets_to_insert]  #take the setnum and move it to the end
     db.batch_update('UPDATE sets SET '
                     'bo_set_num=?,'
                     'item_num=?, '

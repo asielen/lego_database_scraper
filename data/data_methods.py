@@ -237,7 +237,8 @@ def get_basestats(o_set, type=1):
     brickset_stats = BS.get_basestats(set_num, set_seq)
     bricklink_stats = blds.get_basestats(set_num, set_seq)
     rebrickable_stats = list(reapi.pull_set_info(o_set))
-
+    # import pprint
+    # print("####")
     if 'set_name' in brickset_stats:
         # if brickset_stats['set_name'] == '':
         # return None
@@ -264,6 +265,7 @@ def get_basestats(o_set, type=1):
     else:
         scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = base.expand_set_num(
             o_set)
+
 
     if "theme" in brickset_stats:
         scrubbed_dic['theme'] = brickset_stats['theme']
@@ -349,7 +351,7 @@ def get_basestats(o_set, type=1):
     scrubbed_dic['last_update'] = base.get_timestamp()
 
     scrubbed_dic['bo_set_num'] = None  # Todo, have this actually set the bo_set_num
-
+    # pprint.pprint(scrubbed_dic)
     if type == 1:  # Return a list instead of a dict
         return [scrubbed_dic['set_num'],
                 scrubbed_dic['bo_set_num'],

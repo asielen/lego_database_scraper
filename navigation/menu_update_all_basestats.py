@@ -41,7 +41,12 @@ def update_from_api():
     @return:
     """
     set_list = pull_set_catalog()
-    secondary.add_sets_to_database(set_list, id_col=2, update=0)
+    proceed = input("What Level of Update (-1 no check, 0 check 90 days, 1 check base data, 2 update all)? ")
+    if proceed not in ('-1', '0', '1', '2'):
+        proceed = 0
+    else:
+        proceed = int(proceed)
+    secondary.add_sets_to_database(set_list, id_col=2, update=proceed)
 
 
 # def update_from_file():
