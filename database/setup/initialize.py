@@ -39,7 +39,7 @@ def _initiate_database():
                     "weight REAL, "
                     "bl_category INTEGER,"
                     "bl_type TEXT, "  # P for part, M for minifig - may implement others
-                    "FOREIGN KEY (bl_category) REFERENCES bl_categories(id);")
+                    "FOREIGN KEY (bl_category) REFERENCES bl_categories(id));")
         con.execute("CREATE UNIQUE INDEX IF NOT EXISTS bo_num_idx ON parts(brickowl_id)")
         con.execute("CREATE UNIQUE INDEX IF NOT EXISTS bl_num_idx ON parts(bricklink_id)")
         con.execute("CREATE UNIQUE INDEX IF NOT EXISTS re_num_idx ON parts(rebrickable_id)")
