@@ -1,7 +1,9 @@
 __author__ = 'andrew.sielen'
 
 # external
-from system.logger import logger
+from system import logger
+
+if __name__ == "__main__": logger.setup()
 # other modules
 import database as db
 import database.info as info

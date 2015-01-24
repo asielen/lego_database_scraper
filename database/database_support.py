@@ -5,7 +5,9 @@ import sys
 
 from database import database
 from system import base
-from system.logger import logger
+from system import logger
+
+if __name__ == "__main__": logger.setup()
 
 
 def batch_update(sql_text, csvfile, header_len=0):

@@ -8,7 +8,9 @@ from data.bricklink import bricklink_data_scrape as BLDS
 from database.update import add_daily_stats as ADS
 from database import info
 from system import base
-from system.logger import logger
+from system import logger
+
+if __name__ == "__main__": logger.setup()
 
 
 def get_all_daily_set_data(set_list):

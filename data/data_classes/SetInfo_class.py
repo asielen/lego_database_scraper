@@ -9,6 +9,8 @@ from data import update_secondary
 import navigation as menu
 from system import logger
 
+if __name__ == "__main__": logger.setup()
+
 # from data.data_classes.HistoricPriceAnalyser_class import HistoricPriceAnalyser
 from system.base import calculate_inflation as inf
 
@@ -28,7 +30,7 @@ class SetInfo(object):
         s_num = None
         if set_info is not None:
             if isinstance(set_info, list) or isinstance(set_info, tuple):
-                # If init with a list
+                # If setup with a list
                 if len(set_info) == 27:
                     set_info_list = list(set_info)
                 elif len(set_info) > 2 and isinstance(set_info[1], str):
@@ -36,7 +38,7 @@ class SetInfo(object):
                     s_num = base.expand_set_num(set_info[1])[2]
             else:
                 if isinstance(set_info, str):
-                    # If init with a string
+                    # If setup with a string
                     s_num = base.expand_set_num(set_info)[2]
 
         if s_num is not None:

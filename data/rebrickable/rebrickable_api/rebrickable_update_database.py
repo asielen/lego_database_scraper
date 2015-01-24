@@ -12,7 +12,9 @@ import data.update_secondary as update
 import database.info as info
 import database as db
 from system import base
-from system.logger import logger
+from system import logger
+
+if __name__ == "__main__": logger.setup()
 
 
 def update_parts():

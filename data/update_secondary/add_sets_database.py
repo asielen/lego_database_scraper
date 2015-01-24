@@ -8,7 +8,9 @@ import data
 import database as db
 import database.info as info
 from system import base
-from system.logger import logger
+from system import logger
+
+if __name__ == "__main__": logger.setup()
 
 
 # def add_set_to_database(set_data):

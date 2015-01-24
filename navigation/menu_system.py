@@ -3,7 +3,9 @@ __author__ = 'andrew.sielen'
 import navigation.menu
 
 from database import setup
-from system.logger import logger
+from system import logger
+
+if __name__ == "__main__": logger.setup()
 from data.import_data import read_historic_prices_file as HPF
 
 

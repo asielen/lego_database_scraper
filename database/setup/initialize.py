@@ -3,6 +3,8 @@ __author__ = 'andrew.sielen'
 import sqlite3 as lite
 
 from system import logger
+
+if __name__ == "__main__": logger.setup()
 import database as db
 
 

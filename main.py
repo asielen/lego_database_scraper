@@ -2,7 +2,9 @@ __author__ = 'andrew.sielen'
 
 import os
 
-from system.logger import logger
+from system import logger
+
+if __name__ == "__main__": logger.setup()
 from database.database import database
 import navigation.menu as menu
 import navigation.menu_daily_price_capture as DPC

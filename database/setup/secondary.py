@@ -11,7 +11,9 @@ __author__ = 'andrew.sielen'
 
 import data.bricklink.bricklink_api as blapi
 import data.rebrickable.rebrickable_api as reapi
-from system.logger import logger
+from system import logger
+
+if __name__ == "__main__": logger.setup()
 from navigation import menu
 
 

@@ -9,7 +9,9 @@ import data
 import sys
 import database as db
 from database import info
-from system.logger import logger
+from system import logger
+
+if __name__ == "__main__": logger.setup()
 from system import base
 
 

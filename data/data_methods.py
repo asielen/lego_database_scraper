@@ -1,6 +1,8 @@
 __author__ = 'andrew.sielen'
 
-from system.logger import logger
+from system import logger
+
+if __name__ == "__main__": logger.setup()
 
 from system import base
 from data.bricklink import bricklink_data_scrape as blds

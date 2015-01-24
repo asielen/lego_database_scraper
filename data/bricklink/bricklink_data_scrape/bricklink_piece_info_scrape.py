@@ -12,7 +12,9 @@ import re
 from system import base
 from database import info
 import database as db
-from system.logger import logger
+from system import logger
+
+if __name__ == "__main__": logger.setup()
 
 
 def get_bl_piece_info(design_num, design_name=None, default='dict'):

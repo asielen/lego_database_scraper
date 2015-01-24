@@ -12,7 +12,9 @@
 # X : XML (seems to default to this)
 
 # external
-from system.logger import logger
+from system import logger
+
+if __name__ == "__main__": logger.setup()
 
 # other module
 from navigation import menu

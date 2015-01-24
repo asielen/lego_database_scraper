@@ -1,6 +1,8 @@
 __author__ = 'andrew.sielen'
 
 from system import logger
+
+if __name__ == "__main__": logger.setup()
 from system import base
 import database as db
 

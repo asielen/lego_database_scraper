@@ -6,7 +6,9 @@ import data.bricklink.bricklink_api as blapi
 import data.rebrickable.rebrickable_api as reapi
 import data.update_primitives as update_p
 import database as db
-from system.logger import logger
+from system import logger
+
+if __name__ == "__main__": logger.setup()
 
 
 #

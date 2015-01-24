@@ -2,7 +2,9 @@ __author__ = 'Andrew'
 
 import navigation.menu as menu
 from system import base
-from system.logger import logger
+from system import logger
+
+if __name__ == "__main__": logger.setup()
 
 KEY = '12da35f38a061ef52efc56eba9267ed7c9a8f3d4b5c54c396729378788819a0b'
 url = 'https://public_api.brickowl.com/v1/catalog'

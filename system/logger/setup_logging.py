@@ -9,7 +9,6 @@ logging_level = logging.INFO
 
 notes_file = "notes.txt"
 
-
 def get_week_for_log():
     """
     @return: a text string "YYYYMMDD-WKN.log
@@ -18,26 +17,39 @@ def get_week_for_log():
     return today.format('YYYY') + "-WK" + str(today.isocalendar()[1]) + ".log"
 
 
-def setup_logging():
-    logger = logging.getLogger('LBEF')
-    logger.setLevel(logging_level)
+def setup():
+    log = logging.getLogger('LBEF')
+    log.setLevel(logging_level)
     print("Logging to " + str(get_week_for_log()))
     fh = logging.FileHandler(str(get_week_for_log()))
     fh.setLevel(logging.WARNING)
     ff = logging.Formatter('%(asctime)s %(name)s %(levelname)-8s: %(message)s')
     fh.setFormatter(ff)
-    logger.addHandler(fh)
+    log.addHandler(fh)
 
     ch = logging.StreamHandler()
     ch.setLevel(logging_level)
     cf = logging.Formatter('%(name)s %(levelname)s: %(message)s')
     ch.setFormatter(cf)
-    logger.addHandler(ch)
+    log.addHandler(ch)
 
-    return logger
+    return log
 
 
-logger = logging.getLogger('LBEF')
+log = logging.getLogger('LBEF')
+
+# Needed to set these up because i over
+def info(string):
+    log.info(string)
+
+
+def critical(string):
+    log.critical(string)
+
+
+def debug(string):
+    log.debug(string)
+
 
 
 def note(string):

@@ -2,7 +2,9 @@ __author__ = 'andrew.sielen'
 
 import arrow
 
-from system.logger import logger
+from system import logger
+
+if __name__ == "__main__": logger.setup()
 
 
 class process_timer():

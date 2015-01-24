@@ -4,7 +4,9 @@ __author__ = 'Andrew'
 
 import csv
 import sqlite3 as lite
-from system.logger import logger
+from system import logger
+
+if __name__ == "__main__": logger.setup()
 import pprint as pp
 
 import arrow

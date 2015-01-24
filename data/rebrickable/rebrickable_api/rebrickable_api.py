@@ -3,7 +3,9 @@ __author__ = 'Andrew'
 
 # internal
 from system import base
-from system.logger import logger
+from system import logger
+
+if __name__ == "__main__": logger.setup()
 
 KEY = 'LmtbQqIRtP'
 url = 'http://rebrickable.com/api'

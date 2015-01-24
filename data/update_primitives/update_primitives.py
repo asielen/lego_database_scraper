@@ -3,7 +3,9 @@ __author__ = 'andrew.sielen'
 import data
 import database as db
 from database import info
-from system.logger import logger
+from system import logger
+
+if __name__ == "__main__": logger.setup()
 
 
 def update_colors(update=False):

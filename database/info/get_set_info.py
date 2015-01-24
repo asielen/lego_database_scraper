@@ -6,6 +6,8 @@ from system.base.calculate_inflation import get_inflation_rate
 import database as db
 from system import base
 from system import logger
+
+if __name__ == "__main__": logger.setup()
 # from data.update_secondary.add_sets_database import add_set_to_database
 
 
