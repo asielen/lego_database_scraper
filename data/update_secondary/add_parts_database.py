@@ -1,18 +1,14 @@
-__author__ = 'andrew.sielen'
-
-# external
+# External
 from time import sleep
+import sys
 from multiprocessing import Pool as _pool
 
 # Internal
 import data
-import sys
 import database as db
 from database import info
-from system import logger
-
-if __name__ == "__main__": logger.setup()
-from system import base
+import system as syt
+if __name__ == "__main__": syt.setup_logger()
 
 
 def add_part_to_database(part_num, type='bl'):
@@ -27,18 +23,19 @@ def add_part_to_database(part_num, type='bl'):
     if type == 'bl':
         part_database = info.read_bl_parts()
         if part_num in part_database:
-            logger.info('{} not added to database, already there'.format(part_num))
+            syt.log_info('{} not added to database, already there'.format(part_num))
             return
         part_data = [_parse_get_bl_pieceinfo(part_num)]
     elif type == 're':
         part_database = info.read_re_parts()
         if part_num in part_database:
-            logger.info('{} not added to database, already there'.format(part_num))
+            syt.log_info('{} not added to database, already there'.format(part_num))
             return
         part_data = [_parse_get_re_pieceinfo(part_num)]
+    else: return
     part_data = _process_categories(part_data, bl_categories)
     add_part_data_to_database(part_data)
-    logger.info('{} was added to the database'.format(part_num))
+    syt.log_info('{} was added to the database'.format(part_num))
 
 
     #
@@ -57,16 +54,16 @@ def add_parts_to_database(part_id_list, type="bl"):
     @param part_id_list: list of bl_part numbers to look up and add
     @return:
     """
-    logger.info("$$$ Adding {} parts to the database from {}".format(len(part_id_list), type))
+    syt.log_info("$$$ Adding {} parts to the database from {}".format(len(part_id_list), type))
 
     part_database = {}
 
     parts_to_scrape = []
     parts_to_insert = []
-    pool = _pool(base.RUNNINGPOOL)
+    pool = _pool(syt.RUNNINGPOOL)
     bl_categories = info.read_bl_categories()  # To convert the category ids to table ids
 
-    timer = base.process_timer("Add parts to database")
+    timer = syt.process_timer("Add parts to database")
     total_ids = len(part_id_list)
     if type == "bl":  # TODO need to update this with all the changes to the re side of things
         part_database = info.read_bl_parts()
@@ -78,10 +75,10 @@ def add_parts_to_database(part_id_list, type="bl"):
                 # parts_to_insert.extend(_parse_get_bl_pieceinfo(part)) #Todo this is a test just to see where an error is
 
             # Scrape
-            if idx > 0 and idx % (base.RUNNINGPOOL * 3) == 0:
+            if idx > 0 and idx % (syt.RUNNINGPOOL * 3) == 0:
                 parts_to_insert.extend(pool.map(_parse_get_bl_pieceinfo, parts_to_scrape))
 
-                logger.info("@@@ Running Pool {}".format(idx))
+                syt.log_info("@@@ Running Pool {}".format(idx))
 
                 timer.log_time(len(parts_to_scrape), total_ids - idx)
 
@@ -90,7 +87,7 @@ def add_parts_to_database(part_id_list, type="bl"):
 
             # Insert
             if idx > 0 and len(parts_to_insert) >= 1500:
-                logger.info("@@@ Inserting {} pieces".format(len(parts_to_insert)))
+                syt.log_info("@@@ Inserting {} pieces".format(len(parts_to_insert)))
                 parts_to_insert = _process_categories(parts_to_insert, bl_categories)
                 add_part_data_to_database(parts_to_insert)
                 parts_to_insert = []
@@ -101,25 +98,25 @@ def add_parts_to_database(part_id_list, type="bl"):
 
     elif type == "re":
         part_database = info.read_re_parts()
-        logger.debug("Number of Parts in Re Database = {}".format(len(part_database)))
+        syt.log_debug("Number of Parts in Re Database = {}".format(len(part_database)))
         for idx, part in enumerate(part_id_list):
             if part in part_database:
                 continue
             if "-" in part:
-                base.note("Set in part list? {}".format(part))
-                logger.warning("Set in part list? {}".format(part))
+                syt.log_note("Set in part list? {}".format(part))
+                syt.log_warning("Set in part list? {}".format(part))
                 continue
             else:
                 parts_to_scrape.append(part)
                 # parts_to_insert.extend(_parse_get_re_pieceinfo(part)) #Todo this is a test just to see where an error is
             if idx > 0 and idx % 150 == 0:
-                logger.info("@@@ Running Pool {}".format(idx))
+                syt.log_info("@@@ Running Pool {}".format(idx))
                 parts_to_insert.extend(pool.map(_parse_get_re_pieceinfo, parts_to_scrape))
                 timer.log_time(len(parts_to_scrape), total_ids - idx)
                 parts_to_scrape = []
                 sleep(.5)
             if idx > 0 and idx % 1500 == 0:
-                logger.info("@@@ Inserting {} pieces".format(len(parts_to_insert)))
+                syt.log_info("@@@ Inserting {} pieces".format(len(parts_to_insert)))
                 parts_to_insert = _process_categories(parts_to_insert, bl_categories)
                 add_part_data_to_database(parts_to_insert)
                 parts_to_insert = []
@@ -129,24 +126,24 @@ def add_parts_to_database(part_id_list, type="bl"):
 
     timer.log_time(len(parts_to_scrape), 0)
     timer.end()
-    logger.info("%%% Finished adding parts to the database from {}".format(type))
+    syt.log_info("%%% Finished adding parts to the database from {}".format(type))
 
 
 def _process_categories(parts_to_insert, bl_categories):
     parts_to_insert_processed = []
     for part_row in parts_to_insert:
         try:
-            current_cat = base.int_null(part_row[7])
+            current_cat = syt.int_null(part_row[7])
             if current_cat in bl_categories:
                 part_row[7] = bl_categories[current_cat]
             else:
                 part_row[7] = None
-                base.note("Missing Category: Category {} could not be found. For set bl_id={}".format(current_cat,
+                syt.log_note("Missing Category: Category {} could not be found. For set bl_id={}".format(current_cat,
                                                                                                       part_row[0]))
         except:
             import pprint as pp
 
-            logger.warning("### Can't insert part_row {}".format(pp.pformat(part_row)))
+            syt.log_warning("### Can't insert part_row {}".format(pp.pformat(part_row)))
         if part_row is not None:
             parts_to_insert_processed.append(part_row)
     return parts_to_insert_processed
@@ -174,7 +171,7 @@ def add_part_data_to_database(insert_list, basics=0):
         elif row[3] is not None:
             lg_add.append(row)
 
-    logger.info("Inserting: {} BL [{}%] ; {} OL [{}%] ; {} RE [{}%] ; {} LG [{}%] Parts ; Total {}".format(
+    syt.log_info("Inserting: {} BL [{}%] ; {} OL [{}%] ; {} RE [{}%] ; {} LG [{}%] Parts ; Total {}".format(
         len(bl_add), round(len(bl_add) / len(insert_list) * 100, 2),
         len(ol_add), round(len(ol_add) / len(insert_list) * 100, 2),
         len(re_add), round(len(re_add) / len(insert_list) * 100, 2),
@@ -183,7 +180,7 @@ def add_part_data_to_database(insert_list, basics=0):
 
     if len(bl_add) > 0:  # If Bricklink Id is set
         try:
-            logger.info("adding {} bl_rows".format(len(bl_add)))
+            syt.log_info("adding {} bl_rows".format(len(bl_add)))
             db.batch_update(
                 'INSERT OR IGNORE INTO parts(bricklink_id) VALUES (?)', ((p[0],) for p in bl_add))
             if basics == 1:
@@ -195,29 +192,29 @@ def add_part_data_to_database(insert_list, basics=0):
                     'UPDATE parts SET brickowl_id=?, rebrickable_id=?, lego_id=?, design_name=?, weight=?, bl_type=?, bl_category=? '
                     'WHERE bricklink_id=?', (tuple(p[1:] + [p[0]]) for p in bl_add))
         except:
-            base.note("ERROR: {}".format(sys.exc_info()[0]))
-            base.note("Can't insert BL row: {} / {}".format(len(bl_add), base.list2string(bl_add)))
+            syt.log_note("ERROR: {}".format(sys.exc_info()[0]))
+            syt.log_note("Can't insert BL row: {} / {}".format(len(bl_add), syt.list2string(bl_add)))
             for r in bl_add:
-                base.note("Can't insert row: {}".format(base.list2string(r)))
+                syt.log_note("Can't insert row: {}".format(syt.list2string(r)))
 
     if len(ol_add) > 0:  # If BrickOwl Id is set and not bricklink
         try:
-            logger.info("adding {} bo_rows".format(len(ol_add)))
+            syt.log_info("adding {} bo_rows".format(len(ol_add)))
             db.batch_update(
                 'INSERT OR IGNORE INTO parts(bricklink_id, brickowl_id) VALUES (?,?)', (tuple(p[:2]) for p in ol_add))
             db.batch_update(
                 'UPDATE parts SET rebrickable_id=?, lego_id=?, design_name=?, weight=?, bl_type=?, bl_category=? '
                 'WHERE bricklink_id=? AND brickowl_id=?', (tuple(p[2:] + p[0:2]) for p in ol_add))
         except:
-            logger.critical("Add BO failed, check notes")
-            base.note("ERROR: {}".format(sys.exc_info()[0]))
-            base.note("Can't insert BO row: {} / {}".format(len(ol_add), base.list2string(ol_add)))
+            syt.log_critical("Add BO failed, check notes")
+            syt.log_note("ERROR: {}".format(sys.exc_info()[0]))
+            syt.log_note("Can't insert BO row: {} / {}".format(len(ol_add), syt.list2string(ol_add)))
             for r in ol_add:
-                base.note("Can't insert row: {}".format(base.list2string(r)))
+                syt.log_note("Can't insert row: {}".format(syt.list2string(r)))
 
     if len(re_add) > 0:  # If rebrickable ID is set and not brickowl or bricklink
         try:
-            logger.info("adding {} re_rows".format(len(re_add)))
+            syt.log_info("adding {} re_rows".format(len(re_add)))
             db.batch_update(
                 'INSERT OR IGNORE INTO parts(bricklink_id, brickowl_id, rebrickable_id) VALUES (?,?,?)',
                 (tuple(p[:3]) for p in re_add))
@@ -225,15 +222,15 @@ def add_part_data_to_database(insert_list, basics=0):
                 'UPDATE parts SET lego_id=?, design_name=?, weight=?, bl_type=?, bl_category=? '
                 'WHERE bricklink_id=? AND brickowl_id=? AND rebrickable_id=?', (tuple(p[3:] + p[0:3]) for p in re_add))
         except:
-            logger.critical("Add RE failed, check notes")
-            base.note("ERROR: {}".format(sys.exc_info()[0]))
-            base.note("Can't insert RE row: {} / {}".format(len(re_add), base.list2string(re_add)))
+            syt.log_critical("Add RE failed, check notes")
+            syt.log_note("ERROR: {}".format(sys.exc_info()[0]))
+            syt.log_note("Can't insert RE row: {} / {}".format(len(re_add), syt.list2string(re_add)))
             for r in re_add:
-                base.note("Can't insert row: {}".format(base.list2string(r)))
+                syt.log_note("Can't insert row: {}".format(syt.list2string(r)))
 
     if len(lg_add) > 0:  # only lego ID is set
         try:
-            logger.info("adding {} lg_rows".format(len(lg_add)))
+            syt.log_info("adding {} lg_rows".format(len(lg_add)))
             db.batch_update(
                 'INSERT OR IGNORE INTO parts(bricklink_id, brickowl_id, rebrickable_id, lego_id) VALUES (?,?,?,?)',
                 (tuple(p[:4]) for p in lg_add))
@@ -242,30 +239,30 @@ def add_part_data_to_database(insert_list, basics=0):
                 'WHERE bricklink_id=? AND brickowl_id=? AND rebrickable_id=? AND lego_id=?',
                 (tuple(p[4:] + p[0:4]) for p in lg_add))
         except:
-            logger.critical("Add LG failed, check notes")
-            base.note("ERROR: {}".format(sys.exc_info()[0]))
-            base.note("Can't insert LG row: {} / {}".format(len(lg_add), base.list2string(lg_add)))
+            syt.log_critical("Add LG failed, check notes")
+            syt.log_note("ERROR: {}".format(sys.exc_info()[0]))
+            syt.log_note("Can't insert LG row: {} / {}".format(len(lg_add), syt.list2string(lg_add)))
             for r in lg_add:
-                base.note("Can't insert row: {}".format(base.list2string(r)))
+                syt.log_note("Can't insert row: {}".format(syt.list2string(r)))
 
 
 def _parse_get_bl_pieceinfo(part_num):
     """
     Wrapper for the get_bl_piece_info method to make it work easier with multiprocess
-    @param part:
+    @param part_num:
     @return:
     """
-    logger.debug("Getting info on bl part {}".format(part_num))
+    syt.log_debug("Getting info on bl part {}".format(part_num))
     return data.get_piece_info(bl_id=part_num)
 
 
 def _parse_get_re_pieceinfo(part_num):
     """
     Wrapper for the get_bl_piece_info method to make it work easier with multiprocess
-    @param part:
+    @param part_num:
     @return:
     """
-    logger.debug("Getting info on re part {}".format(part_num))
+    syt.log_debug("Getting info on re part {}".format(part_num))
     return data.get_piece_info(re_id=part_num)
 
 
@@ -278,7 +275,7 @@ if __name__ == "__main__":
         @return:
         """
 
-        logger.info("RUNNING: Update Database - add parts")
+        syt.log_info("RUNNING: Update Database - add parts")
         options = {}
 
         options['1'] = "Add Part", menu_add_part_to_database

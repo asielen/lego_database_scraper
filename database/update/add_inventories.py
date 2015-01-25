@@ -1,15 +1,12 @@
-__author__ = 'andrew.sielen'
-
+# External
 import sqlite3 as lite
 
-from system import logger
-
-if __name__ == "__main__": logger.setup()
+# Internal
 from database import database
 import database.info as info
 import data.bricklink.bricklink_api as blapi
-import system.base as LBEF
-
+import system as syt
+if __name__ == "__main__": syt.setup_logger()
 
 def add_bl_set_pieces_to_database(set_num, bricklink_pieces):
     """
@@ -36,7 +33,7 @@ def add_bl_inventory_to_database(set_id, set_dict):
     """
 
     if set_dict is None or set_id is None:
-        logger.warning("Can't add blds inventory to database: set_id = {}".format(set_id))
+        syt.log_warning("Can't add blds inventory to database: set_id = {}".format(set_id))
         return None
 
     con = lite.connect(database)
@@ -57,7 +54,7 @@ def add_bl_inventory_to_database(set_id, set_dict):
 
         # If it isn't in the database yet, add it
         if design_id is None:
-            logger.debug("Adding blds element to database: design = " + current_design)
+            syt.log_debug("Adding blds element to database: design = " + current_design)
 
             design_id = blapi.add_part_to_database(current_design)
 
@@ -69,4 +66,4 @@ def add_bl_inventory_to_database(set_id, set_dict):
     with con:  # Update the last date
         c = con.cursor()
         c.execute('UPDATE sets SET last_inv_updated_bl=? WHERE id=?',
-                  (LBEF.get_timestamp(), set_id))
+                  (syt.get_timestamp(), set_id))

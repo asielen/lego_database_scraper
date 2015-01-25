@@ -1,15 +1,19 @@
 __author__ = 'Andrew'
 
+# External
 import csv
 import sqlite3 as lite
 
 import arrow
 
-from system.base import functions as base
+
+
+# Internal - Should have none outside system
+from system import base
 from system.system_database import database
 
 
-inflation_sheet = 'system/historic_cpi.csv'
+inflation_sheet = base.make_project_path('system/historic_cpi.csv')
 
 
 def get_cpis():
@@ -79,8 +83,6 @@ def get_inflation_rate(year_start, year_end=2013):
 
 def update_inflation_database():
     """
-
-    @param inflation_sheet:
     @return:
     """
     with open(inflation_sheet, 'r') as csvfile:

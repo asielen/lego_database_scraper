@@ -1,11 +1,12 @@
 __author__ = 'andrew.sielen'
 
+# External
 import os
 
-from system import logger
-
-if __name__ == "__main__": logger.setup()
-from database.database import database
+# Internal
+import system as syt
+if __name__ == "__main__": syt.setup_logger()
+from database import database as db
 import navigation.menu as menu
 import navigation.menu_daily_price_capture as DPC
 import navigation.menu_update_all_basestats as UAB
@@ -40,11 +41,11 @@ def run_get_inv():
 
 
 def validate_database():
-    if os.path.isfile(database):
-        logger.info("Database Found")
+    if os.path.isfile(db):
+        syt.log_info("Database Found")
 
     else:
-        logger.warning("No Database Found. Please locate it or create one in the system menu")
+        syt.log_warning("No Database Found. Please locate it or create one in the system menu")
 
 
 def main():
@@ -55,7 +56,7 @@ def main():
 
     validate_database()
 
-    logger.info("Running Main")
+    syt.log_info("Running Main")
     options = {}
 
     options['1'] = "Run Daily Price Capture", run_get_prices
@@ -71,5 +72,5 @@ def main():
         if result is 'kill':
             exit()
 
-
-main()
+if __name__ == "__main__":
+    main()

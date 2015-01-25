@@ -1,12 +1,11 @@
-__author__ = 'andrew.sielen'
-
+# Internal
 import navigation.menu
-
 from database import setup
-from system import logger
-
-if __name__ == "__main__": logger.setup()
 from data.import_data import read_historic_prices_file as HPF
+
+import system as syt
+if __name__ == "__main__": syt.setup_logger()
+
 
 
 def main():
@@ -72,11 +71,11 @@ def menu_run_primitives():
 
 
 def menu_build_all():
-    logger.info("Creating Database")
+    syt.log_info("Creating Database")
     setup.create_database()
-    logger.info("Creating Primitives")
+    syt.log_info("Creating Primitives")
     setup.run_primitives()
-    logger.info("Creating Secondaries")
+    syt.log_info("Creating Secondaries")
     setup.run_secondary()
 
 

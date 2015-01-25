@@ -1,11 +1,11 @@
-__author__ = 'andrew.sielen'
-
+# External
 import sqlite3 as lite
 
+# Internal
 import database as db
 from database import info
-import system.base as LBEF
-
+import system as syt
+if __name__ == "__main__": syt.setup_logger()
 
 def add_daily_set_data_to_database(daily_data):
     """
@@ -15,7 +15,7 @@ def add_daily_set_data_to_database(daily_data):
     """
 
     # First format data
-    timestamp = LBEF.get_timestamp()
+    timestamp = syt.get_timestamp()
     cprices_list_to_insert = []
     cratings_list_to_insert = []
     cdates_list_to_insert = []
@@ -28,10 +28,12 @@ def add_daily_set_data_to_database(daily_data):
     for s in daily_data:
         cset_id = ""
 
-        for r in s: cset_id = r
-        # cset_id = info.get_set_id(cset_num) # not needed because the cset is passed and doesn't need to be looked up
+        # Each dict should only be a length of one, so it should grab the first one
+        for r in s:
+            cset_id = r
+            break
         if cset_id is None: continue
-        cdaily_data = s[r]
+        cdaily_data = s[cset_id]
         cprices = cdaily_data[0]
         cratings = cdaily_data[1]
 
@@ -70,7 +72,7 @@ def add_daily_set_data_to_database(daily_data):
 
 
 def add_daily_prices_to_database(set_id, prices):
-    current_date = LBEF.get_timestamp()
+    current_date = syt.get_timestamp()
 
     con = lite.connect(db.database)
     with con:
@@ -123,7 +125,7 @@ def add_daily_ratings_to_database(set_id, ratings):
                    ratings['bs_want'],
                    ratings['bs_own'],
                    ratings['bs_score'],
-                   LBEF.get_timestamp()))
+                   syt.get_timestamp()))
 
     if 'available_us' in ratings or 'available_uk' in ratings:
         check_set_availability_dates(set_id, ratings)

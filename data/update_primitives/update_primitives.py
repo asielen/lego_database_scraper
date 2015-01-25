@@ -1,11 +1,9 @@
-__author__ = 'andrew.sielen'
-
+# Internal
 import data
 import database as db
 from database import info
-from system import logger
-
-if __name__ == "__main__": logger.setup()
+import system as syt
+if __name__ == "__main__": syt.setup_logger()
 
 
 def update_colors(update=False):
@@ -14,17 +12,17 @@ def update_colors(update=False):
     @param update: If true, start from scratch - usually a bad idea, would screw up joins and lookups
     @return:
     """
-    logger.info("$$$ Updating Colors from BL and RE")
+    syt.log_info("$$$ Updating Colors from BL and RE")
     color_list = data.get_colors()  # [bl_id, re_id, bo_id, ldraw_id, lego_id, bl_name, lego_name, hex]
     if color_list is None:
-        logger.critical("!!! ERROR: Failed to Pull Colors")
+        syt.log_critical("!!! ERROR: Failed to Pull Colors")
         return False
 
     if update == True:
         check_update = input(
             "Are you sure you want to update the colors? Y/N Only do this if also refreshing parts - it will ruin color lookups")
         if check_update == 'y' or check_update == 'Y':
-            logger.warning("### WARNING: Rebuilding Color Table")
+            syt.log_warning("### WARNING: Rebuilding Color Table")
             db.run_sql('DELETE FROM colors')
             db.batch_update(
                 'INSERT INTO colors(bl_color_id, re_color_id, bo_color_id, ldraw_color_id, lego_color_id, bl_color_name, lego_color_name, hex_value)'
@@ -39,15 +37,14 @@ def update_colors(update=False):
         for c in color_list:
             if c[0] in bl_current_colors or c[
                 1] in re_current_colors:  # Only update colors that are not already in the database
-                logger.debug("Color {} Already in db",
-                             format(c[5]))  # This keeps us from overwriting the id connections
+                syt.log_debug("Color {} Already in db".format(c[5]))  # This keeps us from overwriting the id connections
                 continue
             else:
-                logger.debug("New Color! {} {}".format(c[5], c[0]))
+                syt.log_debug("New Color! {} {}".format(c[5], c[0]))
                 db.run_sql(
                     'INSERT INTO colors(bl_color_id, re_color_id, bo_color_id, ldraw_color_id, lego_color_id, bl_color_name, lego_color_name, hex_value)'
                     ' VALUES (?,?,?,?,?,?,?,?)', c)
                 db.run_sql(
                     'INSERT INTO colors(id, bl_color_id, re_color_id, bo_color_id, ldraw_color_id, lego_color_id, bl_color_name, lego_color_name, hex_value)'
                     ' VALUES (?,?,?,?,?,?,?,?,?)', (9999, 9999, 9999, 9999, 9999, 9999, 'unknown', 'unknown',))
-    logger.info("%%% Done Updating Colors")
+    syt.log_info("%%% Done Updating Colors")

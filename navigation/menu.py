@@ -1,5 +1,5 @@
 __author__ = 'andrew.sielen'
-
+# Basic menu system
 
 def quit():
     return 'kill'

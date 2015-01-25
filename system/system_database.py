@@ -1,11 +1,14 @@
 __author__ = 'Andrew'
 
-import os.path
+# External
 import sqlite3 as lite
 
-database = os.path.abspath('/Users/andrew.sielen/PycharmProjects/lego_database_scraper/system/system.sqlite')  # for mac
-# database = os.path.abspath('system.sqlite')
+# Internal
+from system import base
 
+# database = os.path.abspath('/Users/andrew.sielen/PycharmProjects/lego_database_scraper/system/system.sqlite')  # for mac
+# database = os.path.abspath('system.sqlite')
+database = base.make_project_path('system/system.sqlite')
 
 def initiate_database():
     con = lite.connect(database)

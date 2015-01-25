@@ -1,16 +1,14 @@
-__author__ = 'andrew.sielen'
-
-from multiprocessing import Pool as _pool
-
 # Todo: Need to test this file
 
+# External
+from multiprocessing import Pool as _pool
+
+# Internal
 import data
 import database as db
 import database.info as info
-from system import base
-from system import logger
-
-if __name__ == "__main__": logger.setup()
+import system as syt
+if __name__ == "__main__": syt.setup_logger()
 
 
 # def add_set_to_database(set_data):
@@ -64,13 +62,13 @@ def add_set_to_database(set_num):
 def add_set_data_to_database(set_data):
     """
     Single set add to database
-    @param sets_data: list of 22 or 27 values to insert (27 with dates from class)
+    @param set_data: list of 22 or 27 values to insert (27 with dates from class)
     @return:
     """
     if set_data is None:
         return None
 
-    # logger.info("Inserting Set: {}".format(set_data[1]))
+    # sys.info("Inserting Set: {}".format(set_data[1]))
 
     # This is all for total update from a class
     dates = []
@@ -80,7 +78,7 @@ def add_set_data_to_database(set_data):
         set_data = set_data[:22]  # remove the last four items from the list
 
     if len(set_data) != 22:
-        logger.error("Set Data list is not valid")
+        syt.log_error("Set Data list is not valid")
 
     db.run_sql('INSERT OR IGNORE INTO sets(set_num) VALUES (?)', (set_data[0],))
 
@@ -173,14 +171,14 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
     """
     set_dict = info.read_bl_sets()
 
-    logger.info("$$$ Adding sets to the database")
+    syt.log_info("$$$ Adding sets to the database")
     sets_to_scrape = []
     sets_to_insert = []
     set_id_list = list(set_id_list)
     set_list_len = len(set_id_list)
-    pool = _pool(base.RUNNINGPOOL)
+    pool = _pool(syt.RUNNINGPOOL)
 
-    timer = base.process_timer("Add Sets to Database {}".format(update))
+    timer = syt.process_timer("Add Sets to Database {}".format(update))
     for idx, row in enumerate(set_id_list):
         if len(row) == 0:
             continue
@@ -190,8 +188,8 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
 
         sets_to_scrape.append(row[id_col])
 
-        if idx > 0 and idx % (base.RUNNINGPOOL * 3) == 0:
-            logger.info("@@@ Running Pool {}".format(idx))
+        if idx > 0 and idx % (syt.RUNNINGPOOL * 3) == 0:
+            syt.log_info("@@@ Running Pool {}".format(idx))
             sets_to_insert.extend(pool.map(_parse_get_basestats, sets_to_scrape))
             timer.log_time(len(sets_to_scrape), set_list_len - idx)
             sets_to_scrape = []
@@ -208,7 +206,7 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
     pool.join()
 
     add_sets_data_to_database(sets_to_insert)
-    logger.info("%%% Sets added to database")
+    syt.log_info("%%% Sets added to database")
 
 
 def add_sets_data_to_database(sets_to_insert):
@@ -223,7 +221,7 @@ def add_sets_data_to_database(sets_to_insert):
     if sets_to_insert is None or len(sets_to_insert) == 0:
         return
     sets_to_insert = list(filter(None, sets_to_insert))
-    logger.info("Adding {} sets to the database".format(len(sets_to_insert)))
+    syt.log_info("Adding {} sets to the database".format(len(sets_to_insert)))
 
     db.batch_update('INSERT OR IGNORE INTO sets(set_num) VALUES (?)',
                     ((p[0],) for p in sets_to_insert))  # 0 is the position of the set_num
@@ -285,7 +283,7 @@ def _check_set_completeness(set_data, level=1):
     """
     if level == -1: return True
     if level >= 0:
-        if base.old_data(set_data[22]) is True:
+        if syt.old_data(set_data[22]) is True:
             return False
     if level == 2:
         for n in set_data:
@@ -302,7 +300,7 @@ def _check_set_completeness(set_data, level=1):
 def _parse_get_basestats(id):
     """
     Wrapper for the get_basestats method to make it work easier with multiprocess
-    @param row:
+    @param id:
     @return:
     """
     return data.get_basestats(id)

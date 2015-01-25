@@ -1,22 +1,15 @@
-__author__ = 'andrew.sielen'
-
+# External
 import arrow
 
-from system.base.calculate_inflation import get_inflation_rate
+# Internal
 import database as db
-from system import base
-from system import logger
-
-if __name__ == "__main__": logger.setup()
-# from data.update_secondary.add_sets_database import add_set_to_database
-
-
+import system as syt
+if __name__ == "__main__": syt.setup_logger()
 
 # # Basic Functions
 def get_set_id(set_num=None):
     """
     @param set_num:
-    @param add: if True, Add the set if it is missing in the database
     @return: the id column num of the set in the database, or a list of all set ids with set num if no set num is provided
     """
     if set_num is None:
@@ -32,7 +25,6 @@ def get_set_id(set_num=None):
 def get_set_info(set_num=None, new=False):
     """
     @param set_num:
-    @param add: if True, Add the set if it is missing in the database
     @return: the id column num of the set in the database, or a list of all set ids with set num if no set num is provided
     """
     if set_num is None:
@@ -60,7 +52,7 @@ def get_all_set_years(set_num=None):
     last_updated = None
     if set_num is None:
         last_updated_raw = db.run_sql("SELECT set_num, last_updated FROM sets;")
-        last_updated = base.list_to_dict(last_updated_raw)
+        last_updated = syt.list_to_dict(last_updated_raw)
     else:
         last_updated_raw = db.run_sql("SELECT last_updated FROM sets WHERE set_num=?;", (set_num,), one=True)
         # if last_updated_raw is not None:
@@ -82,15 +74,15 @@ def get_last_updated_for_daily_stats(set_num=None):
         last_updated_raw = db.run_sql("SELECT set_num, last_price_updated FROM sets")
         update = []
         for s in last_updated_raw:
-            update.append((s[0], base.check_if_the_same_day(today, s[1])))
-        update = base.list_to_dict(update)
+            update.append((s[0], syt.check_if_the_same_day(today, s[1])))
+        update = syt.list_to_dict(update)
     else:
         last_updated_raw = db.run_sql("SELECT last_price_updated FROM sets WHERE set_num=?", (set_num,), one=True)
 
         if last_updated_raw is None:
             update = False
         # last_updated = last_updated_raw[0]
-        update = base.check_if_the_same_day(today, last_updated_raw)
+        update = syt.check_if_the_same_day(today, last_updated_raw)
 
     return update
 
@@ -114,7 +106,7 @@ def filter_list_on_dates(sets, year_sets, date_range=180):
 
     for s in sets:
         if s in year_sets:
-            if base.check_in_date_rangeA(arrow.get(year_sets[s]), past, today):
+            if syt.check_in_date_rangeA(arrow.get(year_sets[s]), past, today):
                 continue
         result.append(s)
 
@@ -129,7 +121,7 @@ def get_bl_update_years(set_num=None):
     last_updated = None
     if set_num is None:
         last_updated = db.run_sql("SELECT set_num, last_inv_updated_bl FROM sets;")
-        last_updated = base.list_to_dict(last_updated)
+        last_updated = syt.list_to_dict(last_updated)
 
     else:
         last_updated = db.run_sql("SELECT set_num, last_inv_updated_bl FROM sets WHERE set_num=?;", (set_num,),
@@ -148,7 +140,7 @@ def get_bl_update_years(set_num=None):
 # last_updated = None
 # if set_num is None:
 #         last_updated = db.run_sql("SELECT set_num, last_inv_updated_bs FROM sets;")
-#         last_updated = base.list_to_dict(last_updated)
+#         last_updated = syt.list_to_dict(last_updated)
 #
 #     else:
 #         last_updated = db.run_sql("SELECT set_num, last_inv_updated_bs FROM sets WHERE set_num=?;",(set_num,),one=True)
@@ -165,7 +157,7 @@ def get_re_update_years(set_num=None):
     last_updated = None
     if set_num is None:
         last_updated = db.run_sql("SELECT set_num, last_inv_updated_re FROM sets;")
-        last_updated = base.list_to_dict(last_updated)
+        last_updated = syt.list_to_dict(last_updated)
 
     else:
         last_updated = db.run_sql("SELECT set_num, last_inv_updated_re FROM sets WHERE set_num=?;", (set_num,),
@@ -202,7 +194,7 @@ def get_set_price(set_num=None, inf_year=None):
                 return None
             if inf_year >= year_released:
                 return price
-            price_inflated = (get_inflation_rate(year_released, inf_year) * price) + price
+            price_inflated = (syt.get_inflation_rate(year_released, inf_year) * price) + price
             return price_inflated, year_released, inf_year
         else:
             return price
@@ -216,7 +208,7 @@ def get_set_price(set_num=None, inf_year=None):
                 (inf_year,))
             prices = []
             for s in prices_raw:
-                prices.append((s[0], (get_inflation_rate(s[2], inf_year) * s[1]) + s[1], s[2], inf_year))
+                prices.append((s[0], (syt.get_inflation_rate(s[2], inf_year) * s[1]) + s[1], s[2], inf_year))
             return prices
         else:
             # if there isn't a set specified or a inf_year specified, just return all set prices
@@ -369,20 +361,20 @@ def get_set_dump(set_num):
     set_figures = set_info[9]
     set_weight = set_info[10]
     set_year_released = set_info[11]
-    set_date_released_us = base.get_date(set_info[12])
-    set_date_ended_us = base.get_date(set_info[13])
-    set_date_released_uk = base.get_date(set_info[14])
-    set_date_ended_uk = base.get_date(set_info[15])
+    set_date_released_us = syt.get_date(set_info[12])
+    set_date_ended_us = syt.get_date(set_info[13])
+    set_date_released_uk = syt.get_date(set_info[14])
+    set_date_ended_uk = syt.get_date(set_info[15])
     set_original_price_us = set_info[16]
     set_original_price_uk = set_info[17]
     set_age_low = set_info[18]
     set_age_high = set_info[19]
     set_box_size = set_info[20]
     set_box_volume = set_info[21]
-    set_last_updated = base.get_date(set_info[22])
-    set_last_inv_updated_bl = base.get_date(set_info[24])
-    set_last_inv_updated_re = base.get_date(set_info[25])
-    set_last_price_updated = base.get_date(set_info[26])
+    set_last_updated = syt.get_date(set_info[22])
+    set_last_inv_updated_bl = syt.get_date(set_info[24])
+    set_last_inv_updated_re = syt.get_date(set_info[25])
+    set_last_price_updated = syt.get_date(set_info[26])
 
     set_calc_price = get_set_price(set_num, 2014)
     set_calc_pieces = get_piece_count(set_num, 'bricklink')
@@ -416,7 +408,7 @@ if __name__ == "__main__":
 
     def main_menu():
 
-        logger.critical("get_set_info.py testing")
+        syt.log_critical("get_set_info.py testing")
         options = {}
 
         options['0'] = "Get Set ID", menu_get_set_id
@@ -440,21 +432,21 @@ if __name__ == "__main__":
                 exit()
 
     def menu_get_set_id():
-        set_num = base.input_set_num()
+        set_num = syt.input_set_num()
         print(get_set_id(set_num))
         print(get_set_info(set_num))
-        base.print4(get_set_id())
+        syt.print4(get_set_id())
 
     def menu_get_all_set_years():
-        set_num = base.input_set_num()
+        set_num = syt.input_set_num()
         print(get_all_set_years(set_num))
-        base.print4(get_all_set_years())
+        syt.print4(get_all_set_years())
 
     def menu_get_last_updated_for_daily_stats():
-        set_num = base.input_set_num()
+        set_num = syt.input_set_num()
         if set_num == '-1': set_num = None
         print(get_last_updated_for_daily_stats(set_num))
-        base.print4(get_last_updated_for_daily_stats())
+        syt.print4(get_last_updated_for_daily_stats())
 
     def menu_filter_list_on_dates():
         # Todo: 20140908 figure out how to test
@@ -462,55 +454,55 @@ if __name__ == "__main__":
 
 
     def menu_get_bl_update_years():
-        set_num = base.input_set_num()
+        set_num = syt.input_set_num()
         print(get_bl_update_years(set_num))
-        base.print4(get_bl_update_years())
+        syt.print4(get_bl_update_years())
 
 
     def menu_get_re_update_years():
-        set_num = base.input_set_num()
+        set_num = syt.input_set_num()
         print(get_re_update_years(set_num))
-        base.print4(get_re_update_years())
+        syt.print4(get_re_update_years())
 
 
     def menu_get_set_price():
-        set_num = base.input_set_num()
+        set_num = syt.input_set_num()
         print(get_set_price(set_num))
         print(get_set_price(set_num, 2013))
-        base.print4(get_set_price())
-        base.print4(get_set_price(None, 2010))
+        syt.print4(get_set_price())
+        syt.print4(get_set_price(None, 2010))
 
     def menu_get_piece_count():
-        set_num = base.input_set_num()
+        set_num = syt.input_set_num()
         print(get_piece_count(set_num))
-        base.print4(get_piece_count(set_num, 'bricklink'))
-        base.print4(get_piece_count())
-        base.print4(get_piece_count(None, 'bricklink'))
+        syt.print4(get_piece_count(set_num, 'bricklink'))
+        syt.print4(get_piece_count())
+        syt.print4(get_piece_count(None, 'bricklink'))
 
 
     def menu_get_unique_piece_count():
-        set_num = base.input_set_num()
-        base.print4(get_unique_piece_count(set_num))
-        base.print4(get_unique_piece_count())
+        set_num = syt.input_set_num()
+        syt.print4(get_unique_piece_count(set_num))
+        syt.print4(get_unique_piece_count())
 
     def menu_get_set_weight():
-        set_num = base.input_set_num()
-        base.print4(get_set_weight(set_num))
-        base.print4(get_set_weight(set_num, 'bricklink'))
-        base.print4(get_set_weight())
+        set_num = syt.input_set_num()
+        syt.print4(get_set_weight(set_num))
+        syt.print4(get_set_weight(set_num, 'bricklink'))
+        syt.print4(get_set_weight())
 
     def menu_get_historic_prices():
-        set_num = base.input_set_num()
+        set_num = syt.input_set_num()
         prices = get_historic_prices(set_num)
-        base.print4(prices)
+        syt.print4(prices)
 
     def menu_get_historic_data():
-        set_num = base.input_set_num()
+        set_num = syt.input_set_num()
         data = get_historic_data(set_num)
-        base.print4(data)
+        syt.print4(data)
 
     def menu_get_set_dump():
-        set_num = base.input_set_num()
+        set_num = syt.input_set_num()
         get_set_dump(set_num)
 
 

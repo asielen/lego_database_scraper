@@ -1,20 +1,16 @@
-__author__ = 'andrew.sielen'
-
-# other modules
-
+# External
 from functools import partial
 from multiprocessing import Pool as _pool
 from time import sleep
 
+# Internal
 from data.update_secondary.add_parts_database import add_parts_to_database
 from data.rebrickable.rebrickable_api import rebrickable_api as reapi
 import data.update_secondary as update
 import database.info as info
 import database as db
-from system import base
-from system import logger
-
-if __name__ == "__main__": logger.setup()
+import system as syt
+if __name__ == "__main__": syt.setup_logger()
 
 
 def update_parts():
@@ -24,12 +20,12 @@ def update_parts():
         from a bricklink scrape
     @return:
     """
-    logger.info("$$$ Get Rebrickable Part info")
+    syt.log_info("$$$ Get Rebrickable Part info")
     part_list = [x[0] for x in reapi.pull_all_pieces()]  # ['piece_id', 'descr', 'category')
     part_list.pop(0)  # Remove the header
     add_parts_to_database(part_list, type="re")
     # Todo: need to create a scraper for rebrickable piece num information
-    logger.info("%%% Rebrickable Part info added to parts table")
+    syt.log_info("%%% Rebrickable Part info added to parts table")
 
 
 def update_sets(check_update=1):
@@ -56,7 +52,7 @@ def update_set_inventories(check_update=1):
     Insert and update all set inventories from a master list of pieces - may not be as up to date as the api call
     @return:
     """
-    logger.info("$$$ Adding RE inventories to database")
+    syt.log_info("$$$ Adding RE inventories to database")
     set_inventories = list(reapi.pull_all_set_parts())
     last_updated = info.read_inv_update_date('last_inv_updated_re')
     set_inv = info.read_re_invs()
@@ -66,36 +62,36 @@ def update_set_inventories(check_update=1):
     parts.update(info.read_bl_parts())  # Add bl parts in there just in case
     colors = info.read_re_colors()
 
-    timer = base.process_timer(name="Add Re Inventories")
+    timer = syt.process_timer(name="Add Re Inventories")
 
     print("")
     print("")
-    logger.info("Running Rebrickable Update")
+    syt.log_info("Running Rebrickable Update")
 
     sets_to_skip = []
     rows_to_scrape = []
     parts_to_insert = []
-    pool = _pool(base.RUNNINGPOOL)
+    pool = _pool(syt.RUNNINGPOOL)
     for idx, row in enumerate(set_inventories):
         if row[0] == 'set_id': continue
         if row[0] in sets_to_skip: continue
         if row[0] in set_inv:
-            if check_update == 0 or not base.old_data(last_updated[row[0]]):
+            if check_update == 0 or not syt.old_data(last_updated[row[0]]):
                 sets_to_skip.append(row[0])
                 continue
         print("2222 {} | {} SET {}".format(idx, len(parts_to_insert), row[0]))
         rows_to_scrape.append(row)
-        if idx > 0 and idx % (base.RUNNINGPOOL * 10) == 0:
-            logger.info("@@@ Scraping {} rows".format(len(rows_to_scrape)))
+        if idx > 0 and idx % (syt.RUNNINGPOOL * 10) == 0:
+            syt.log_info("@@@ Scraping {} rows".format(len(rows_to_scrape)))
             _process_data = partial(_process_data_for_inv_db, sets=sets, parts=parts, colors=colors)
             parts_to_insert.extend(pool.map(_process_data, rows_to_scrape))
             # print("$[{}]".format(len(rows_to_scrape)))
             rows_to_scrape = []
             sleep(0.01)
 
-        if idx > 0 and len(parts_to_insert) >= (base.RUNNINGPOOL * 30):
+        if idx > 0 and len(parts_to_insert) >= (syt.RUNNINGPOOL * 30):
             parts_to_insert = list(filter(None, parts_to_insert))
-            logger.info("@@@ Inserting rows >[{}]".format(len(parts_to_insert)))
+            syt.log_info("@@@ Inserting rows >[{}]".format(len(parts_to_insert)))
             _add_re_inventories_to_database(parts_to_insert)
             timer.log_time(300, len(set_inventories) - idx)
             parts_to_insert = []
@@ -106,13 +102,12 @@ def update_set_inventories(check_update=1):
 
     pool.close()
     pool.join()
-    logger.info("%%% Finished RE inventories to database")
+    syt.log_info("%%% Finished RE inventories to database")
 
 
 def _process_data_for_inv_db(row=None, sets=None, parts=None, colors=None):
     """
     So pool will work, could also use partial but this is a little more control
-    @param set_num:
     @return:
     """
     # print("Getting data for row {}".format(row[0]))
@@ -121,7 +116,7 @@ def _process_data_for_inv_db(row=None, sets=None, parts=None, colors=None):
     if row[0] is not None:
         row[1] = get_re_piece_id(row[1], parts=parts, add=False)  # Re_piece Id
         # print("Got Piece {}".format(row[1]))
-        row[2] = base.int_zero(row[2])  # Quantity
+        row[2] = syt.int_zero(row[2])  # Quantity
         row[3] = info.get_color_id(row[3], colors=colors)  # Color ID
         # print("Got Color {}".format(row[3]))
 
@@ -135,8 +130,7 @@ def _process_data_for_inv_db(row=None, sets=None, parts=None, colors=None):
 def _add_re_inventories_to_database(invs):
     """
     Adds a inventory to the database
-    @param set_num: xxxx-xx
-    @param parts: ['Type', 'Item No', 'Item Name', 'Qty', 'Color ID', 'Extra?', 'Alternate?', 'Match ID', 'Counterpart?']
+    @param invs: ['Type', 'Item No', 'Item Name', 'Qty', 'Color ID', 'Extra?', 'Alternate?', 'Match ID', 'Counterpart?']
         With - 2 - lines for heading
     @return:
     """
@@ -144,7 +138,7 @@ def _add_re_inventories_to_database(invs):
     set_ids_to_delete = set(
         [n[0] for n in filter(None, invs)])  # list of just the set ids to remove them from the database
 
-    timestamp = base.get_timestamp()
+    timestamp = syt.get_timestamp()
     for s in set_ids_to_delete:
         db.run_sql("DELETE FROM re_inventories WHERE set_id = ?", (s,))
         db.run_sql("UPDATE sets SET last_inv_updated_re = ? WHERE id = ?", (timestamp, s))
@@ -152,7 +146,7 @@ def _add_re_inventories_to_database(invs):
         'INSERT OR IGNORE INTO re_inventories(set_id, piece_id, quantity, color_id) VALUES (?,?,?,?)',
         invs)
 
-    logger.debug("Added {} unique pieces to database for {}".format(len(invs), len(set_ids_to_delete)))
+    syt.log_debug("Added {} unique pieces to database for {}".format(len(invs), len(set_ids_to_delete)))
 
 
 def get_re_piece_id(part_num, parts=None, add=False):
@@ -170,7 +164,7 @@ def get_re_piece_id(part_num, parts=None, add=False):
     if piece_id is None:
         piece_id = info.get_re_piece_id(part_num)
     if piece_id is None and add:
-        logger.debug('{} part not in db'.format(part_num))
+        syt.log_debug('{} part not in db'.format(part_num))
         update.add_part_to_database(part_num, type='re')
         return get_re_piece_id(part_num)
     return piece_id
@@ -185,7 +179,7 @@ if __name__ == "__main__":
         @return:
         """
 
-        logger.info("RUNNING: Rebrickable API testing")
+        syt.log_info("RUNNING: Rebrickable API testing")
         options = {}
 
         options['1'] = "Update Parts", menu_update_parts
@@ -208,7 +202,7 @@ if __name__ == "__main__":
         update_sets()
 
     def menu_update_one_set_inventory():
-        set_num = base.input_set_num()
+        set_num = syt.input_set_num()
         update_one_set_inventory(set_num)
 
     def menu_update_set_inventories():

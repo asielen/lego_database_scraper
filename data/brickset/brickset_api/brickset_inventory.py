@@ -1,10 +1,8 @@
-__author__ = 'andrew.sielen'
+# File Probably no longer needed todo
 
-# File Probably no longer needed
+import system as syt
 
-from system import base
-
-# http://brickset.com/inventories/21010-1 <-Set piece lookip
+# http://brickset.com/inventories/21010-1 <-Set piece lookup
 
 # Get pieces stats
 def get_setpieces(set_num_primary, set_num_secondary=1):
@@ -14,7 +12,7 @@ def get_setpieces(set_num_primary, set_num_secondary=1):
     """
     url = "http://brickset.com/inventories/{0}-{1}".format(set_num_primary, set_num_secondary)
     # print(url)
-    soup = base.soupify(url)
+    soup = syt.soupify(url)
 
     pieces = {}
     pieces = _parse_pieces(soup)
@@ -42,7 +40,7 @@ def _parse_pieces(soup):
     if parent_table0 is None:
         return None
 
-    pieces_array = base.parse_html_table(parent_table0)
+    pieces_array = syt.parse_html_table(parent_table0)
 
     pieces_array2 = []
 

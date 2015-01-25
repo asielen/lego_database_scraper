@@ -1,21 +1,19 @@
-__author__ = 'andrew.sielen'
-
+# External
 import sqlite3 as lite
 import sys
 
+# Internal
 from database import database
-from system import base
-from system import logger
-
-if __name__ == "__main__": logger.setup()
+import system as syt
+if __name__ == "__main__": syt.setup_logger()
 
 
 def batch_update(sql_text, csvfile, header_len=0):
     """
 
     @param sql_text:
-    @param table:
     @param csvfile:
+    @param header_len;
     @return:
     """
     rows_to_process = []
@@ -28,11 +26,11 @@ def batch_update(sql_text, csvfile, header_len=0):
         rows_to_process.append(row)
 
         if idx % 100 == 0:
-            logger.debug("{} rows processed".format(idx))
+            syt.log_debug("{} rows processed".format(idx))
             run_batch_sql(sql_text, rows_to_process)
             rows_to_process = []
 
-    logger.debug("Inserting Final Rows")
+    syt.log_debug("Inserting Final Rows")
     run_batch_sql(sql_text, rows_to_process)
 
 
@@ -44,12 +42,12 @@ def run_batch_sql(sql_text, values):
         try:
             c.executemany(sql_text, values)
         except:
-            logger.note("ERROR: {}".format(sys.exc_info()[0]))
-            logger.note("Can't insert row: {} / {}".format(len(values), base.list2string(values)))
-            logger.error("ERROR: {} | Can't insert row: {} / {}".format(sys.exc_info()[0], len(values),
-                                                                        base.list2string(values)))
+            syt.log_note("ERROR: {}".format(sys.exc_info()[0]))
+            syt.log_note("Can't insert row: {} / {}".format(len(values), syt.list2string(values)))
+            syt.log_error("ERROR: {} | Can't insert row: {} / {}".format(sys.exc_info()[0], len(values),
+                                                                        syt.list2string(values)))
             for r in values:
-                logger.note("Can't insert row: {}".format(base.list2string(r)))
+                syt.log_note("Can't insert row: {}".format(syt.list2string(r)))
 
 
 def run_sql(sql_text, insert_list=None, one=False):

@@ -1,12 +1,14 @@
-__author__ = 'andrew.sielen'
-
+# External
 import collections
 import copy
 
 import arrow
 
+
+
+# Internal
 import database as db
-from system import base
+import system as syt   
 import navigation as menu
 from data.data_classes import SetInfo
 
@@ -48,7 +50,7 @@ class HistoricPriceAnalyser(object):
 
         sql_result = self.sql(sql_query)
         if sql_result is not None and len(sql_result):
-            base_dict = base.list_to_dict(self._process_date_price_list(sql_result))
+            base_dict = syt.list_to_dict(self._process_date_price_list(sql_result))
             self.original_data = OrderedDictV2(sorted(base_dict.items(), key=lambda t: t[0]))
             # for rebuilding data
             self.sql_query = sql_query
@@ -83,16 +85,16 @@ class HistoricPriceAnalyser(object):
         for idx, dp in enumerate(dp_list):
             if idx == 0:
                 continue
-            days_between = abs(base.get_days_between(dp_list[idx][0], dp_list[idx - 1][0]))
+            days_between = abs(syt.get_days_between(dp_list[idx][0], dp_list[idx - 1][0]))
             if days_between == 1:
                 continue
             else:
                 increment = round(
-                    (base.float_zero(dp_list[idx][1]) - base.float_zero(dp_list[idx - 1][1])) / days_between, ndigits=2)
+                    (syt.float_zero(dp_list[idx][1]) - syt.float_zero(dp_list[idx - 1][1])) / days_between, ndigits=2)
                 for n in range(1, days_between):
                     # next_date = arrow.get(arrow.get(dp_list[idx-1][0]).replace(days=+n).timestamp).format("YYYY-MM-DD")
                     dp_list_to_add.append([arrow.get(dp_list[idx - 1][0]).replace(days=+n).timestamp,
-                                           round((base.float_zero(dp_list[idx - 1][1]) + (increment * n)), ndigits=2)])
+                                           round((syt.float_zero(dp_list[idx - 1][1]) + (increment * n)), ndigits=2)])
         dp_list.extend(dp_list_to_add)
         return dp_list
 
@@ -100,7 +102,6 @@ class HistoricPriceAnalyser(object):
     def set_inflation_year(self, year=None):
         """
         @param year:
-        @param clear: revert back to working data
         @return:
         """
         self.inf_year = None
@@ -111,7 +112,7 @@ class HistoricPriceAnalyser(object):
 
     def set_report_type(self, rtype=None):
         """
-        @param type: Options:
+        @param rtype: Options:
             standard - actual numbers (overrides all others)
             relative - percent change from start date
             relative_day - percent change from previous day (does not take into account start price)
@@ -165,7 +166,7 @@ class HistoricPriceAnalyser(object):
             else:
                 self.base_price = self._get_price_from_date(self.base_date)
         else:
-            self.base_date = base.get_timestamp(date)
+            self.base_date = syt.get_timestamp(date)
             self.base_price = self._get_price_from_date(self.base_date)
 
             # if self.base_date is None:
@@ -177,7 +178,7 @@ class HistoricPriceAnalyser(object):
     def run(self, by_date=False, clear=True):
         """
 
-        @param clear: Default is to re-run from base. Can also set to False to rerun from existing
+        @param clear: Default is to re-run from syt. Can also set to False to rerun from existing
         @return:
         Default values
         self.base_date = min(self.original_data, key=self.original_data.get)
@@ -187,7 +188,7 @@ class HistoricPriceAnalyser(object):
         """
         if clear: self.working_data = copy.deepcopy(self.original_data)
         if isinstance(self.inf_year, int):
-            self.working_data = base.adj_dict_for_inf(self.working_data, self.inf_year)
+            self.working_data = syt.adj_dict_for_inf(self.working_data, self.inf_year)
         self._process_change_list()
         return self.get(by_date)
 
@@ -213,7 +214,7 @@ class HistoricPriceAnalyser(object):
             if by_date is True:
                 results_dict[n] = next_row
             else:
-                results_dict[base.get_ts_day(n)] = next_row
+                results_dict[syt.get_ts_day(n)] = next_row
                 # Note this returns a list not just a value, if you have one value (one price) you need to pull it out later
 
         return results_dict
@@ -230,7 +231,6 @@ class HistoricPriceAnalyser(object):
         relative_day - percent change from previous day (does not take into account start price)
         delta - price change from start date
         delta_day - price change *day over day*  (does not take into account start price)
-        @param type:
         @return:
         """
         new_dict = collections.defaultdict()
@@ -238,11 +238,11 @@ class HistoricPriceAnalyser(object):
             return self.working_data  # standard type no change
         elif self.type == self.DELTA:
             for db in self.working_data:
-                new_dict[db] = base.float_zero(self.working_data[db]) - base.float_zero(self.base_price)
+                new_dict[db] = syt.float_zero(self.working_data[db]) - syt.float_zero(self.base_price)
         elif self.type == self.RELATIVE:
             for db in self.working_data:
                 try:
-                    new_dict[db] = (base.float_zero(self.working_data[db]) / base.float_zero(self.base_price)) - 1
+                    new_dict[db] = (syt.float_zero(self.working_data[db]) / syt.float_zero(self.base_price)) - 1
                 except ZeroDivisionError:
                     new_dict[db] = 0
         elif self.type == self.DELTA_DAY:
@@ -252,7 +252,7 @@ class HistoricPriceAnalyser(object):
                     continue
                 else:
                     previous_value = self.working_data.previous_key(db)
-                    new_dict[db] = base.float_zero(self.working_data[db]) - base.float_zero(
+                    new_dict[db] = syt.float_zero(self.working_data[db]) - syt.float_zero(
                         self.working_data[previous_value])
         elif self.type == self.RELATIVE_DAY:
             for idx, db in enumerate(self.working_data.keys()):
@@ -263,7 +263,7 @@ class HistoricPriceAnalyser(object):
                     previous_value = self.working_data.previous_key(db)
                     try:
                         new_dict[db] = round(
-                            (base.float_zero(self.working_data[db]) / self.working_data[previous_value]) - 1, 6)
+                            (syt.float_zero(self.working_data[db]) / self.working_data[previous_value]) - 1, 6)
                     except ZeroDivisionError:
                         new_dict[db] = None
         self.working_data = OrderedDictV2(sorted(new_dict.items(), key=lambda t: t[0]))
@@ -283,7 +283,7 @@ class HistoricPriceAnalyser(object):
                     self.si.date_released_us, self.si.date_ended_us]
         else:
             return {"set_num": self.si.set_num, "theme": self.si.theme, "date_release": self.si.date_released_us,
-                    "original_price": self.si.original_price_us, "base_date": base.get_date(self.base_date),
+                    "original_price": self.si.original_price_us, "base_date": syt.get_date(self.base_date),
                     "base_date_ts": self.base_date, "inflation_year": self.inf_year, "base_price": self.base_price,
                     "report_type": self.type, "records": len(self.working_data)}
 
@@ -307,8 +307,8 @@ class HistoricPriceAnalyser(object):
         @return:
         """
         if date is None: return None
-        compare_ts = date  # base.get_timestamp(date)
-        closest_price_date = base.get_closest_list(compare_ts, self.working_data.keys())
+        compare_ts = date  # syt.get_timestamp(date)
+        closest_price_date = syt.get_closest_list(compare_ts, self.working_data.keys())
         self.base_date = date
         return self.working_data[closest_price_date]
 
@@ -342,8 +342,6 @@ class HistoricPriceAnalyser(object):
 
         Price List
         set_num, date(price), date(price), date(price), date(price)
-        @param year_start:
-        @param year_end:
         @return:
         """
         set_prices = []
@@ -380,7 +378,7 @@ if __name__ == "__main__":
         while True:
             if test_HPA is not None:
                 print("Settings")
-                print("Base Date = {}".format(base.get_date(test_HPA.base_date)))
+                print("Base Date = {}".format(syt.get_date(test_HPA.base_date)))
                 print("Base Price = {}".format(test_HPA.base_price))
                 print("Type = {}".format(test_HPA.type))
                 # if test_HPA.inf_year is not None:
@@ -392,7 +390,7 @@ if __name__ == "__main__":
     def menu_test_historic():
         global test_HPA
 
-        set_num = base.input_set_num()
+        set_num = syt.input_set_num()
         test_set = SetInfo(set_num)
 
         test_HPA = HistoricPriceAnalyser(si=test_set, select_filter=["AVG(historic_prices.piece_avg)",
@@ -404,7 +402,7 @@ if __name__ == "__main__":
         if test_HPA is None:
             menu_test_historic()
         inf_year = input("Enter Inflation Year: ")
-        test_HPA.set_inflation_year(base.int_null(inf_year))
+        test_HPA.set_inflation_year(syt.int_null(inf_year))
 
     def menu_report_type():
         if test_HPA is None:
@@ -415,13 +413,13 @@ if __name__ == "__main__":
         RELATIVE_DAY = 2
         DELTA = 3
         DELTA_DAY = 4\n-->: """)
-        test_HPA.set_report_type(base.int_zero(rtype))
+        test_HPA.set_report_type(syt.int_zero(rtype))
 
     def menu_date_price():
         if test_HPA is None:
             menu_test_historic()
         rprice = input("Enter Comparison Price OR original: ")
-        rprice = base.float_null(rprice)
+        rprice = syt.float_null(rprice)
         rdate = input("Enter Comparison Date YYYY-MM-DD OR start or end: ")
         test_HPA.set_base_price_date(price=rprice, date=rdate)
 
@@ -429,7 +427,7 @@ if __name__ == "__main__":
         if test_HPA is None:
             menu_test_historic()
         result = test_HPA.run().items()
-        base.print4(result, 10)
+        syt.print4(result, 10)
 
     def menu_clear():
         if test_HPA is None:
@@ -445,16 +443,16 @@ if __name__ == "__main__":
         test_HPA.set_inflation_year(2014)
         test_HPA.set_base_price_date(price="original")
         result = test_HPA.run_all([0, 1])
-        base.print4(test_HPA.get_def().items(), 20)
-        base.print4(result.items(), 10)
+        syt.print4(test_HPA.get_def().items(), 20)
+        syt.print4(result.items(), 10)
         try:
             test_HPA.clear()
 
             test_HPA.set_inflation_year(2014)
             test_HPA.set_base_price_date(date="end")
             result = test_HPA.run_all([0, 1], by_date=True)
-            base.print4(test_HPA.get_def().items(), 20)
-            base.print4(result.items(), 10)
+            syt.print4(test_HPA.get_def().items(), 20)
+            syt.print4(result.items(), 10)
         except AssertionError:
             print("No End Date")
 

@@ -1,11 +1,11 @@
-__author__ = 'andrew.sielen'
-
+# External
 import sqlite3 as lite
 
-from system import logger
-
-if __name__ == "__main__": logger.setup()
+# Internal
 import database as db
+import system as syt
+if __name__ == "__main__": syt.setup_logger()
+
 
 
 def create_database():
@@ -17,7 +17,7 @@ def create_database():
 
 
 def _initiate_database():
-    logger.info("$$$ Creating Database")
+    syt.log_info("$$$ Creating Database")
     con = lite.connect(db.database)
     with con:
         # ### Brick Link Info Tables
@@ -162,4 +162,4 @@ def _initiate_database():
                     "record_date INTEGER,"
                     "FOREIGN KEY (set_id) REFERENCES sets(id));")
         con.execute("CREATE UNIQUE INDEX IF NOT EXISTS rating_type_date_idx ON bs_ratings(set_id, record_date)")
-        logger.info("%%% Database Created")
+        syt.log_info("%%% Database Created")

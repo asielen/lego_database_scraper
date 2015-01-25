@@ -1,15 +1,15 @@
-__author__ = 'Andrew'
-
+# TODO - Not needed anymore?
+# External
 import csv
 
 import arrow
 
+
+# Internal
 import database as db
 from database import info
-from system import logger
-
-if __name__ == "__main__": logger.setup()
-from system import base
+import system as syt
+if __name__ == "__main__": syt.setup_logger()
 
 
 def open_dm_csv(file_name='Eval_Data.csv'):
@@ -18,8 +18,8 @@ def open_dm_csv(file_name='Eval_Data.csv'):
     @param file_name:
     @return:
     """
-    logger.info("$$$ Adding historic prices from csv file")
-    set_id_dict = base.list_to_dict(info.get_set_id())
+    syt.log_info("$$$ Adding historic prices from csv file")
+    set_id_dict = syt.list_to_dict(info.get_set_id())
 
     total_rows = 0
 
@@ -34,7 +34,7 @@ def open_dm_csv(file_name='Eval_Data.csv'):
     current_price_row = []
     current_rating_row = ()
 
-    timer = base.process_timer("Add historic data to database")
+    timer = syt.process_timer("Add historic data to database")
 
     for idx, r in enumerate(historic_prices):
 
@@ -48,7 +48,7 @@ def open_dm_csv(file_name='Eval_Data.csv'):
         current_rating_row = ()
 
         if idx % 1000 == 0:
-            logger.info("@@@ Inserting {} Rows".format(len(price_rows_to_process)))
+            syt.log_info("@@@ Inserting {} Rows".format(len(price_rows_to_process)))
             add_daily_prices_to_database(price_rows_to_process)
             add_daily_ratings_to_database(rating_rows_to_process)
             timer.log_time(len(rating_rows_to_process), total_rows - idx)
@@ -70,10 +70,10 @@ def get_rows(row, set_id_dict):
         set_id = set_id_dict[row[0]]
     except:
         try:
-            set_id = set_id_dict[base.expand_set_num(row[0])]
+            set_id = set_id_dict[syt.expand_set_num(row[0])]
         except:
             if len(row) > 0:
-                logger.warning("Can't find set: {}".format(row[0]))
+                syt.log_warning("Can't find set: {}".format(row[0]))
             return None, None
 
     date = parse_date(row[5])
@@ -85,16 +85,16 @@ def get_rows(row, set_id_dict):
 def scrub_row(set_id, date, row):
     price_types = {'current_new': 1, 'current_used': 2, 'historic_new': 3,
                    'historic_used': 4}  # This is the same as what it is stored in the database
-    price_list = [(set_id, date, price_types['current_new'], base.float_null(row[12]), base.float_null(row[11]),
-                   base.float_null(row[10]), base.float_null(row[13]), base.float_null(row[3])),
-                  (set_id, date, price_types['current_used'], base.float_null(row[20]), base.float_null(row[19]),
-                   base.float_null(row[18]), base.float_null(row[21]), base.float_null(row[5])),
-                  (set_id, date, price_types['historic_new'], base.float_null(row[8]), base.float_null(row[7]),
-                   base.float_null(row[6]), base.float_null(row[9]), base.float_null(row[2])),
-                  (set_id, date, price_types['historic_used'], base.float_null(row[16]), base.float_null(row[15]),
-                   base.float_null(row[14]), base.float_null(row[17]), base.float_null(row[4]))]
+    price_list = [(set_id, date, price_types['current_new'], syt.float_null(row[12]), syt.float_null(row[11]),
+                   syt.float_null(row[10]), syt.float_null(row[13]), syt.float_null(row[3])),
+                  (set_id, date, price_types['current_used'], syt.float_null(row[20]), syt.float_null(row[19]),
+                   syt.float_null(row[18]), syt.float_null(row[21]), syt.float_null(row[5])),
+                  (set_id, date, price_types['historic_new'], syt.float_null(row[8]), syt.float_null(row[7]),
+                   syt.float_null(row[6]), syt.float_null(row[9]), syt.float_null(row[2])),
+                  (set_id, date, price_types['historic_used'], syt.float_null(row[16]), syt.float_null(row[15]),
+                   syt.float_null(row[14]), syt.float_null(row[17]), syt.float_null(row[4]))]
 
-    rating_list = (set_id, base.int_null(row[1]), base.int_null(row[0]), date)
+    rating_list = (set_id, syt.int_null(row[1]), syt.int_null(row[0]), date)
 
     return price_list, rating_list
 
@@ -106,32 +106,32 @@ def scrub_row(set_id, date, row):
     # raiting_dict = {'set_id': None, 'date': None, 'bs_want': None, 'bs_own': None}
     #
     #
-    # raiting_dict['bs_own'] = base.int_null(row[0])
-    # raiting_dict['bs_want'] = base.int_null(row[1])
+    # raiting_dict['bs_own'] = syt.int_null(row[0])
+    # raiting_dict['bs_want'] = syt.int_null(row[1])
     #
-    # price_dict['current_new']['min'] = base.float_null(row[10])
-    # price_dict['current_new']['max'] = base.float_null(row[11])
-    # price_dict['current_new']['avg'] = base.float_null(row[12])
-    # price_dict['current_new']['qty_avg'] = base.float_null(row[13])
-    # price_dict['current_new']['piece_avg'] = base.float_null(row[3])
+    # price_dict['current_new']['min'] = syt.float_null(row[10])
+    # price_dict['current_new']['max'] = syt.float_null(row[11])
+    # price_dict['current_new']['avg'] = syt.float_null(row[12])
+    # price_dict['current_new']['qty_avg'] = syt.float_null(row[13])
+    # price_dict['current_new']['piece_avg'] = syt.float_null(row[3])
     #
-    # price_dict['current_used']['min'] = base.float_null(row[18])
-    # price_dict['current_used']['max'] = base.float_null(row[19])
-    # price_dict['current_used']['avg'] = base.float_null(row[20])
-    # price_dict['current_used']['qty_avg'] = base.float_null(row[21])
-    # price_dict['current_used']['piece_avg'] = base.float_null(row[5])
+    # price_dict['current_used']['min'] = syt.float_null(row[18])
+    # price_dict['current_used']['max'] = syt.float_null(row[19])
+    # price_dict['current_used']['avg'] = syt.float_null(row[20])
+    # price_dict['current_used']['qty_avg'] = syt.float_null(row[21])
+    # price_dict['current_used']['piece_avg'] = syt.float_null(row[5])
     #
-    # price_dict['historic_new']['min'] = base.float_null(row[6])
-    # price_dict['historic_new']['max'] = base.float_null(row[7])
-    # price_dict['historic_new']['avg'] = base.float_null(row[8])
-    # price_dict['historic_new']['qty_avg'] = base.float_null(row[9])
-    # price_dict['historic_new']['piece_avg'] = base.float_null(row[2])
+    # price_dict['historic_new']['min'] = syt.float_null(row[6])
+    # price_dict['historic_new']['max'] = syt.float_null(row[7])
+    # price_dict['historic_new']['avg'] = syt.float_null(row[8])
+    # price_dict['historic_new']['qty_avg'] = syt.float_null(row[9])
+    # price_dict['historic_new']['piece_avg'] = syt.float_null(row[2])
     #
-    # price_dict['historic_used']['min'] = base.float_null(row[14])
-    # price_dict['historic_used']['max'] = base.float_null(row[15])
-    # price_dict['historic_used']['avg'] = base.float_null(row[16])
-    # price_dict['historic_used']['qty_avg'] = base.float_null(row[17])
-    # price_dict['historic_used']['piece_avg'] = base.float_null(row[4])
+    # price_dict['historic_used']['min'] = syt.float_null(row[14])
+    # price_dict['historic_used']['max'] = syt.float_null(row[15])
+    # price_dict['historic_used']['avg'] = syt.float_null(row[16])
+    # price_dict['historic_used']['qty_avg'] = syt.float_null(row[17])
+    # price_dict['historic_used']['piece_avg'] = syt.float_null(row[4])
     #
     # return price_dict, raiting_dict
 
@@ -139,8 +139,6 @@ def scrub_row(set_id, date, row):
 def add_daily_prices_to_database(prices):
     """
     (set_id, record_date, price_types[price], prices[price]['avg'], prices[price]['max'], prices[price]['min'], prices[price]['qty_avg'], prices[price]['piece_avg'])
-    @param set_id:
-    @param record_date:
     @param prices:
     @return:
     """
@@ -178,7 +176,7 @@ def parse_date(s):
     #         c = con.cursor()
     #
     #         c.execute("SELECT set_num, id FROM sets")
-    #         set_id_list = base.list_to_dict(c.fetchall())
+    #         set_id_list = syt.list_to_dict(c.fetchall())
     #
     #     return set_id_list
 

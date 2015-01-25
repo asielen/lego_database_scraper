@@ -1,9 +1,13 @@
 __author__ = 'andrew.sielen'
 
+# External
 import logging
 
 import arrow
 
+
+# Only internal dependency is base
+from system import base
 
 logging_level = logging.INFO
 
@@ -17,11 +21,12 @@ def get_week_for_log():
     return today.format('YYYY') + "-WK" + str(today.isocalendar()[1]) + ".log"
 
 
-def setup():
+def setup_logger():
     log = logging.getLogger('LBEF')
     log.setLevel(logging_level)
-    print("Logging to " + str(get_week_for_log()))
-    fh = logging.FileHandler(str(get_week_for_log()))
+    log_path = base.make_project_path(get_week_for_log())
+    print("Logging to " + log_path)
+    fh = logging.FileHandler(log_path)
     fh.setLevel(logging.WARNING)
     ff = logging.Formatter('%(asctime)s %(name)s %(levelname)-8s: %(message)s')
     fh.setFormatter(ff)
@@ -33,25 +38,19 @@ def setup():
     ch.setFormatter(cf)
     log.addHandler(ch)
 
-    return log
+    #return log
 
 
 log = logging.getLogger('LBEF')
 
 # Needed to set these up because i over
-def info(string):
-    log.info(string)
+def log_info(string): log.info(string)
+def log_critical(string): log.critical(string)
+def log_debug(string): log.debug(string)
+def log_error(string): log.error(string)
+def log_warning(string): log.warning(string)
 
 
-def critical(string):
-    log.critical(string)
-
-
-def debug(string):
-    log.debug(string)
-
-
-
-def note(string):
+def log_note(string):
     with open(notes_file, 'a')  as text_file:
         print(arrow.now('US/Pacific').format('YYYYMMDD HH:mm') + " @ " + string, file=text_file)

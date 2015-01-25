@@ -1,10 +1,7 @@
-__author__ = 'andrew.sielen'
-
 # 20140603 This is still needed, no easy API for this data
 # http://www.bricklink.com/catalogPG.asp?S=[piece number] <- gives you weight
 
-from system import base
-
+import system as syt
 
 def get_all_prices(set_num_primary, set_num_secondary=1):
     price_dict = {}
@@ -50,7 +47,7 @@ def get_pieceout_new(set_num_primary, set_num_secondary=1):
     url = "http://www.bricklink.com/catalogPOV.asp?itemType=S&itemNo={0}&itemSeq={1}&itemQty=1&breakType=M&itemCondition=N&incInstr=Y&incBox=Y&incParts=Y&breakSets=Y".format(
         set_num_primary, set_num_secondary)
 
-    soup = base.soupify(url)
+    soup = syt.soupify(url)
     dic = _parse_priceout(soup)
     return {'pieced_new': dic}
 
@@ -61,7 +58,7 @@ def get_pieceout_used(set_num_primary, set_num_secondary=1):
     """
     url = "http://www.bricklink.com/catalogPOV.asp?itemType=S&itemNo={0}&itemSeq={1}&itemQty=1&breakType=M&itemCondition=U&incInstr=Y&incBox=Y&incParts=Y&breakSets=Y".format(
         set_num_primary, set_num_secondary)
-    soup = base.soupify(url)
+    soup = syt.soupify(url)
     dic = _parse_priceout(soup)
     return {'pieced_used': dic}
 
@@ -74,7 +71,7 @@ def get_set_prices(set_num_primary, set_num_secondary=1):
     """
     url = "http://www.bricklink.com/catalogPG.asp?S={0}-{1}&colorID=0&viewExclude=Y&v=D&cID=Y".format(set_num_primary,
                                                                                                       set_num_secondary)
-    soup = base.soupify(url)
+    soup = syt.soupify(url)
 
     parent_tags = soup.find("tr", {"bgcolor": "#C0C0C0"})  # Relies on only that secion having that color
 
@@ -116,7 +113,7 @@ def _parse_pieceout_price_block(parent_tags):
     children_tags1 = children_tags0.findAll("font")
 
     return {
-        children_tags1[0].string.strip(): base.zero_2_null(base.only_numerics_float(children_tags1[1].string.strip()))}
+        children_tags1[0].string.strip(): syt.zero_2_null(syt.only_numerics_float(children_tags1[1].string.strip()))}
 
 
 def _parse_current_prices(parent_tags_list):
@@ -148,7 +145,7 @@ def _parse_price_block(parent_tags):
 
     prices = {}
     for i in children_tags0:
-        prices[i.contents[0].string.strip()] = base.zero_2_null(base.only_numerics_float(i.contents[-1].string.strip()))
+        prices[i.contents[0].string.strip()] = syt.zero_2_null(syt.only_numerics_float(i.contents[-1].string.strip()))
 
     return prices
 
@@ -321,5 +318,4 @@ if __name__ == "__main__":
         main()
 
 
-    if __name__ == "__main__":
-        main()
+    main()

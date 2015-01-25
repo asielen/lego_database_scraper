@@ -1,5 +1,4 @@
-__author__ = 'andrew.sielen'
-
+# Internal
 from data.bricklink import bricklink_api as blapi
 from data.rebrickable import rebrickable_api as reapi
 

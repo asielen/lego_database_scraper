@@ -1,8 +1,8 @@
-__author__ = 'andrew.sielen'
-
+# Internal
 from database.info import database_info
 from data.update_ternary import daily_data
-
+import system as syt
+if __name__ == "__main__": syt.setup_logger()
 
 def main():
     """

@@ -1,10 +1,9 @@
-__author__ = 'andrew.sielen'
-# todo
-
+# Internal
 import navigation.menu
 import database.info as info
-from system import base
+import system as syt
 
+# todo
 
 def main():
     options = {}
@@ -21,7 +20,7 @@ def main():
 
 
 def quick_info():
-    set_num = base.input_set_num()
+    set_num = syt.input_set_num()
     info.get_set_dump(set_num)
 
 

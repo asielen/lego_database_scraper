@@ -1,11 +1,17 @@
+
+# External
 import configparser
-import os
 from collections import defaultdict
 
 import arrow
 
 
-config_file = os.path.abspath('/Users/andrew.sielen/PycharmProjects/lego_database_scraper/config.ini')
+
+# Internal - Should have none outside system base
+from system import base
+
+config_file = base.make_project_path('config.ini')
+
 
 
 def read_config(value_list=None):

@@ -1,7 +1,7 @@
-__author__ = 'andrew.sielen'
+# Internal
+import system as syt
 
-import os
+# database = os.path.abspath(
+#     '/Users/andrew.sielen/PycharmProjects/lego_database_scraper/database/lego_eval.sqlite')  # for mac
+database = syt.make_project_path("database\lego_eval.sqlite")
 
-database = os.path.abspath(
-    '/Users/andrew.sielen/PycharmProjects/lego_database_scraper/database/lego_eval.sqlite')  # for mac
-# database = os.path.abspath('lego_eval.sqlite')

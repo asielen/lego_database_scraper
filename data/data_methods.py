@@ -1,10 +1,6 @@
-__author__ = 'andrew.sielen'
-
-from system import logger
-
-if __name__ == "__main__": logger.setup()
-
-from system import base
+# Internal
+import system as syt
+if __name__ == "__main__": syt.setup_logger()
 from data.bricklink import bricklink_data_scrape as blds
 from data.bricklink.bricklink_api import bricklink_api as blapi
 from data.brickset.brickset_api import brickset_set_data as BS
@@ -17,13 +13,13 @@ def get_colors():
     combine data from peeron and rebrickable to create the colors table
     @return:  [bl_id, re_id, bo_id, ldraw_id, lego_id, bl_name, lego_name, hex]
     """
-    logger.debug("Get all colors from rebrickable and peeron")
+    syt.log_debug("Get all colors from rebrickable and peeron")
 
     rebrickable_colors = _filter_rebrickable_colors(
         reapi.pull_colors())  # bl_color: [rebrickable ID, Name, hex, [ldraw color], [bricklink color]]
     peeron_colors = _filter_peeron_colors(
         perapi.pull_colors())  # [bl_name, bl_id, ldraw_id, ldraw_hex, lego_id, lego_name]
-    bricklink_colors = base.list_to_dict(_filter_bl_colors(blapi.pull_colors()))
+    bricklink_colors = syt.list_to_dict(_filter_bl_colors(blapi.pull_colors()))
 
     processed_colors = []
 
@@ -83,9 +79,9 @@ def _filter_peeron_colors(colors):
     processed_colors = []
     for c in colors:
         # Convert the text to ints
-        c[3] = base.int_null(c[3])
-        c[4] = base.int_null(c[4])
-        c[6] = base.int_null(c[6])
+        c[3] = syt.int_null(c[3])
+        c[4] = syt.int_null(c[4])
+        c[6] = syt.int_null(c[6])
         processed_colors.append(c[2:-4])
     return processed_colors
 
@@ -129,7 +125,7 @@ def _filter_rebrickable_colors(colors):
     for c in colors:
         if str(c[10][0]) not in processed_colors:
             processed_colors[str(c[10][0])] = []
-        processed_colors[str(c[10][0])].append([base.int_null(c[1]), c[2], c[3], c[9][0], c[10][0]])
+        processed_colors[str(c[10][0])].append([syt.int_null(c[1]), c[2], c[3], c[9][0], c[10][0]])
 
     return processed_colors
 
@@ -144,7 +140,7 @@ def _process_clist(clist):
     if isinstance(clist, list): return clist
     clist = clist.strip("{}")
     clist = clist.split(',')
-    clist = [base.int_null(c) for c in clist]
+    clist = [syt.int_null(c) for c in clist]
     return clist
 
 
@@ -168,10 +164,10 @@ def get_piece_info(bl_id=None, bo_id=None, re_id=None, lego_id=None, type=1):
 
     # Try to find the bl_id for this set by searching alternate ids and element ids. This can be very slow
     elif re_id is not None:
-        logger.debug("Searching for bl_id for re_id {}".format(re_id))
+        syt.log_debug("Searching for bl_id for re_id {}".format(re_id))
         re_piece_info = reapi.pull_piece_info(re_id)  # [re_id, bl_id, name, alt_ids, element_ids]
         if re_piece_info is None:
-            logger.warning("{} doesn't even exist on rebrickable".format(re_id))
+            syt.log_warning("{} doesn't even exist on rebrickable".format(re_id))
             return piece_info, design_alts
         elif re_piece_info[1] is not None:
             bl_piece_info = blds.get_bl_piece_info(re_piece_info[1], default=None)
@@ -194,10 +190,10 @@ def get_piece_info(bl_id=None, bo_id=None, re_id=None, lego_id=None, type=1):
 
 
             if bl_piece_info is not None:
-                logger.debug("Found bl_id {}".format(bl_piece_info['design_num']))
+                syt.log_debug("Found bl_id {}".format(bl_piece_info['design_num']))
             else:
-                logger.debug("Couldn't Find bl_id adding as filler")
-                base.note("Missing Piece Info: re_id={}".format(re_id))
+                syt.log_debug("Couldn't Find bl_id adding as filler")
+                syt.log_note("Missing Piece Info: re_id={}".format(re_id))
 
     if bl_piece_info is not None:
         piece_info['bricklink_id'] = bl_piece_info['design_num']
@@ -227,10 +223,10 @@ def get_basestats(o_set, type=1):
     """
 
     if o_set is None:
-        logger.warning("Trying to update a set but there is none to update")
+        syt.log_warning("Trying to update a set but there is none to update")
         return None
 
-    set_num, set_seq, o_set = base.expand_set_num(o_set)
+    set_num, set_seq, o_set = syt.expand_set_num(o_set)
     if set_num is None:  # If it is an invalid setnum then return Num, this happens for rebrickable alternate sets that have multiple dashes in the setnum
         return None
 
@@ -257,15 +253,15 @@ def get_basestats(o_set, type=1):
     if 'set_num' in brickset_stats:
         # if brickset_stats['set_num'] == '':
         # return None
-        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = base.expand_set_num(
+        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = syt.expand_set_num(
             brickset_stats['set_num'])
     elif 'set_num' in bricklink_stats:
         # if bricklink_stats['set_num'] == '':
         # return None
-        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = base.expand_set_num(
+        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = syt.expand_set_num(
             bricklink_stats['set_num'])
     else:
-        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = base.expand_set_num(
+        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = syt.expand_set_num(
             o_set)
 
 
@@ -347,10 +343,10 @@ def get_basestats(o_set, type=1):
         scrubbed_dic['box_volume'] = None
 
     if scrubbed_dic == {}:
-        logger.warning("No data for o_set: {}".format(o_set))
+        syt.log_warning("No data for o_set: {}".format(o_set))
         return None
 
-    scrubbed_dic['last_update'] = base.get_timestamp()
+    scrubbed_dic['last_update'] = syt.get_timestamp()
 
     scrubbed_dic['bo_set_num'] = None  # Todo, have this actually set the bo_set_num
     # pprint.pprint(scrubbed_dic)

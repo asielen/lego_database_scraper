@@ -1,15 +1,13 @@
-__author__ = 'andrew.sielen'
-
+# External
 import sqlite3 as lite
 
+# Internal
 import data.bricklink.bricklink_api as blapi
 import data.rebrickable.rebrickable_api as reapi
 import data.update_primitives as update_p
 import database as db
-from system import logger
-
-if __name__ == "__main__": logger.setup()
-
+import system as syt
+if __name__ == "__main__": syt.setup_logger()
 
 #
 # Primitive: {these initiate the database from nothing}
@@ -47,7 +45,7 @@ def init_price_types():
     Create price_types table
     @return:
     """
-    logger.info("$$$ Updating Price Types")
+    syt.log_info("$$$ Updating Price Types")
     price_types = (('current_new',), ('current_used',), ('historic_new',), ('historic_used',))
     con = lite.connect(db.database)
 
@@ -55,7 +53,7 @@ def init_price_types():
         con.execute(
             "DELETE FROM price_types")  #This is okay because there are only 4 and they are always in the same order
         con.executemany("INSERT OR IGNORE INTO price_types(price_type) VALUES (?)", price_types)
-    logger.info("%%% Price Types Updated")
+    syt.log_info("%%% Price Types Updated")
 
 
 def init_bl_categories():
@@ -81,7 +79,7 @@ if __name__ == "__main__":
         Main launch menu
         @return:
         """
-        logger.critical("Primitives testing")
+        syt.log_critical("Primitives testing")
         options = {}
 
         options['1'] = "Initiate Colors", menu_init_colors

@@ -1,18 +1,19 @@
-from system.base import LBEF
-
-__author__ = 'Andrew'
-
+# TODO - Not needed anymore?
+# External
 import csv
 import sqlite3 as lite
-from system import logger
-
-if __name__ == "__main__": logger.setup()
 import pprint as pp
 
 import arrow
 from profilehooks import profile
 
-from database.info.database_info import database
+
+
+# Internal
+import system as syt
+if __name__ == "__main__": syt.setup_logger()
+
+from database import database as db
 
 # Todo, this whole file I think can be replaced with the rebrickable_api
 
@@ -27,7 +28,7 @@ def create_color_database():
     @return:
     """
 
-    con = lite.connect(database)
+    con = lite.connect(db)
     with con:
         c = con.cursor()
         c.execute("CREATE TABLE IF NOT EXISTS colors(id INTEGER PRIMARY KEY,"
@@ -51,17 +52,17 @@ def check_pieces():
     compare the pieces in the database to the pieces in the csv file
     @return:
     """
-    con = lite.connect(database)
+    con = lite.connect(db)
     database_pieces = {}
     with con:
         c = con.cursor()
         c.execute("SELECT design_num, design_name FROM piece_designs")
-        database_pieces = LBEF.list_to_dict(c.fetchall())
+        database_pieces = syt.list_to_dict(c.fetchall())
 
     with open(REBRICKABLE_PIECES, 'r', encoding='utf-8') as csvfile:
         pieces_list = {t[0]: t[1] for t in csv.reader(csvfile)}
 
-    diff = LBEF.DictDiffer(pieces_list, database_pieces)
+    diff = syt.DictDiffer(pieces_list, database_pieces)
 
     # update piece names
     changed_list = dict(diff.changed())
@@ -70,7 +71,7 @@ def check_pieces():
         for rec in changed_list:
             print(changed_list[rec][0], rec)
             c.execute("UPDATE piece_designs SET design_name=? WHERE design_num=?", (changed_list[rec][0], rec))
-            # database_pieces = LBEF.list_to_dict(c.fetchall())
+            # database_pieces = syt.list_to_dict(c.fetchall())
 
     # add missing pieces
     missing_pieces = diff.added()
@@ -137,10 +138,10 @@ def get_rows(row, set_id_dict):
         set_id = set_id_dict[row[0]]
     except:
         try:
-            set_id = set_id_dict[LBEF.expand_set_num(row[0])]
+            set_id = set_id_dict[syt.expand_set_num(row[0])]
         except:
             if len(row) > 0:
-                logger.warning("Can't find set: {}".format(row[0]))
+                syt.log_warning("Can't find set: {}".format(row[0]))
             return None, None
 
     date = parse_date(row[5])
@@ -158,7 +159,7 @@ def add_daily_prices_to_database(prices):
     @return:
     """
 
-    con = lite.connect(database)
+    con = lite.connect(db)
     with con:
         c = con.cursor()
 
@@ -169,7 +170,7 @@ def add_daily_prices_to_database(prices):
 
 
 def add_daily_ratings_to_database(raitings):
-    con = lite.connect(database)
+    con = lite.connect(db)
     with con:
         c = con.cursor()
         c.executemany('INSERT OR IGNORE INTO bs_ratings(set_id, want, own, record_date)'
@@ -181,13 +182,13 @@ def parse_date(s):
 
 
 def get_all_set_ids():
-    con = lite.connect(database)
-    print(database)
+    con = lite.connect(db)
+    print(db)
     with con:
         c = con.cursor()
 
         c.execute("SELECT set_num, id FROM sets")
-        set_id_list = LBEF.list_to_dict(c.fetchall())
+        set_id_list = syt.list_to_dict(c.fetchall())
 
     return set_id_list
 

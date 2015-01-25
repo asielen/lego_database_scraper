@@ -1,18 +1,14 @@
-__author__ = 'andrew.sielen'
-
+# External
 import arrow
 
 from database import info
 import database as db
-from system import base
 from data import update_secondary
 import navigation as menu
-from system import logger
-
-if __name__ == "__main__": logger.setup()
+import system as syt
+if __name__ == "__main__": syt.setup_logger()
 
 # from data.data_classes.HistoricPriceAnalyser_class import HistoricPriceAnalyser
-from system.base import calculate_inflation as inf
 
 
 class SetInfo(object):
@@ -35,11 +31,11 @@ class SetInfo(object):
                     set_info_list = list(set_info)
                 elif len(set_info) > 2 and isinstance(set_info[1], str):
                     # If the list is the wrong size, it still trys to find a set_num
-                    s_num = base.expand_set_num(set_info[1])[2]
+                    s_num = syt.expand_set_num(set_info[1])[2]
             else:
                 if isinstance(set_info, str):
                     # If setup with a string
-                    s_num = base.expand_set_num(set_info)[2]
+                    s_num = syt.expand_set_num(set_info)[2]
 
         if s_num is not None:
             # Todo: Cant add set with this function here because it causes a circular import
@@ -72,7 +68,7 @@ class SetInfo(object):
     @set_num.setter
     def set_num(self, set_id):
         assert isinstance(set_id, str)
-        self.set_info_list[3], self.set_info_list[4], self.set_info_list[1] = base.expand_set_num(set_id)
+        self.set_info_list[3], self.set_info_list[4], self.set_info_list[1] = syt.expand_set_num(set_id)
 
     @property
     def bo_id(self):
@@ -178,13 +174,13 @@ class SetInfo(object):
 
     @property
     def date_released_us(self):
-        return base.get_date(self.set_info_list[12])
+        return syt.get_date(self.set_info_list[12])
 
     @date_released_us.setter
     def date_released_us(self, value):
         """ @param value: In the format YYYY-MM-DD"""
         assert isinstance(value, str) or value is None
-        self.set_info_list[12] = base.get_timestamp(value)
+        self.set_info_list[12] = syt.get_timestamp(value)
 
     @property
     def ts_date_ended_us(self):
@@ -197,13 +193,13 @@ class SetInfo(object):
 
     @property
     def date_ended_us(self):
-        return base.get_date(self.set_info_list[13])
+        return syt.get_date(self.set_info_list[13])
 
     @date_ended_us.setter
     def date_ended_us(self, value):
         """ @param value: In the format YYYY-MM-DD"""
         assert isinstance(value, str) or value is None
-        self.set_info_list[13] = base.get_timestamp(value)
+        self.set_info_list[13] = syt.get_timestamp(value)
 
     @property
     def ts_date_released_uk(self):
@@ -216,13 +212,13 @@ class SetInfo(object):
 
     @property
     def date_released_uk(self):
-        return base.get_date(self.set_info_list[14])
+        return syt.get_date(self.set_info_list[14])
 
     @date_released_uk.setter
     def date_released_uk(self, value):
         """ @param value: In the format YYYY-MM-DD"""
         assert isinstance(value, str) or value is None
-        self.set_info_list[14] = base.get_timestamp(value)
+        self.set_info_list[14] = syt.get_timestamp(value)
 
     @property
     def ts_date_ended_uk(self):
@@ -235,13 +231,13 @@ class SetInfo(object):
 
     @property
     def date_ended_uk(self):
-        return base.get_date(self.set_info_list[15])
+        return syt.get_date(self.set_info_list[15])
 
     @date_ended_uk.setter
     def date_ended_uk(self, value):
         """ @param value: In the format YYYY-MM-DD"""
         assert isinstance(value, str) or value is None
-        self.set_info_list[15] = base.get_timestamp(value)
+        self.set_info_list[15] = syt.get_timestamp(value)
 
     @property
     def original_price_us(self):
@@ -311,13 +307,13 @@ class SetInfo(object):
 
     @property
     def last_updated(self):
-        return base.get_date(self.set_info_list[22])
+        return syt.get_date(self.set_info_list[22])
 
     @last_updated.setter
     def last_updated(self, value):
         """ @param value: In the format YYYY-MM-DD"""
         assert isinstance(value, str) or value is None
-        self.set_info_list[22] = base.get_timestamp(value)
+        self.set_info_list[22] = syt.get_timestamp(value)
 
     @property
     def ts_last_inv_updated_bo(self):
@@ -330,13 +326,13 @@ class SetInfo(object):
 
     @property
     def last_inv_updated_bo(self):
-        return base.get_date(self.set_info_list[23])
+        return syt.get_date(self.set_info_list[23])
 
     @last_inv_updated_bo.setter
     def last_inv_updated_bo(self, value):
         """ @param value: In the format YYYY-MM-DD"""
         assert isinstance(value, str) or value is None
-        self.set_info_list[23] = base.get_timestamp(value)
+        self.set_info_list[23] = syt.get_timestamp(value)
 
     @property
     def ts_last_inv_updated_bl(self):
@@ -349,13 +345,13 @@ class SetInfo(object):
 
     @property
     def last_inv_updated_bl(self):
-        return base.get_date(self.set_info_list[24])
+        return syt.get_date(self.set_info_list[24])
 
     @last_inv_updated_bl.setter
     def last_inv_updated_bl(self, value):
         """ @param value: In the format YYYY-MM-DD"""
         assert isinstance(value, str) or value is None
-        self.set_info_list[24] = base.get_timestamp(value)
+        self.set_info_list[24] = syt.get_timestamp(value)
 
     @property
     def ts_last_inv_updated_re(self):
@@ -368,13 +364,13 @@ class SetInfo(object):
 
     @property
     def last_inv_updated_re(self):
-        return base.get_date(self.set_info_list[25])
+        return syt.get_date(self.set_info_list[25])
 
     @last_inv_updated_re.setter
     def last_inv_updated_re(self, value):
         """ @param value: In the format YYYY-MM-DD"""
         assert isinstance(value, str) or value is None
-        self.set_info_list[25] = base.get_timestamp(value)
+        self.set_info_list[25] = syt.get_timestamp(value)
 
     @property
     def ts_last_daily_update(self):
@@ -387,13 +383,13 @@ class SetInfo(object):
 
     @property
     def last_daily_update(self):
-        return base.get_date(self.set_info_list[26])
+        return syt.get_date(self.set_info_list[26])
 
     @last_daily_update.setter
     def last_daily_update(self, value):
         """ @param value: In the format YYYY-MM-DD"""
         assert isinstance(value, str) or value is None
-        self.set_info_list[26] = base.get_timestamp(value)
+        self.set_info_list[26] = syt.get_timestamp(value)
 
     # ###
     # # Calculated Properties
@@ -439,7 +435,7 @@ class SetInfo(object):
         if year is None or year == self.year_released:
             return self.original_price_us
         else:
-            price_inflated = (inf.get_inflation_rate(self.year_released,
+            price_inflated = (syt.get_inflation_rate(self.year_released,
                                                      year) * self.original_price_us) + self.original_price_us
             return price_inflated
 
@@ -496,7 +492,8 @@ class SetInfo(object):
 
         return self.get_price(year) / weight
 
-    # def get_price_history(self, select_filter=None):
+    def get_price_history(self, select_filter=None):
+        pass
     #     self.price_history = HistoricPriceAnalyser(si=self, select_filter=select_filter)
     #     return self.price_history
 
@@ -725,7 +722,7 @@ if __name__ == "__main__":
         Main launch menu
         @return:
         """
-        logger.critical("Set Info testing")
+        syt.log_critical("Set Info testing")
 
         options = {}
 
@@ -751,12 +748,12 @@ if __name__ == "__main__":
 
     def menu_create_set_db():
         global test_set
-        set_num = base.input_set_num()
+        set_num = syt.input_set_num()
         test_set = SetInfo(set_num)
 
     def menu_create_set_lst():
         global test_set
-        set_num = base.input_set_num()
+        set_num = syt.input_set_num()
         set_info_list = info.get_set_info(set_num)
         test_set = SetInfo(set_info_list)
 
@@ -794,9 +791,9 @@ if __name__ == "__main__":
         pass
 
         # print("Price History")
-        # base.print4(price_history)
+        # syt.print4(price_history)
         # print("Rating History")
-        # base.print4(rating_history)
+        # syt.print4(rating_history)
 
     def menu_test_all_output():
         global test_set
@@ -819,18 +816,18 @@ if __name__ == "__main__":
     #     while not bool(test_set):
     #         menu_create_set_db()
     #     c_result = test_set.get_historic_price_trends()
-    #     base.print4(c_result, 5)
+    #     syt.print4(c_result, 5)
     #     c_result = test_set.get_historic_price_trends(
     #         select_filter=["(historic_prices.min+historic_prices.max)/2", None, False])
-    #     base.print4(c_result, 5)
+    #     syt.print4(c_result, 5)
     #     c_result = test_set.get_historic_price_trends(select_filter=["(historic_prices.min+historic_prices.max)",
     #                                                                  "(price_types.price_type='historic_used' OR price_types.price_type='historic_new')",
     #                                                                  False])
-    #     base.print4(c_result, 5)
+    #     syt.print4(c_result, 5)
     #     c_result = test_set.get_historic_price_trends(select_filter=["SUM(historic_prices.min+historic_prices.max)",
     #                                                                  "(price_types.price_type='historic_used' OR price_types.price_type='historic_new')",
     #                                                                  True])
-    #     base.print4(c_result, 5)
+    #     syt.print4(c_result, 5)
 
 
     if __name__ == "__main__":

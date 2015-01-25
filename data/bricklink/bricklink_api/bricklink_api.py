@@ -1,3 +1,8 @@
+# Internal
+from navigation import menu
+import system as syt
+if __name__ == "__main__": syt.setup_logger()
+
 # TODO: Add return specs for all api calls
 
 # parameter info
@@ -10,16 +15,6 @@
 # downloadType =
 # T : tabs
 # X : XML (seems to default to this)
-
-# external
-from system import logger
-
-if __name__ == "__main__": logger.setup()
-
-# other module
-from navigation import menu
-from system import base
-
 
 url = "http://www.bricklink.com/catalogDownload.asp"
 
@@ -39,7 +34,7 @@ def pull_set_catalog():
                   'selDim': 'Y',
                   'itemTypeInv': 'S',
                   'downloadType': 'T'}
-    return base.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url(url, params=parameters)
 
 
 def pull_part_catalog():
@@ -57,7 +52,7 @@ def pull_part_catalog():
                   'selWeight': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return base.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url(url, params=parameters)
 
 
 def pull_minifig_catalog():
@@ -75,14 +70,13 @@ def pull_minifig_catalog():
                   'selWeight': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return base.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url(url, params=parameters)
 
 
 def pull_book_catalog():
     """
     Access bricklink.com and download the csv of its book catalog
     # http://www.bricklink.com/catalogDownload.asp?viewType=0&itemType=B&itemTypeInv=S&itemNo=&downloadType=T
-    @param set_num:
     @return:
     """
     parameters = {'a': 'a',
@@ -93,13 +87,12 @@ def pull_book_catalog():
                   'selWeight': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return base.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url(url, params=parameters)
 
 
 def pull_gear_catalog():
     """
     Access bricklink.com and download the csv of its book catalog
-    @param set_num:
     @return:
     """
     parameters = {'itemType': 'G',
@@ -110,13 +103,12 @@ def pull_gear_catalog():
                   'selDim': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return base.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url(url, params=parameters)
 
 
 def pull_catalogs_catalog():
     """
     Access bricklink.com and download the csv of its book catalog
-    @param set_num:
     @return:
     """
     parameters = {'itemType': 'C',
@@ -127,13 +119,12 @@ def pull_catalogs_catalog():
                   'selDim': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return base.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url(url, params=parameters)
 
 
 def pull_instructions_catalog():
     """
     Access bricklink.com and download the csv of its book catalog
-    @param set_num:
     @return:
     """
     parameters = {'itemType': 'I',
@@ -144,7 +135,7 @@ def pull_instructions_catalog():
                   'selDim': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return base.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url(url, params=parameters)
 
 
 def pull_boxes_catalog():
@@ -161,13 +152,12 @@ def pull_boxes_catalog():
                   'selDim': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return base.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url(url, params=parameters)
 
 
 def pull_item_types():
     """
     Access bricklink.com and download the csv of its book catalog
-    @param set_num:
     @return: [Item Type ID, Item Type name]
     """
     parameters = {'itemType': 'O',
@@ -178,14 +168,13 @@ def pull_item_types():
                   'selDim': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return base.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url(url, params=parameters)
 
 
 def pull_categories():
     """
     Access bricklink.com and download the csv of its book catalog
     # http://www.bricklink.com/catalogDownload.asp?itemType=S&viewType=2&itemTypeInv=S&itemNo=&downloadType=T
-    @param set_num:
     @return: [Category ID, Category Name]
     """
     url = "http://www.bricklink.com/catalogDownload.asp"
@@ -194,7 +183,7 @@ def pull_categories():
                   'itemTypeInv': 'S',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return base.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url(url, params=parameters)
 
 
 def pull_colors():
@@ -208,7 +197,7 @@ def pull_colors():
                   'itemTypeInv': 'S',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return base.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url(url, params=parameters)
 
 
 def pull_part_color_codes():
@@ -222,7 +211,7 @@ def pull_part_color_codes():
                   'itemTypeInv': 'S',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return base.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url(url, params=parameters)
 
 
 def pull_set_inventory(set_num):
@@ -238,7 +227,7 @@ def pull_set_inventory(set_num):
                   'itemTypeInv': 'S',
                   'itemNo': set_num,
                   'downloadType': 'T'}
-    return base.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url(url, params=parameters)
 
 
 if __name__ == "__main__":
@@ -248,7 +237,7 @@ if __name__ == "__main__":
         @return:
         """
 
-        logger.critical("Bricklink API testing")
+        syt.log_critical("Bricklink API testing")
         options = {}
 
         options['1'] = "Pull Set Inventory", menu_pull_set_inventory
@@ -269,43 +258,43 @@ if __name__ == "__main__":
 
     def menu_pull_set_catalog():
         csvfile = pull_set_catalog()
-        base.print4(csvfile)
+        syt.print4(csvfile)
 
 
     def menu_pull_part_catalog():
         csvfile = pull_part_catalog()
-        base.print4(csvfile)
+        syt.print4(csvfile)
 
 
     def menu_pull_minifig_catalog():
         csvfile = pull_part_catalog()
-        base.print4(csvfile)
+        syt.print4(csvfile)
 
 
     def menu_pull_item_types():
         csvfile = pull_item_types()
-        base.print4(csvfile)
+        syt.print4(csvfile)
 
 
     def menu_pull_categories():
         csvfile = pull_categories()
-        base.print4(csvfile)
+        syt.print4(csvfile)
 
 
     def menu_pull_colors():
         csvfile = pull_colors()
-        base.print4(csvfile)
+        syt.print4(csvfile)
 
 
     def menu_pull_part_color_codes():
         csvfile = pull_part_color_codes()
-        base.print4(csvfile)
+        syt.print4(csvfile)
 
 
     def menu_pull_set_inventory():
-        set_num = base.input_set_num()
+        set_num = syt.input_set_num()
         csvfile = pull_set_inventory(set_num)
-        base.print4(csvfile)
+        syt.print4(csvfile)
 
 
     if __name__ == "__main__":

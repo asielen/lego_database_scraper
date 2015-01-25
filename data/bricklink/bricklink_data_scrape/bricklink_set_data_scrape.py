@@ -5,7 +5,7 @@ __author__ = 'andrew.sielen'
 
 # http://www.bricklink.com/catalogItem.asp?P=[piece number] <- gives you weight
 
-from system import base
+import system as syt
 
 # Get base stats
 def get_basestats(set_num_primary, set_num_secondary=1):
@@ -22,7 +22,7 @@ def get_basestats(set_num_primary, set_num_secondary=1):
     """
     url = "http://www.bricklink.com/catalogItem.asp?S={0}-{1}".format(set_num_primary, set_num_secondary)
 
-    soup = base.soupify(url)
+    soup = syt.soupify(url)
     if soup is None: return {}
 
     # Get the set name
@@ -45,7 +45,7 @@ def get_basestats(set_num_primary, set_num_secondary=1):
             start = children_tags_text.index("Set", 0, end) + 4
         else:
             start = children_tags_text.index("Of:", 0, end) + 3
-        piece_count = base.scrub_text2int(children_tags_text[start:end])
+        piece_count = syt.scrub_text2int(children_tags_text[start:end])
         children_tags_text = children_tags_text[end:]
         #This line makes finding the minifigure count easier by removing the data for pieces
     if "Minifig" in children_tags_text:
@@ -60,7 +60,7 @@ def get_basestats(set_num_primary, set_num_secondary=1):
         if start is None:
             figures_count = 0
         else:
-            figures_count = base.scrub_text2int(children_tags_text[start:end])
+            figures_count = syt.scrub_text2int(children_tags_text[start:end])
 
 
 
@@ -76,7 +76,7 @@ def get_basestats(set_num_primary, set_num_secondary=1):
             dic[i.contents[0].string.strip()] = _parse_dimensions(i.contents[-1].string.strip())
         elif "Weight" in i.contents[0].string.strip():
             #Makes the weight a float instead of a string
-            dic[i.contents[0].string.strip()] = base.float_null(i.contents[-1].string.strip())
+            dic[i.contents[0].string.strip()] = syt.float_null(i.contents[-1].string.strip())
         else:
             dic[i.contents[0].string.strip()] = i.contents[-1].string.strip()
             #i.contents[0] is the title tag / i.contents[-1] is the innermost tag
@@ -84,13 +84,13 @@ def get_basestats(set_num_primary, set_num_secondary=1):
     return _scrub_base_data(dic)
 
 
-def _parse_dimensions(s):
+def _parse_dimensions(string):
     """
         Takes a string like: 38\xa0x\xa028.5\xa0x\xa05.8 and returns (38,28.5,5.8)
     """
-    if s == '?':
+    if string == '?':
         return None
-    return tuple([base.float_null(s) for s in str.split(s, u'\xa0x\xa0')])
+    return tuple([syt.float_null(s) for s in str.split(string, u'\xa0x\xa0')])
 
 
 def _scrub_base_data(dic):
@@ -133,7 +133,7 @@ def _scrub_base_data(dic):
     if 'Weight (in grams):' in dic:
         scrubbed_dic['weight'] = dic['Weight (in grams):']
     if 'Year Released:' in dic:
-        scrubbed_dic['year_released'] = base.int_null(dic['Year Released:'])
+        scrubbed_dic['year_released'] = syt.int_null(dic['Year Released:'])
 
     return scrubbed_dic
 

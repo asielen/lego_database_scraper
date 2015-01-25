@@ -1,5 +1,4 @@
-__author__ = 'andrew.sielen'
-
+# Internal
 import navigation.menu
 from data.bricklink.bricklink_api import pull_set_catalog
 from data import update_secondary as secondary

@@ -1,9 +1,8 @@
-__author__ = 'andrew.sielen'
-
+#Not needed anymore? Todo
 import pprint
 
-from system.base import *  # Change this to not using *
-
+#from system.base import *  # Change this to not using *
+import system as syt
 
 # http://brickset.com/parts/473326 <-Piece lookup
 # http://www.bricklink.com/catalogItem.asp?P=4733
@@ -25,7 +24,7 @@ def get_pieceinfo(element_number):
 
     url = "http://brickset.com/parts/{0}".format(element_number)
     # print(url)
-    soup = soupify(url)
+    soup = syt.soupify(url)
 
     piece_info = {}
     piece_info = _scrub_data(_parse_sidebar(soup))
@@ -110,7 +109,7 @@ def get_blPieceInfo(design_num, element_num):
     child_tags0 = parent_tags1.findAll("td")
     weight_tag = child_tags0[3].get_text().split(":")[
         1]  # Pull the weight from the tag that contains the weight. EX: <td width="20%"><font color="#666666">Weight (in grams):</font><br>0.45</td>
-    weight = float_zero(weight_tag)
+    weight = syt.float_zero(weight_tag)
 
     # Find Name
     name_tag = soup.find("font", {"face": "Geneva,Arial,Helvetica"})
@@ -142,7 +141,7 @@ def get_blPieceInfo(design_num, element_num):
 def _search_piece(design_num, element_num):
     soup = None
     url = "http://www.bricklink.com/catalogItem.asp?P={0}".format(design_num)
-    soup = soupify(url)
+    soup = syt.soupify(url)
     if soup is not None:
         parent_tags0 = soup.find("font", {"size": "+2"})
         parent_tags1 = soup.find(text="Search Results")
@@ -150,7 +149,7 @@ def _search_piece(design_num, element_num):
             return soup
 
     url = "http://www.bricklink.com/cataloglist.asp?&searchNo=Y&q={0}&catLike=W&catType=P".format(design_num)
-    soup = soupify(url)
+    soup = syt.soupify(url)
     if soup is not None:
         parent_tags0 = soup.find("font", {"size": "+2"})
         parent_tags1 = soup.find(text="Search Results")
@@ -158,7 +157,7 @@ def _search_piece(design_num, element_num):
             return soup
 
         url = "http://www.bricklink.com/cataloglist.asp?&searchNo=Y&q={0}&catLike=W&catType=P".format(element_num)
-        soup = soupify(url)
+        soup = syt.soupify(url)
         if soup is not None:
             parent_tags0 = soup.find("font", {"size": "+2"})
             parent_tags1 = soup.find(text="Search Results")
@@ -166,7 +165,7 @@ def _search_piece(design_num, element_num):
                 return soup
 
         url = "http://www.bricklink.com/cataloglist.asp?&searchNo=Y&q={0}&catLike=W&catType=M".format(element_num)
-        soup = soupify(url)
+        soup = syt.soupify(url)
     return soup
 
 

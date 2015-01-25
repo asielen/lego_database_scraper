@@ -1,5 +1,3 @@
-__author__ = 'andrew.sielen'
-
 # Secondary: {initiate the database, rely on primitives but can still be downloaded in bulk}
 # * init_part_color_codes()
 # @ Download from Bricklink and add to the database
@@ -11,10 +9,11 @@ __author__ = 'andrew.sielen'
 
 import data.bricklink.bricklink_api as blapi
 import data.rebrickable.rebrickable_api as reapi
-from system import logger
-
-if __name__ == "__main__": logger.setup()
 from navigation import menu
+
+import system as syt
+if __name__ == "__main__": syt.setup_logger()
+
 
 
 def init_part_color_codes():
@@ -55,7 +54,7 @@ if __name__ == "__main__":
         Main launch menu
         @return:
         """
-        logger.critical("Secondary testing")
+        syt.log_critical("Secondary testing")
         options = {}
 
         options['1'] = "Initiate Color Codes", menu_init_part_color_codes

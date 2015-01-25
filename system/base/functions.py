@@ -1,64 +1,41 @@
-__author__ = 'andrew.sielen'
-
+# Internal
 import re  # Regular expressions
 import csv
 import gzip
-import html.parser
+import html
 from io import StringIO
 import json
-from time import sleep
+import os
 
 import requests
 from bs4 import BeautifulSoup
 import arrow
 
-from system import logger
-
-if __name__ == "__main__": logger.setup()
 
 
-SLOWPOOL = 10
-FASTPOOL = 35
-RUNNINGPOOL = FASTPOOL
+# THIS FILE SHOULD HAVE NO INTERNAL DEPENDENCIES
 
+
+##
+# SYSTEM
+##
+def runningWindows():
+    if os.name == 'nt':
+        return True
+    return False
+
+def make_project_path(string=""):
+    """
+    @return: the path to the main project folder with an optional string
+    """
+    path = os.path.dirname(os.path.realpath(__file__)).split("lego_database_scraper")[0]
+    if string != "":
+        return os.path.abspath(path+'lego_database_scraper'+os.sep+string)
+    else:
+        return os.path.abspath(path+"lego_database_scraper"+os.sep)
 # #
 # Web
 # #
-invalid_urls = 0
-
-
-def soupify(url):
-    """
-
-    @param url: any url
-    @return: returns the soup for that url
-    """
-    global invalid_urls
-    try:
-        page = requests.get(url, timeout=10).content
-    except:
-        try:
-            page = requests.get(url, timeout=20).content
-        except:
-            invalid_urls += 1
-            logger.error("INVALID URL {}: Can't reach the url! {}".format(invalid_urls, url))
-            return None
-    soup = BeautifulSoup(page)
-    if soup is None:
-        logger.error("Can't make the soup! {}".format(url))
-        soup = BeautifulSoup(page)
-
-    # Check that bricklink isn't down
-    available = soup.find(text="System Unavailable")
-    if available is not None:
-        bold = soup.find('b').text[-10:-9]
-        logger.info("Bricklink down for maintenance, it will be back in {} minutes.".format(bold))
-        logger.info("Waiting to continue")
-        for n in range(1, int_zero(bold)):
-            sleep(60)
-            logger.info("{} minutes remaining".format(int_zero(bold) - n))
-        return soupify(url)
-    return soup
 
 
 def parse_html_table(table_tags):
@@ -124,11 +101,11 @@ def read_csv_from_url(url, params=None, delimiter='\t'):
     Wrapper to make syntax simpler
     also handles errors
     @param url:
-    @param parameters:
+    @param params:
+    @param delimiter:
     @return:
     """
-    h = html.parser.HTMLParser()
-    return read_csv_in_memory(h.unescape(requests.get(url, params=params, verify=False).text), delimiter)
+    return read_csv_in_memory(html.unescape(requests.get(url, params=params, verify=False).text), delimiter)
 
 
 def read_json_from_url(url, params=None):
@@ -464,7 +441,6 @@ def input_set_num(type=0):
 
 def input_part_num():
     """
-    @param type:
     @return:
     """
     part_num = input("What part num? ")

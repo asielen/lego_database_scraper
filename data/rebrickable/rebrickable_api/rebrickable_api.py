@@ -1,11 +1,6 @@
-__author__ = 'Andrew'
-
-
 # internal
-from system import base
-from system import logger
-
-if __name__ == "__main__": logger.setup()
+import system as syt
+if __name__ == "__main__": syt.setup_logger()
 
 KEY = 'LmtbQqIRtP'
 url = 'http://rebrickable.com/api'
@@ -30,7 +25,7 @@ def pull_all_pieces():
     @return:
     """
     url = "http://rebrickable.com/files/pieces.csv.gz"
-    return base.read_gzip_csv_from_url(url)
+    return syt.read_gzip_csv_from_url(url)
 
 
 def pull_all_set_parts():
@@ -40,7 +35,7 @@ def pull_all_set_parts():
     @return:
     """
     url = "http://rebrickable.com/files/set_pieces.csv.gz"
-    return base.read_gzip_csv_from_url(url)
+    return syt.read_gzip_csv_from_url(url)
 
 
 def pull_set_catalog():
@@ -66,7 +61,7 @@ def pull_set_info(set_num):
     @return:
     """
     parameters = {'key': KEY, 'set_id': set_num, 'format': 'csv'}
-    return base.read_csv_from_url(url + '/get_set', params=parameters)
+    return syt.read_csv_from_url(url + '/get_set', params=parameters)
 
 
 def pull_set_inventory(set_num):
@@ -78,7 +73,7 @@ def pull_set_inventory(set_num):
     @return:
     """
     parameters = {'key': KEY, 'set': set_num, 'format': 'csv'}
-    return base.read_csv_from_url(url + '/get_set_parts', params=parameters)
+    return syt.read_csv_from_url(url + '/get_set_parts', params=parameters)
 
 
 def _pull_piece_info(part_id):
@@ -88,14 +83,14 @@ def _pull_piece_info(part_id):
     inc_rels - Optional flag (1 or 0) to include Part Relationships in return data (may be a lot of data for some parts)
     inc_ext - Optional flag (1 or 0) to include external Part IDs (may be a lot of data for some parts due to LEGO element ids)
     format - How to display output data. Valid values: xml, json
-    @param piece:
+    @param part_id:
     @return: in json format for some stupid reason (a dictionary)
     xml is a little easier to deal with
     """
     # parameters = {'key': KEY, 'part_id': part_id, 'inc_ext': '1', 'format': 'json'}
-    # return base.read_json_from_url(url + '/get_part', params=parameters)
+    # return syt.read_json_from_url(url + '/get_part', params=parameters)
     parameters = {'key': KEY, 'part_id': part_id, 'inc_ext': '1', 'format': 'xml'}
-    return base.read_xml_from_url(url + '/get_part', params=parameters)
+    return syt.read_xml_from_url(url + '/get_part', params=parameters)
 
 
 def pull_piece_info(part_id):
@@ -125,7 +120,7 @@ def pull_piece_info(part_id):
     try:
         name = piece_info.find('name').text
     except:
-        base.note("Missing Piece Info: re_id={} does not exist through re_id api call".format(part_id))
+        syt.log_note("Missing Piece Info: re_id={} does not exist through re_id api call".format(part_id))
         return [part_id, None, None, [part_id], []]
     return [part_id, bl_id, name, alt_ids, element_ids]
 
@@ -138,9 +133,9 @@ def pull_colors():
     note rebrickable ID is essentially the same as the ldraw id
     """
     url = 'http://rebrickable.com/colors'
-    soup = base.soupify(url)
+    soup = syt.soupify(url)
     table = soup.find('table', {'class': 'table'})
-    return base.parse_html_table(table)
+    return syt.parse_html_table(table)
 
 
 if __name__ == "__main__":
@@ -152,7 +147,7 @@ if __name__ == "__main__":
         @return:
         """
 
-        logger.info("RUNNING: Rebrickable API testing")
+        syt.log_info("RUNNING: Rebrickable API testing")
         options = {}
 
         options['1'] = "Pull Set Info", menu_pull_set_info
@@ -172,27 +167,27 @@ if __name__ == "__main__":
 
     def menu_pull_all_pieces():
         csvfile = pull_all_pieces()
-        base.print4(csvfile)
+        syt.print4(csvfile)
 
 
     def menu_pull_all_set_parts():
         csvfile = pull_all_set_parts()
         filelist = list(csvfile)
-        base.print4(csvfile)
+        syt.print4(csvfile)
         print(len(filelist))
 
     def menu_pull_all_sets():
         csvfile = pull_set_catalog()
-        base.print4(csvfile, 100)
+        syt.print4(csvfile, 100)
 
     def menu_pull_set_info():
-        set_num = base.input_set_num("What set num? ")
+        set_num = syt.input_set_num("What set num? ")
         csvfile = pull_set_info(set_num)
-        base.print4(csvfile)
+        syt.print4(csvfile)
 
 
     def menu_pull_set_inventory():
-        set_num = base.input_set_num("What set num? ")
+        set_num = syt.input_set_num("What set num? ")
         csvfile = pull_set_inventory(set_num)
         for c in csvfile:
             print(c)
@@ -206,7 +201,7 @@ if __name__ == "__main__":
 
     def menu_pull_colors():
         csvfile = pull_colors()
-        base.print4(csvfile)
+        syt.print4(csvfile)
 
 
     if __name__ == "__main__":

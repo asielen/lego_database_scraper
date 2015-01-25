@@ -1,7 +1,7 @@
-__author__ = 'andrew.sielen'
-
+# External
 import sqlite3 as lite
 
+# Internal
 import database as db
 
 

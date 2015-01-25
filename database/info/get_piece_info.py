@@ -1,10 +1,8 @@
-__author__ = 'andrew.sielen'
-
-from system import logger
-
-if __name__ == "__main__": logger.setup()
-from system import base
+# Internal
 import database as db
+import system as syt
+if __name__ == "__main__": syt.setup_logger()
+
 
 # Todo: 20140908 Add type
 def get_color_id(color_num, colors=None, type='bl'):
@@ -16,7 +14,7 @@ def get_color_id(color_num, colors=None, type='bl'):
     @return:
     """
     color_id = 9999
-    color_num = base.int_null(color_num)
+    color_num = syt.int_null(color_num)
     if colors is not None:
         try:
             color_id = colors[color_num]
@@ -138,7 +136,7 @@ if __name__ == "__main__":
         @return:
         """
 
-        logger.critical("set_info.py testing")
+        syt.log_critical("set_info.py testing")
         options = {}
 
         options['1'] = "Get Color ID", menu_get_color_id
@@ -159,31 +157,31 @@ if __name__ == "__main__":
         print(get_color_id(color))
 
     def menu_get_bl_piece_id():
-        part_num = base.input_part_num()
+        part_num = syt.input_part_num()
         print(get_bl_piece_ids(part_num))
-        base.print4(get_bl_piece_ids())
+        syt.print4(get_bl_piece_ids())
 
     def menu_get_re_piece_id():
-        part_num = base.input_part_num()
+        part_num = syt.input_part_num()
         print(get_re_piece_id(part_num))
-        base.print4(get_re_piece_id())
+        syt.print4(get_re_piece_id())
 
     def menu_get_num_sets_for_part_design():
-        part_num = base.input_part_num()
+        part_num = syt.input_part_num()
         print(get_num_sets_for_part_design(part_num))
-        base.print4(get_num_sets_for_part_design())
+        syt.print4(get_num_sets_for_part_design())
 
 
     def menu_get_years_available():
-        part_num = base.input_part_num()
+        part_num = syt.input_part_num()
         print(get_years_available(part_num))
-        base.print4(get_years_available())
+        syt.print4(get_years_available())
 
 
     def menu_get_avg_price_per_design():
-        part_num = base.input_part_num()
+        part_num = syt.input_part_num()
         print(get_avg_price_per_design(part_num))
-        base.print4(get_avg_price_per_design())
+        syt.print4(get_avg_price_per_design())
 
 
     if __name__ == "__main__":

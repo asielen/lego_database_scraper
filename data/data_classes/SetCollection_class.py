@@ -1,14 +1,15 @@
-__author__ = 'andrew.sielen'
-
+# External
 import collections
 
 from profilehooks import profile
 
+
+# Internal
 import database as db
 from data.data_classes.SetInfo_class import SetInfo
 from data.data_classes.HistoricPriceAnalyser_class import HistoricPriceAnalyser
-from system import base
 import navigation as menu
+import system as syt
 
 
 class SetCollection(object):
@@ -21,7 +22,7 @@ class SetCollection(object):
     def __init__(self, set_list=None, filter_text=None):
         """
         @param set_list: List of set_nums
-        @param filter: Filter Text e.g. "year_released = 2014, theme = city
+        @param filter_text: Filter Text e.g. "year_released = 2014, theme = city
         @return:
         """
 
@@ -106,7 +107,7 @@ class SetCollection(object):
             result = self._run_query(base_text="SELECT AVG({}) FROM sets".format(field))
         else:
             result_list = self._run_query(base_text="SELECT set_num, {} FROM sets".format(field))
-            result = base.list_to_dict(result_list)
+            result = syt.list_to_dict(result_list)
         return result
 
     def unique_piece_count(self):
@@ -121,6 +122,7 @@ class SetCollection(object):
 
     def piece_count(self, type=None, calc=False):
         if calc:
+            query = None
             if self.set_data_lookups["calc_piece_count"] is not None and type is None:
                 return self.set_data_lookups["calc_piece_count"]
             if calc:
@@ -209,7 +211,7 @@ class SetCollection(object):
                            "last_updated, last_inv_updated_bl, last_inv_updated_re, last_daily_update, BASE CALC, ppp, ppp_uk, ppg, ppg_uk, " \
                            "avg_piece_weight,INFLATION, price_inf, ppp_inf, ppg_inf, CALC PIECE/WEIGHT, calc_piece_count, calc_unique_piece_count, " \
                            "calc_unique_to_total_piece_count, calc_weight, calc_avg_piece_weight, CALC INFLATION, calc_ppp_inf, calc_ppg_inf\n"
-        timer = base.process_timer("BUILDING CSV")
+        timer = syt.process_timer("BUILDING CSV")
         sets = self.set_nums()
         total_sets = len(sets)
         timer.log_time(1, total_sets)
@@ -276,7 +278,7 @@ class SetCollection(object):
         price_csv = "SET_NUM"
         print("Building Price CSV")
         for dte in range(date_range[0], date_range[1]):
-            price_csv += ",{}".format(dte)  #base.get_date(dte))
+            price_csv += ",{}".format(dte)  #syt.get_date(dte))
         price_csv += "\n"
 
         for st in historic_price_sets:
@@ -296,13 +298,13 @@ class SetCollection(object):
 
         set_csv = "SET_NUM, THEME, YEAR_RELEASED, ORIGINAL_PRICE, START_DATE, END_DATE\n"
         for st in historic_set_defs:
-            set_csv += base.list2string(historic_set_defs[st])
+            set_csv += syt.list2string(historic_set_defs[st])
             set_csv += "\n"
 
-        with open('{}-price-data.csv'.format(base.get_timestamp()), "w") as f:
+        with open('{}-price-data.csv'.format(syt.get_timestamp()), "w") as f:
             f.write(price_csv)
 
-        with open('{}-price-set-data.csv'.format(base.get_timestamp()), "w") as f:
+        with open('{}-price-set-data.csv'.format(syt.get_timestamp()), "w") as f:
             f.write(set_csv)
 
 
@@ -372,7 +374,7 @@ if __name__ == "__main__":
         global test_SC
 
         historic_data_sets = test_SC.historic_price_report()
-        # base.print4(historic_data_sets.items(), 20)
+        # syt.print4(historic_data_sets.items(), 20)
 
     def menu_get_historic_prices():
         global test_SC
@@ -384,7 +386,7 @@ if __name__ == "__main__":
         filter_text = "(year_released BETWEEN 1980 AND 2014) AND ((piece_count >=25) OR (original_price_us >=4)) AND year_released IS NOT NULL AND set_name IS NOT NULL"
         test_SC = SetCollection(filter_text=filter_text)
         csv_dump_text = test_SC.csv_dump()
-        with open('{}-set-dump.csv'.format(base.get_timestamp()), "w") as f:
+        with open('{}-set-dump.csv'.format(syt.get_timestamp()), "w") as f:
             f.write(csv_dump_text)
 
     main_menu()
