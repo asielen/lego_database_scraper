@@ -1,15 +1,33 @@
 # External
+import collections
+import copy
+
 import arrow
 
-from database import info
-import database as db
+
+# Internal
 from data import update_secondary
-import navigation as menu
+import database as db
+from database import info
 import system as syt
-if __name__ == "__main__": syt.setup_logger()
 
-# from data.data_classes.HistoricPriceAnalyser_class import HistoricPriceAnalyser
+class OrderedDictV2(collections.OrderedDict):
+    def next_key(self, key):
+        next = self._OrderedDict__map[key].next
+        if next is self._OrderedDict__root:
+            raise ValueError("{!r} is the last key".format(key))
+        return next.key
 
+    def previous_key(self, key):
+        previous = self._OrderedDict__map[key].prev
+        return previous.key
+
+    def first_key(self):
+        for key in self: return key
+        raise ValueError("OrderedDict() is empty")
+
+def replace_comma(text):
+    return str(text).replace(',', "/")
 
 class SetInfo(object):
     """
@@ -493,9 +511,8 @@ class SetInfo(object):
         return self.get_price(year) / weight
 
     def get_price_history(self, select_filter=None):
-        pass
-    #     self.price_history = HistoricPriceAnalyser(si=self, select_filter=select_filter)
-    #     return self.price_history
+        self.price_history = HistoricPriceAnalyser(si=self, select_filter=select_filter)
+        return self.price_history
 
     def get_rating_history(self):
         return info.get_historic_data(set_id=self.db_id)
@@ -652,6 +669,56 @@ class SetInfo(object):
         test_string += "\n"
         return test_string
 
+    def set_report(self):
+        """
+        "id, set_num, set_name, set_theme, piece_count, figures, set_weight, year_released, date_released_us, date_ended_us,
+        date_released_uk, date_ended_uk, original_price_us, original_price_uk, age_low, age_high, box_size, box_volume,
+        last_updated, last_inv_updated_bl, last_inv_updated_re, last_daily_update, BASE CALC, ppp, ppp_uk, ppg, ppg_uk,
+        avg_piece_weight,INFLATION, price_inf, ppp_inf, ppg_inf, CALC PIECE/WEIGHT, calc_piece_count, calc_unique_piece_count,
+        calc_unique_to_total_piece_count, calc_weight, calc_avg_piece_weight, CALC INFLATION, calc_ppp_inf, calc_ppg_inf\n"
+        """
+        csv_string = ""
+        csv_string += "Set Report, {}, {},\n".format(replace_comma(self.set_num),replace_comma(self.name))
+        csv_string += "Database ID, {},\n".format(self.db_id)
+        csv_string += "\n"
+        csv_string += "Basic Info,\n"
+        csv_string += "Set Num, {},\n".format(replace_comma(self.set_num))
+        csv_string += "Set Name, {},\n".format(replace_comma(self.name))
+        csv_string += "Theme, {},\n".format(replace_comma(self.theme))
+        csv_string += "Piece Count, {},\n".format(self.piece_count)
+        csv_string += "Figures, {},\n".format(self.figures)
+        csv_string += "Set Weight, {},\n".format(self.weight)
+        csv_string += "Year Released, {},\n".format(self.year_released)
+        csv_string += "US Availability, {}, {},\n".format(self.date_released_us, self.date_ended_us)
+        csv_string += "US Price, {},\n".format(self.original_price_us)
+        csv_string += "UK Availability, {}, {},\n".format(self.date_released_uk, self.date_ended_uk)
+        csv_string += "UK Price, {},\n".format(self.original_price_uk)
+        csv_string += "Age Range, {}, {},\n".format(self.age_low, self.age_high)
+        csv_string += "Box Dimensions, {},\n".format(replace_comma(self.box_size))
+        csv_string += "Box Volume, {},\n".format(self.box_volume)
+        csv_string += "\n"
+        csv_string += "Last Updated,\n"
+        csv_string += "Last Inventory Updated BL, {},\n".format(self.last_inv_updated_bl)
+        csv_string += "Last Inventory Updated BO, {},\n".format(self.last_inv_updated_bo)
+        csv_string += "Last Inventory Updated RE, {},\n".format(self.last_inv_updated_re)
+        csv_string += "Last Price Updated, {},\n".format(self.last_daily_update)
+        csv_string += "\n"
+        csv_string += "Calculated Date,\n"
+        csv_string += "Calc Piece Count, {},\n".format(self.get_calc_piece_count())
+        csv_string += "Calc Unique Pieces, {}, {},\n".format(self.get_calc_unique_pieces(), self.get_unique_piece_ratio())
+        csv_string += "Calc Weight, {},\n".format(self.get_calc_weight())
+        csv_string += "Price Adj for Inflation, {},\n".format(self.get_price(year=2014))
+        csv_string += "Price per Piece, {}, {},\n".format(self.ppp, self.get_ppp_adj(calc=True))
+        csv_string += "Price per Piece Adj for Inflation, {}, {},\n".format(self.get_ppp_adj(year=2015), self.get_ppp_adj(year=2015, calc=True))
+        csv_string += "Price per Gram, {}, {},\n".format(self.ppg, self.get_ppg_adj(calc=True))
+        csv_string += "Price per Gram Adj for Inflation, {}, {},\n".format(self.get_ppg_adj(year=2015), self.get_ppg_adj(year=2015, calc=True))
+        csv_string += "\n"
+        csv_string += "\n"
+        csv_string += "Historic Data,,,,,,6 Month New Prices,,,,,,,6 Month Used Prices,,,,,,,Current New Prices,,,,,,,Current Used Prices,\n"
+        csv_string += "Note,Date,Want,Own,Rating,,6 Month New - Lots,6 Month New - QTY,6 Month New - MIN,6 Month New - MAX,6 Month New - AVG,6 Month New - QTY AVG,,6 Month Used - Lots,6 Month Used - QTY,6 Month Used - MIN,6 Month Used - MAX,6 Month Used - AVG,6 Month Used - QTY AVG,,Current New - Lots,Current New - QTY,Current New - MIN,Current New - MAX,Current New - AVG,Current New - QTY AVG,,Current Used - Lots,Current Used - QTY,Current Used - MIN,Current Used - MAX,Current Used - AVG,Current Used - QTY AVG,\n"
+        return csv_string
+
+
 
     # For testing
     def test_base_info(self):
@@ -710,127 +777,415 @@ class SetInfo(object):
     def test_historic(self):
         return self.get_price_history(), self.get_rating_history()
 
+class HistoricPriceAnalyser(object):
+    STANDARD = 0
+    RELATIVE = 1
+    RELATIVE_DAY = 2
+    DELTA = 3
+    DELTA_DAY = 4
 
-def replace_comma(text):
-    return str(text).replace(',', "/")
 
-if __name__ == "__main__":
-    test_set = SetInfo()
+    def __init__(self, si=None, select_filter=None):
 
-    def main_menu():
         """
-        Main launch menu
+            @param select_filter: List:
+                [select statement, where statement, group?] See the end of this doc for examples
+        """
+        self.si = si  # the parent set
+        sql_query = ""
+        if isinstance(select_filter, list) and len(select_filter) >= 2:
+            sql_query = self._build_historic_data_sql(*select_filter)
+
+        sql_result = self.sql(sql_query)
+        if sql_result is not None and len(sql_result):
+            base_dict = syt.list_to_dict(self._process_date_price_list(sql_result))
+            self.original_data = OrderedDictV2(sorted(base_dict.items(), key=lambda t: t[0]))
+            # for rebuilding data
+            self.sql_query = sql_query
+            # Same as clear - but needs to be defined in __init__
+            self.working_data = copy.deepcopy(self.original_data)
+            #Working_data_format:
+            #
+            self.base_date = min(self.original_data.keys())  #), key=self.original_data.get)
+            self.base_price = self.original_data[self.base_date]
+            self.type = self.STANDARD
+            self.inf_year = None
+        else:
+            raise SyntaxError("Invalid HPA Formation")
+
+
+    def __bool__(self):
+        return bool(self.si)
+
+    @property
+    def dates(self):
+        return self.working_data.keys()
+
+    def _process_date_price_list(self, dp_list):
+        """
+        Takes a list of dates and prices and fills in the missing dates and extrapolates the prices
+        @param dp_list: In this format [(date,price),(date,price))]
         @return:
         """
-        syt.log_critical("Set Info testing")
-
-        options = {}
-
-        options['1'] = "Create Set from DB", menu_create_set_db
-        options['2'] = "Create Set from List", menu_create_set_lst
-        options['3'] = "Test Base Info", menu_get_base_info
-        options['4'] = "Test Basic Calcs", menu_get_basic_calcs
-        options['5'] = "Test Inflation", menu_test_inflation
-        options['6'] = "Test SQL Data", menu_test_sql_data
-        options['7'] = "Test Historic", menu_test_historic
-        options['8'] = "Test all Output", menu_test_all_output
-        #options['S'] = "Test SQL Historic", menu_test_sql_historic
-        options['D'] = "Get Date Min", menu_test_date_range
-        options['C'] = "GET CSV DUMP", menu_text_csv_dump
-        options['9'] = "Quit", menu.quit
-
-        while True:
-            print("Current Set: {}".format(test_set.set_num))
-            result = menu.options_menu(options)
-            if result is 'kill':
-                exit()
+        dp_list.sort(key=lambda x: x[0])  # Sort the list by date
+        dp_list_to_add = []  # date, price combos that need to be added
+        DAY = (60 * 60 * 24)  # NUmber of seconds in a day
+        for idx, dp in enumerate(dp_list):
+            if idx == 0:
+                continue
+            days_between = abs(syt.get_days_between(dp_list[idx][0], dp_list[idx - 1][0]))
+            if days_between == 1:
+                continue
+            else:
+                increment = round(
+                    (syt.float_zero(dp_list[idx][1]) - syt.float_zero(dp_list[idx - 1][1])) / days_between, ndigits=2)
+                for n in range(1, days_between):
+                    # next_date = arrow.get(arrow.get(dp_list[idx-1][0]).replace(days=+n).timestamp).format("YYYY-MM-DD")
+                    dp_list_to_add.append([arrow.get(dp_list[idx - 1][0]).replace(days=+n).timestamp,
+                                           round((syt.float_zero(dp_list[idx - 1][1]) + (increment * n)), ndigits=2)])
+        dp_list.extend(dp_list_to_add)
+        return dp_list
 
 
-    def menu_create_set_db():
-        global test_set
-        set_num = syt.input_set_num()
-        test_set = SetInfo(set_num)
-
-    def menu_create_set_lst():
-        global test_set
-        set_num = syt.input_set_num()
-        set_info_list = info.get_set_info(set_num)
-        test_set = SetInfo(set_info_list)
-
-    def menu_get_base_info():
-        global test_set
-        while not bool(test_set):
-            menu_create_set_db()
-        print(test_set)
-
-    def menu_get_basic_calcs():
-        global test_set
-        while not bool(test_set):
-            menu_create_set_db()
-        print(test_set.test_basic_calcs())
-
-    def menu_test_inflation():
-        global test_set
-        while not bool(test_set):
-            menu_create_set_db()
-        print(test_set.test_inflation())
-
-    def menu_test_date_range():
-        global test_set
-        while not bool(test_set):
-            menu_create_set_db()
-        print(test_set.get_relative_end_date_range())
-
-    def menu_test_sql_data():
-        global test_set
-        while not bool(test_set):
-            menu_create_set_db()
-        print(test_set.test_sql_data())
-
-    def menu_test_historic():
-        pass
-
-        # print("Price History")
-        # syt.print4(price_history)
-        # print("Rating History")
-        # syt.print4(rating_history)
-
-    def menu_test_all_output():
-        global test_set
-        while not bool(test_set):
-            menu_create_set_db()
-        menu_get_base_info()
-        menu_get_basic_calcs()
-        menu_test_inflation()
-        menu_test_sql_data()
-        menu_test_historic()
-
-    def menu_text_csv_dump():
-        global test_set
-        while not bool(test_set):
-            menu_create_set_db()
-        print(test_set.set_dump())
-
-    # def menu_test_sql_historic():
-    #     global test_set
-    #     while not bool(test_set):
-    #         menu_create_set_db()
-    #     c_result = test_set.get_historic_price_trends()
-    #     syt.print4(c_result, 5)
-    #     c_result = test_set.get_historic_price_trends(
-    #         select_filter=["(historic_prices.min+historic_prices.max)/2", None, False])
-    #     syt.print4(c_result, 5)
-    #     c_result = test_set.get_historic_price_trends(select_filter=["(historic_prices.min+historic_prices.max)",
-    #                                                                  "(price_types.price_type='historic_used' OR price_types.price_type='historic_new')",
-    #                                                                  False])
-    #     syt.print4(c_result, 5)
-    #     c_result = test_set.get_historic_price_trends(select_filter=["SUM(historic_prices.min+historic_prices.max)",
-    #                                                                  "(price_types.price_type='historic_used' OR price_types.price_type='historic_new')",
-    #                                                                  True])
-    #     syt.print4(c_result, 5)
+    def set_inflation_year(self, year=None):
+        """
+        @param year:
+        @return:
+        """
+        self.inf_year = None
+        if isinstance(year, int):
+            if 1950 <= year <= arrow.get().year:
+                self.inf_year = year
 
 
-    if __name__ == "__main__":
-        main_menu()
+    def set_report_type(self, rtype=None):
+        """
+        @param rtype: Options:
+            standard - actual numbers (overrides all others)
+            relative - percent change from start date
+            relative_day - percent change from previous day (does not take into account start price)
+            delta - price change from start date
+            delta_day - price change *day over day*  (does not take into account start price)
+        """
+        if rtype in (self.STANDARD, self.RELATIVE, self.RELATIVE_DAY, self.DELTA, self.DELTA_DAY):
+            if rtype != self.type:
+                self.type = rtype
+
+
+    def set_base_price_date(self, price=None, date=None, region="us"):
+        """
+        @param price: Options:
+                standard - compare price against historic prices (influenced by base date)
+            These can only be used with relative and delta [type]
+                original - compare price against us original
+                original - compare price against uk original
+        @param date: Options:
+                a date to start on (in format YYYY-MM-DD)
+                start - list prices with start date as the focus
+                end - list prices with end date as the focus
+        @param region: Options:
+                us or uk
+        """
+        if date is None or date == "":
+            self.base_date = None
+            if price == "original":
+                if region == "uk":
+                    self.base_price = self.si.original_price_uk
+                else:
+                    self.base_price = self.si.original_price_us
+            else:
+                self.base_price = None
+        elif date == "start":
+            if region == "uk":
+                self.base_date = self.si.ts_date_released_uk
+            else:
+                self.base_date = self.si.ts_date_released_us
+
+            if self.base_date is None or self.base_date == "":
+                self.base_date = max(self.original_data.keys())
+            self.base_price = self._get_price_from_date(self.base_date)
+        elif date == "end":
+            if region == "uk":
+                self.base_date = self.si.ts_date_ended_uk
+            else:
+                self.base_date = self.si.ts_date_ended_us
+            if self.base_date is None or self.base_date == "":
+                self.base_date = None
+            else:
+                self.base_price = self._get_price_from_date(self.base_date)
+        else:
+            self.base_date = syt.get_timestamp(date)
+            self.base_price = self._get_price_from_date(self.base_date)
+
+            # if self.base_date is None:
+            # self.base_date = min(self.original_data.keys())
+            # if self.base_price is None:
+            #     self.base_price = max(self.original_data.keys())
+
+
+    def run(self, by_date=False, clear=True):
+        """
+
+        @param clear: Default is to re-run from syt. Can also set to False to rerun from existing
+        @return:
+        Default values
+        self.base_date = min(self.original_data, key=self.original_data.get)
+        self.base_price = self.original_data[self.base_date]
+        self.type = self.STANDARD
+        self.inf_year = None
+        """
+        if clear: self.working_data = copy.deepcopy(self.original_data)
+        if isinstance(self.inf_year, int):
+            self.working_data = syt.adj_dict_for_inf(self.working_data, self.inf_year)
+        self._process_change_list()
+        return self.get(by_date)
+
+
+    def run_all(self, types=None, by_date=False):
+        self.working_data = copy.deepcopy(self.original_data)
+        results_dict = collections.defaultdict()
+        in_progress = []
+        range_types = range(0, 5)
+        if isinstance(types, list):
+            range_types = types
+        for n in range_types:
+            self.set_report_type(n)
+            self.set_base_price_date(date="end")
+            self.set_base_price_date(price="original")
+            self._process_change_list()
+            in_progress.append(self.get(by_date))
+
+        for n in in_progress[0]:
+            next_row = []
+            for m in range(len(in_progress)):
+                next_row.append(in_progress[m][n])
+            if by_date is True:
+                results_dict[n] = next_row
+            else:
+                results_dict[syt.get_ts_day(n)] = next_row
+                # Note this returns a list not just a value, if you have one value (one price) you need to pull it out later
+
+        return results_dict
+
+
+    def _process_change_list(self):
+        """
+         STANDARD = 0
+        RELATIVE = 1
+        RELATIVE_DAY = 2
+        DELTA = 3
+        DELTA_DAY = 4
+        relative - percent change from start date
+        relative_day - percent change from previous day (does not take into account start price)
+        delta - price change from start date
+        delta_day - price change *day over day*  (does not take into account start price)
+        @return:
+        """
+        new_dict = collections.defaultdict()
+        if self.type == 0:
+            return self.working_data  # standard type no change
+        elif self.type == self.DELTA:
+            for db in self.working_data:
+                new_dict[db] = syt.float_zero(self.working_data[db]) - syt.float_zero(self.base_price)
+        elif self.type == self.RELATIVE:
+            for db in self.working_data:
+                try:
+                    new_dict[db] = (syt.float_zero(self.working_data[db]) / syt.float_zero(self.base_price)) - 1
+                except ZeroDivisionError:
+                    new_dict[db] = 0
+        elif self.type == self.DELTA_DAY:
+            for idx, db in enumerate(self.working_data.keys()):
+                if idx == 0:
+                    new_dict[db] = 0
+                    continue
+                else:
+                    previous_value = self.working_data.previous_key(db)
+                    new_dict[db] = syt.float_zero(self.working_data[db]) - syt.float_zero(
+                        self.working_data[previous_value])
+        elif self.type == self.RELATIVE_DAY:
+            for idx, db in enumerate(self.working_data.keys()):
+                if idx == 0:
+                    new_dict[db] = 0
+                    continue
+                else:
+                    previous_value = self.working_data.previous_key(db)
+                    try:
+                        new_dict[db] = round(
+                            (syt.float_zero(self.working_data[db]) / self.working_data[previous_value]) - 1, 6)
+                    except ZeroDivisionError:
+                        new_dict[db] = None
+        self.working_data = OrderedDictV2(sorted(new_dict.items(), key=lambda t: t[0]))
+        return self.working_data
+
+
+    def clear(self):
+        self.working_data = copy.deepcopy(self.original_data)
+        self.base_date = min(self.original_data.keys())
+        self.base_price = self.original_data[self.base_date]
+        self.type = self.STANDARD
+        self.inf_year = None
+
+    def get_def(self, type="dict"):
+        if type == "list":
+            return [self.si.set_num, self.si.theme, self.si.year_released, self.si.original_price_us,
+                    self.si.date_released_us, self.si.date_ended_us]
+        else:
+            return {"set_num": self.si.set_num, "theme": self.si.theme, "date_release": self.si.date_released_us,
+                    "original_price": self.si.original_price_us, "base_date": syt.get_date(self.base_date),
+                    "base_date_ts": self.base_date, "inflation_year": self.inf_year, "base_price": self.base_price,
+                    "report_type": self.type, "records": len(self.working_data)}
+
+
+    def get(self, by_date=False):
+        if by_date:
+            raw_dict = OrderedDictV2({self.si.get_relative_end_date(d): self.working_data[d] for d in
+                                      self.working_data})  # if d >= self.base_date})
+            # return_dict = OrderedDictV2()
+            # dates = sorted(raw_dict.keys())
+            # for i, dte in enumerate(dates):
+            # return_dict[i] = raw_dict[dte]
+            return raw_dict
+        else:
+            return self.working_data
+
+    def _get_price_from_date(self, date=None):
+        """
+
+        @param date: in format YYYY-MM-DD
+        @return:
+        """
+        if date is None: return None
+        compare_ts = date  # syt.get_timestamp(date)
+        closest_price_date = syt.get_closest_list(compare_ts, self.working_data.keys())
+        self.base_date = date
+        return self.working_data[closest_price_date]
+
+    def _build_historic_data_sql(self, select_=None, where_=None, group=True):
+        """Takes what we got in the starter filter (either a complete filter string or a dict of filter options
+            and returns a built out sql statement
+        """
+        h_select = "SELECT historic_prices.record_date"
+        if select_ is not None:
+            h_select += ", " + select_
+        h_joins = " FROM historic_prices JOIN sets ON (sets.id=historic_prices.set_id) JOIN price_types ON (price_types.id=historic_prices.price_type)"
+        h_filter = " WHERE sets.set_num='{}'".format(self.si.set_num)
+        if where_ is not None:
+            h_filter += " and " + where_
+        if group:
+            h_filter += " GROUP BY historic_prices.record_date"
+        h_end = ";"
+        h_sql = h_select + h_joins + h_filter + h_end
+        return h_sql
+
+    def sql(self, sql_statement):
+        """Not safe to have publicly exposed, but very handy for my own personal project"""
+        return db.run_sql(sql_statement)
+
+    def eval_report(self):
+        """
+        Returns two lists that can be turned into csv files
+
+        Set List
+        Set_num, theme, year_released, original_price, start_date, end_date
+
+        Price List
+        set_num, date(price), date(price), date(price), date(price)
+        @return:
+        """
+        set_prices = []
+        # set_defs = [["SET_NUM", "THEME", "YEAR_RELEASED", "ORIGINAL_PRICE", "DATE_START", "DATE_END"]]
+        set_defs = self.get_def(type="list")
+        self.clear()
+        set_prices = self.run_all(types=[1], by_date=True)  #By date will start with the date ended
+
+        return set_prices, set_defs
+
+
+
+
+    #
+    # def get_historic_price_trends(self, select_filter=None, type="standard", price="standard", date=None,
+    # inflation=None):
+    # """
+    #     @param select_filter: List:
+    #                         [select statement, where statement, group?] See the end of this doc for examples
+    #
+    #     @param inflation: Options:
+    #                         a year to get inflation based on
+    #                         None - no changes
+    #
+    #     All this is done in the lists and not with sql
+    #     @return:
+    #          {data:{year:price,year:price},settings:{price_type:"",type:"",price:"",date:"",inflation:""}}
+    #     """
+    #     if isinstance(select_filter, list) and len(select_filter) >= 2:
+    #         sql_query = self._build_historic_data_sql(*select_filter)
+    #     else:
+    #         return self.get_price_history()
+    #
+    #     working_data = self.sql(sql_query)
+    #
+    #     base_date = None
+    #     base_price = None
+    #     if type != "standard":
+    #         if date is not None:
+    #             if date is "start":
+    #                 base_date = self.date_released_us
+    #             elif date is "end":
+    #                 base_date = self.date_ended_us
+    #             else:
+    #                 base_date = arrow.get(date)
+    #     if price != "standard":
+    #         if price == "original_us":
+    #             base_price = self.original_price_us
+    #         elif price == "original_uk":
+    #             base_price = self.original_price_uk
+    #
+    #     return working_data
+
+
+
+
+    # Historic SQL Exmples
+    # BASE
+    # SELECT sets.set_num, historic_prices.record_date, price_types.price_type,
+    # historic_prices.lots, historic_prices.qty, historic_prices.min, historic_prices.max,
+    # historic_prices.avg, historic_prices.qty_avg, historic_prices.piece_avg
+    # FROM historic_prices
+    # JOIN sets ON (sets.id=historic_prices.set_id)
+    #   JOIN price_types ON (price_types.id=historic_prices.price_type)
+    # WHERE sets.set_num='10501-1';
+    #
+    # AVERAGE 2+ fields
+    # SELECT sets.set_num, historic_prices.record_date, price_types.price_type, (historic_prices.min+historic_prices.max)/2 # The 2 needs to be flexible
+    # FROM historic_prices
+    #   JOIN sets ON (sets.id=historic_prices.set_id)
+    #   JOIN price_types ON (price_types.id=historic_prices.price_type)
+    # WHERE sets.set_num='10501-1';
+    #
+    # SUM
+    # SELECT sets.set_num, historic_prices.record_date, price_types.price_type, (historic_prices.min+historic_prices.max) # Same thing, no division
+    # FROM historic_prices
+    #   JOIN sets ON (sets.id=historic_prices.set_id)
+    #   JOIN price_types ON (price_types.id=historic_prices.price_type)
+    # WHERE sets.set_num='10501-1';
+    #
+    # COMBINE PRICE TYPES - AVERAGE THEM
+    # SELECT sets.set_num, historic_prices.record_date, price_types.price_type, AVG(historic_prices.min+historic_prices.max)
+    # FROM historic_prices
+    #   JOIN sets ON (sets.id=historic_prices.set_id)
+    #   JOIN price_types ON (price_types.id=historic_prices.price_type)
+    # WHERE sets.set_num='10501-1' and (price_types.price_type='historic_used' OR price_types.price_type='historic_new')
+    # GROUP BY historic_prices.record_date;
+    #
+    # COMBINE PRICE TYPES - SUM THEM (ALSO CAN DO MIN AND MAX)
+    # SELECT sets.set_num, historic_prices.record_date, price_types.price_type, SUM(historic_prices.min+historic_prices.max)
+    # FROM historic_prices
+    #   JOIN sets ON (sets.id=historic_prices.set_id)
+    #   JOIN price_types ON (price_types.id=historic_prices.price_type)
+    # WHERE sets.set_num='10501-1' and (price_types.price_type='historic_used' OR price_types.price_type='historic_new')
+    # GROUP BY historic_prices.record_date;
+
+
 
 

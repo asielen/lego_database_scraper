@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component name="dataSourceStorage">
-  <data-source source="LOCAL" name="lego_eval" uuid="9072e813-1e74-4929-9356-72da6703e465">
+  <data-source name="lego_eval" uuid="29a30c00-7e0e-4aa7-b81b-f991494e30f6">
     <database-info product="SQLite" version="3.7.6.3" jdbc-version="2.1" driver-name="SQLiteJDBC" driver-version="native"/>
     <case-sensitivity plain-identifiers="mixed" quoted-identifiers="mixed"/>
     <schema name="" catalog=""/>
@@ -170,7 +170,7 @@
       <index name="set_num_idx" unique="true" columns="set_num"/>
     </table>
   </data-source>
-  <data-source source="LOCAL" name="system" uuid="5d122e1b-9c67-4d2b-a549-775d17507fcd">
+  <data-source name="system" uuid="52bec67d-1f4e-4244-bd05-4c88e2b11869">
     <database-info product="SQLite" version="3.7.6.3" jdbc-version="2.1" driver-name="SQLiteJDBC" driver-version="native"/>
     <case-sensitivity plain-identifiers="mixed" quoted-identifiers="mixed"/>
     <schema name="" catalog=""/>

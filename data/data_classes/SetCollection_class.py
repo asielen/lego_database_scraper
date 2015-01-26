@@ -6,8 +6,7 @@ from profilehooks import profile
 
 # Internal
 import database as db
-from data.data_classes.SetInfo_class import SetInfo
-from data.data_classes.HistoricPriceAnalyser_class import HistoricPriceAnalyser
+from data.data_classes.SetInfo_HPA_Class import HistoricPriceAnalyser, SetInfo
 import navigation as menu
 import system as syt
 
