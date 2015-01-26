@@ -271,7 +271,8 @@ class SetCollection(object):
                 date_range[0] = tdate_range[0]
             if tdate_range[1] is not None and tdate_range[1] > date_range[1]:
                 date_range[1] = tdate_range[1]
-            historic_price_sets[snum], historic_set_defs[snum] = tHPA.eval_report()
+            historic_price_sets[snum], historic_set_defs[snum] = tHPA.eval_re
+            port()
 
         date_list.sort()
         price_csv = "SET_NUM"
@@ -366,26 +367,27 @@ if __name__ == "__main__":
 
     def menu_createSC():
         global test_SC
-        filter_text = "(year_released BETWEEN 2008 AND 2014)"
+        filter_text = "(year_released BETWEEN 2008 AND 2015)"
         test_SC = SetCollection(filter_text=filter_text)
 
     def menu_test_historic():
         global test_SC
-
+        filter_text = "(year_released BETWEEN 1980 AND 2015) AND ((piece_count >=25) OR (original_price_us >=4)) AND year_released IS NOT NULL AND set_name IS NOT NULL"
+        test_SC = SetCollection(filter_text=filter_text)
         historic_data_sets = test_SC.historic_price_report()
-        # syt.print4(historic_data_sets.items(), 20)
+        syt.print4(historic_data_sets.items(), 20)
 
     def menu_get_historic_prices():
         global test_SC
-        filter_text = "(year_released BETWEEN 2008 AND 2014)"
+        filter_text = "(year_released BETWEEN 2008 AND 2015)"
         test_SC = SetCollection(filter_text=filter_text)
 
     def menu_data_dump():
         global test_SC
-        filter_text = "(year_released BETWEEN 1980 AND 2014) AND ((piece_count >=25) OR (original_price_us >=4)) AND year_released IS NOT NULL AND set_name IS NOT NULL"
+        filter_text = "(year_released BETWEEN 1980 AND 2015) AND ((piece_count >=25) OR (original_price_us >=4)) AND year_released IS NOT NULL AND set_name IS NOT NULL"
         test_SC = SetCollection(filter_text=filter_text)
         csv_dump_text = test_SC.csv_dump()
-        with open('{}-set-dump.csv'.format(syt.get_timestamp()), "w") as f:
+        with open('{}-set-collection-dump.csv'.format(syt.get_timestamp()), "w") as f:
             f.write(csv_dump_text)
 
     main_menu()

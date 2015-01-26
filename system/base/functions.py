@@ -13,6 +13,7 @@ import arrow
 
 
 
+
 # THIS FILE SHOULD HAVE NO INTERNAL DEPENDENCIES
 
 
@@ -26,10 +27,13 @@ def runningWindows():
 
 def make_project_path(string=""):
     """
+     Windows uses \, mac uses /
     @return: the path to the main project folder with an optional string
     """
     path = os.path.dirname(os.path.realpath(__file__)).split("lego_database_scraper")[0]
     if string != "":
+        string = string.replace("/", os.sep)  # To fix mac > pc
+        string = string.replace("\\", os.sep)  # To fix pc > mac
         return os.path.abspath(path+'lego_database_scraper'+os.sep+string)
     else:
         return os.path.abspath(path+"lego_database_scraper"+os.sep)
