@@ -174,6 +174,7 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
     syt.log_info("$$$ Adding sets to the database")
     sets_to_scrape = []
     sets_to_insert = []
+    sets_missed = []
     set_id_list = list(set_id_list)
     set_list_len = len(set_id_list)
     pool = _pool(syt.RUNNINGPOOL)
@@ -188,9 +189,16 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
 
         sets_to_scrape.append(row[id_col])
 
-        if idx > 0 and idx % (syt.RUNNINGPOOL * 3) == 0:
+        if idx > 0 and idx % (syt.RUNNINGPOOL * 2) == 0:
             syt.log_info("@@@ Running Pool {}".format(idx))
-            sets_to_insert.extend(pool.map(_parse_get_basestats, sets_to_scrape))
+            temp_list = []
+            try:
+                temp_list = pool.map(_parse_get_basestats, sets_to_scrape)
+                sets_to_insert.extend(temp_list)
+            except:
+                #Skip the add and make a note
+                syt.log_error("Missed {} sets".format(len(sets_to_scrape)))
+                sets_missed.extend(sets_to_scrape)
             timer.log_time(len(sets_to_scrape), set_list_len - idx)
             sets_to_scrape = []
 
@@ -198,7 +206,14 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
             add_sets_data_to_database(sets_to_insert)
             sets_to_insert = []
 
-    sets_to_insert.extend(pool.map(_parse_get_basestats, sets_to_scrape))
+    temp_list = []
+    try:
+        temp_list = pool.map(_parse_get_basestats, sets_to_scrape)
+        sets_to_insert.extend(temp_list)
+    except:
+        #Skip the add and make a note
+        syt.log_error("Missed {} sets".format(len(sets_to_scrape)))
+        sets_missed.extend(sets_to_scrape)
     timer.log_time(len(sets_to_scrape), 0)
     timer.end()
 
@@ -207,6 +222,13 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
 
     add_sets_data_to_database(sets_to_insert)
     syt.log_info("%%% Sets added to database")
+
+    if len(sets_missed) > 0:
+        # Missed Sets
+        syt.log_critical("MISSED {} SETS".format(len(sets_missed)))
+        run_again = input("Run Again?")
+        if run_again == "y":
+            add_sets_to_database(sets_missed, id_col, update)
 
 
 def add_sets_data_to_database(sets_to_insert):
