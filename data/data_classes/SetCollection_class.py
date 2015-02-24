@@ -1,8 +1,6 @@
 # External
 import collections
 
-from profilehooks import profile
-
 
 # Internal
 import database as db
@@ -202,7 +200,7 @@ class SetCollection(object):
     ##
     #CSV DUMP
     ##
-    @profile
+    # @profile
     def csv_dump(self):
         csv_dump_string = ""
         csv_dump_string += "id, set_num, set_name, set_theme, piece_count, figures, set_weight, year_released, date_released_us, date_ended_us, " \

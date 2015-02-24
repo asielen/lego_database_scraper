@@ -5,7 +5,7 @@ import sqlite3 as lite
 import pprint as pp
 
 import arrow
-from profilehooks import profile
+
 
 
 
@@ -93,7 +93,7 @@ def check_pieces():
 # #######
 
 
-@profile
+# @profile
 def open_csv_file():
     set_id_dict = get_all_set_ids()
 
