@@ -14,6 +14,7 @@ import arrow
 
 
 
+
 # THIS FILE SHOULD HAVE NO INTERNAL DEPENDENCIES
 
 
@@ -28,7 +29,7 @@ def runningWindows():
 def make_project_path(string=""):
     """
      Windows uses \, mac uses /
-    @return: the path to the main project folder with an optional string
+    @return: the path to the price_capture_menu project folder with an optional string
     """
     path = os.path.dirname(os.path.realpath(__file__)).split("lego_database_scraper")[0]
     if string != "":
@@ -111,6 +112,9 @@ def read_csv_from_url(url, params=None, delimiter='\t'):
     """
     return read_csv_in_memory(html.unescape(requests.get(url, params=params, verify=False).text), delimiter)
 
+
+def csv_replace_comma(text):
+    return str(text).replace(',', "/")
 
 def read_json_from_url(url, params=None):
     return json.loads(requests.get(url, params=params, verify=False).text)

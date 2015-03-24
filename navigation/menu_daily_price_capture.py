@@ -4,7 +4,8 @@ from data.update_ternary import daily_data
 import system as syt
 if __name__ == "__main__": syt.setup_logger()
 
-def main():
+
+def price_capture_menu():
     """
     # Todo: make sure this runs the right update function - update inventories between the time frame
     @return:
@@ -18,7 +19,7 @@ def main():
     if start_year is "": start_year = database_year_range[0]
     if end_year is "": end_year = database_year_range[1]
     proceed = input(
-        "Would you like to update prices for all sets between {0} and {1}? Y/N?".format(start_year, end_year))
+        "Would you like to update get_prices for all sets between {0} and {1}? Y/N?".format(start_year, end_year))
     if proceed == "y" or proceed == "Y":
         set_list = database_info.get_sets_between_years(start_year, end_year)
 
@@ -26,4 +27,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    price_capture_menu()

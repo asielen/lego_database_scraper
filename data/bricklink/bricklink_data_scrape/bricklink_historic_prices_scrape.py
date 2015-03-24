@@ -63,7 +63,7 @@ def get_pieceout_used(set_num_primary, set_num_secondary=1):
     return {'pieced_used': dic}
 
 
-# Get current market prices
+# Get current market get_prices
 def get_set_prices(set_num_primary, set_num_secondary=1):
     """
         From set number, open the bricklink page and split it into current and _parse_historic_prices

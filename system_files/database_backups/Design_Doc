@@ -36,8 +36,8 @@ Primitives:
         % set_name
         % theme
         % subtheme
-        # piece_count
-        # figures
+        # get_piece_count
+        # get_figures
         $ set_weight
         # year_released
         # date_released_us
@@ -130,7 +130,7 @@ Basic: {once the database is initlaized, these are used to update one at a time}
 
 
 
-Daily: {Daily raitings and prices}
+Daily: {Daily raitings and get_prices}
     * get_historic_prices(set_num)
         @ Scrape from Bricklink
     * get_daily_rating(set_num)

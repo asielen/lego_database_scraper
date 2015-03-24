@@ -164,7 +164,7 @@ def _parse_avaiable_dates(soup):
     if parent_tags1.contents == ['\n']:
         return {}
     children_tagsA = parent_tags1.findAll("dt")  #locations
-    children_tagsB = parent_tags1.findAll("dd")  #prices
+    children_tagsB = parent_tags1.findAll("dd")  # get_prices
     for i in range(0, len(children_tagsA)):
         if len(children_tagsB[i].contents):
             dates_dic[children_tagsA[i].get_text()] = _parse_available_dates_string(children_tagsB[i].contents[0])
@@ -244,10 +244,10 @@ def scrub_data(dic):
             'Weight': '0.4Kg  (0.88 lb)',
             'Year released': '2012'}
         And returns it in this format:
-        {   'age_range': (5,12),                            #tuple of ints  Age range -> age_range
+        {   'get_age_range': (5,12),                            #tuple of ints  Age range -> get_age_range
             'availability': 'Retail',                       #text           Availability -> availability
             'lego_item_num': 'NA: 4648745',                 #text           LEGO item numbers -> lego_item_num
-            'finifigs': 3,                                  #int            Minifigures -> figures
+            'finifigs': 3,                                  #int            Minifigures -> get_figures
             'dimensions': (13.9,7.5,2.3),                   #tuple of float Packaging Dimensions -> dimensions  (cm)
             'volume' : 239.775,                             #float            -> volume (cm^3)
             'pieces': 199,                                  #int            Pieces -> pieces
@@ -268,13 +268,13 @@ def scrub_data(dic):
         scrubbed_dic['set_num'] = dic['Set number']
         scrubbed_dic['set_name'] = dic['Name']
     if 'Age range' in dic:
-        scrubbed_dic['age_range'] = bs_scrub_age_range(dic['Age range'])
+        scrubbed_dic['get_age_range'] = bs_scrub_age_range(dic['Age range'])
     if 'Availability' in dic:
         scrubbed_dic['availability'] = dic['Availability']
     if 'LEGO item numbers' in dic:
         scrubbed_dic['lego_item_num'] = dic['LEGO item numbers']
     if 'Minifigs' in dic:
-        scrubbed_dic['figures'] = syt.scrub_text2int(dic['Minifigs'])
+        scrubbed_dic['get_figures'] = syt.scrub_text2int(dic['Minifigs'])
     if 'Dimensions' in dic:
         scrubbed_dic['dimensions'], scrubbed_dic['volume'] = bs_scrub_dimensions(dic['Dimensions'])
     if 'Pieces' in dic:
@@ -331,10 +331,10 @@ def scrub_daily_data(dic):
             'Weight': '0.4Kg  (0.88 lb)',
             'Year released': '2012'}
         And returns it in this format:
-        {   'age_range': (5,12),                            #tuple of ints  Age range -> age_range
+        {   'get_age_range': (5,12),                            #tuple of ints  Age range -> get_age_range
             'availability': 'Retail',                       #text           Availability -> availability
             'lego_item_num': 'NA: 4648745',                 #text           LEGO item numbers -> lego_item_num
-            'finifigs': 3,                                  #int            Minifigures -> figures
+            'finifigs': 3,                                  #int            Minifigures -> get_figures
             'dimensions': (13.9,7.5,2.3),                   #tuple of float Packaging Dimensions -> dimensions  (cm)
             'volume' : 239.775,                             #float            -> volume (cm^3)
             'pieces': 199,                                  #int            Pieces -> pieces

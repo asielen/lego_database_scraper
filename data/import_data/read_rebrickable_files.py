@@ -9,6 +9,7 @@ import arrow
 
 
 
+
 # Internal
 import system as syt
 if __name__ == "__main__": syt.setup_logger()
@@ -152,7 +153,7 @@ def get_rows(row, set_id_dict):
 
 def add_daily_prices_to_database(prices):
     """
-    (set_id, record_date, price_types[price], prices[price]['avg'], prices[price]['max'], prices[price]['min'], prices[price]['qty_avg'], prices[price]['piece_avg'])
+    (set_id, record_date, price_types[price], get_prices[price]['avg'], get_prices[price]['max'], get_prices[price]['min'], get_prices[price]['qty_avg'], get_prices[price]['piece_avg'])
     @param set_id:
     @param record_date:
     @param prices:

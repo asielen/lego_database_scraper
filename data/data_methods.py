@@ -278,18 +278,18 @@ def get_basestats(o_set, type=1):
         scrubbed_dic['subtheme'] = ""
 
     if 'pieces' in brickset_stats:
-        scrubbed_dic['piece_count'] = brickset_stats['pieces']
+        scrubbed_dic['get_piece_count'] = brickset_stats['pieces']
     elif 'pieces' in bricklink_stats:
-        scrubbed_dic['piece_count'] = bricklink_stats['pieces']
+        scrubbed_dic['get_piece_count'] = bricklink_stats['pieces']
     else:
-        scrubbed_dic['piece_count'] = None
+        scrubbed_dic['get_piece_count'] = None
 
-    if 'figures' in brickset_stats:
-        scrubbed_dic['figures'] = brickset_stats['figures']
-    elif 'figures' in bricklink_stats:
-        scrubbed_dic['figures'] = bricklink_stats['figures']
+    if 'get_figures' in brickset_stats:
+        scrubbed_dic['get_figures'] = brickset_stats['get_figures']
+    elif 'get_figures' in bricklink_stats:
+        scrubbed_dic['get_figures'] = bricklink_stats['get_figures']
     else:
-        scrubbed_dic['figures'] = None
+        scrubbed_dic['get_figures'] = None
 
     if "weight" in bricklink_stats:
         scrubbed_dic['set_weight'] = bricklink_stats['weight']
@@ -327,8 +327,8 @@ def get_basestats(o_set, type=1):
     else:
         scrubbed_dic['original_price_us'], scrubbed_dic['original_price_uk'] = None, None
 
-    if 'age_range' in brickset_stats:
-        scrubbed_dic['age_low'], scrubbed_dic['age_high'] = brickset_stats['age_range']
+    if 'get_age_range' in brickset_stats:
+        scrubbed_dic['age_low'], scrubbed_dic['age_high'] = brickset_stats['get_age_range']
     else:
         scrubbed_dic['age_low'], scrubbed_dic['age_high'] = None, None
 
@@ -358,8 +358,8 @@ def get_basestats(o_set, type=1):
                 scrubbed_dic['set_name'],
                 scrubbed_dic['theme'],
                 scrubbed_dic['subtheme'],
-                scrubbed_dic['piece_count'],
-                scrubbed_dic['figures'],
+                scrubbed_dic['get_piece_count'],
+                scrubbed_dic['get_figures'],
                 scrubbed_dic['set_weight'],
                 scrubbed_dic['year_released'],
                 scrubbed_dic['date_released_us'],

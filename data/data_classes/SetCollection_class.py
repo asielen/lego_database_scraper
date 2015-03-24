@@ -1,24 +1,69 @@
 # External
 import collections
 
-
 # Internal
 import database as db
 from data.data_classes.SetInfo_HPA_Class import HistoricPriceAnalyser, SetInfo
-import navigation as menu
 import system as syt
-
+# Todo:
+# """
+# TODO All of this
+# Need to be able to build reports by
+# Filters
+# date range min / max -  SQL where
+#     piece count min / max - SQL where
+#     original price min/max - SQL where
+#     year released in date range - True False
+#     set_name = True
+#     theme
+#     set size buckets
+#     price buckets
+#
+# Broken out by: Buckets - these are not filters but rather aggregatetors
+#     Theme buckets
+#     Set size buckets (0-20, 21-40, 41-60, 100-150, 151 and up) ^ maybe just use the above filter and not do it auto
+#     Price buckets
+#
+# Price Type
+#     Historic New
+#         qty_avg
+#         piece_avg
+#     Historic Used
+#     Current New
+#     Current Used
+#
+# Report Type
+#     Standard (no price adj)
+#     relative to
+#         start price of eval - relative to the first historic price in the database
+#         original price - relative to the retail price
+#         end price - relative to the price on the day it was discontinued
+#
+#     relative day
+#     delta
+#     delta day
+#
+# Other filter
+#     x number of historic get_prices - exclude sets that don't have many data points
+#
+#
+#
+# @return:
+# """
 
 class SetCollection(object):
     """
         This stores a list of sets, but it also stores the filter list to get that list of text
         This makes it easier to do mass things to it because we can then do it just in sql instead
         of loops
+
+        There is the base filter, and then there is the report creation.
     """
+
 
     def __init__(self, set_list=None, filter_text=None):
         """
-        @param set_list: List of set_nums
+        @param set_list: List of get_set_nums
         @param filter_text: Filter Text e.g. "year_released = 2014, theme = city
         @return:
         """
@@ -32,6 +77,7 @@ class SetCollection(object):
         # set_data = _set_info_creator(self._run_query(filter_text=set_filters))
         self.set_data_lookups = {"calc_piece_count": None, "calc_unique_piece_count": None, "calc_weight": None,
                                  "calc_inf_price": None}
+        self.report_settings = {}
 
         self.set_info_list = None  # set_data  # The actual SetInfo class objects
         self.filter_text = set_filters  # The filter used to reconstruct the collection
@@ -52,10 +98,14 @@ class SetCollection(object):
         else:
             return base_text + " WHERE " + self.filter_text + " " + filter_text + ";"
 
+    def __str__(self):
+        return self.filter_text
+
     def sql(self, base_text=None, filter_text=None):
         """Not safe to have publicly exposed, but very handy for my own personal project"""
         query_text = self._query_builder(base_text=base_text, filter_text=filter_text)
         return db.run_sql(query_text)
+
 
     # #
     # Basic Info
@@ -69,7 +119,7 @@ class SetCollection(object):
         """number of sets in the collection"""
         return len(self.set_info_list)
 
-    def date_range(self):
+    def get_date_range(self):
         """The date range of the collection """
         # Todo: Add month and region
         max_date = None
@@ -78,15 +128,15 @@ class SetCollection(object):
         min_date = self._run_query(base_text="SELECT MIN(year_released) FROM sets", one=True)
         return min_date, max_date
 
-    def themes(self, subtheme=False, coverage=False):
-        """List of all the themes in the collection, when coverage is true, it returns the num of sets that have this field"""
+    def get_themes(self, subtheme=False, coverage=False):
+        """List of all the get_themes in the collection, when coverage is true, it returns the num of sets that have this field"""
         # Todo: add subtheme
         theme_list = self._run_query(base_text="SELECT DISTINCT theme FROM sets")
         if coverage:
             return theme_list, len(theme_list)
         return theme_list
 
-    def set_nums(self):
+    def get_set_nums(self):
         """List of all set nums"""
         nums_list = self._run_query(base_text="SELECT set_num FROM sets", filter_text=None)
         nums_list = [n[0] for n in nums_list]
@@ -94,6 +144,7 @@ class SetCollection(object):
 
     def _get_num_value(self, field="", type=None):
         """
+
         Used for any of the fields on a set record that could contain a value that is worth summing counting etc
         """
         result = None
@@ -107,7 +158,7 @@ class SetCollection(object):
             result = syt.list_to_dict(result_list)
         return result
 
-    def unique_piece_count(self):
+    def get_unique_piece_count(self):
         if self.set_data_lookups["calc_unique_piece_count"] is not None:
             return self.set_data_lookups["calc_unique_piece_count"]
         query = ("SELECT set_num, unique_pieces FROM sets AS S JOIN (SELECT bl_inventories.set_id, "
@@ -117,7 +168,7 @@ class SetCollection(object):
         self.set_data_lookups["calc_unique_piece_count"] = self._run_query(query[0], query[1])
         return self.set_data_lookups["calc_unique_piece_count"]
 
-    def piece_count(self, type=None, calc=False):
+    def get_piece_count(self, type=None, calc=False):
         if calc:
             query = None
             if self.set_data_lookups["calc_piece_count"] is not None and type is None:
@@ -138,18 +189,18 @@ class SetCollection(object):
                 self.set_data_lookups["calc_piece_count"] = self._run_query(query[0], query[1])
             return self._run_query(query[0], query[1])
         else:
-            return self._get_num_value(field="piece_count", type=type)
+            return self._get_num_value(field="get_piece_count", type=type)
 
-    def prices(self, type=None, year=None):
+    def get_prices(self, type=None, year=None):
         """
         @param type; either None, average, or total
-        @param year; If this is a number it will adjust all the prices for that years inflation
+        @param year; If this is a number it will adjust all the get_prices for that years inflation
         @return:
         """
         # Todo, year
         return self._get_num_value(field="original_price_us", type=type)
 
-    def weights(self, type=None, calc=False):
+    def get_weights(self, type=None, calc=False):
         if calc:
             if self.set_data_lookups["calc_weight"] is not None:
                 return self.set_data_lookups["calc_weight"]
@@ -170,10 +221,10 @@ class SetCollection(object):
         else:
             return self._get_num_value(field="set_weight", type=type)
 
-    def figures(self, type=None):
-        return self._get_num_value(field="figures", type=type)
+    def get_figures(self, type=None):
+        return self._get_num_value(field="get_figures", type=type)
 
-    def age_range(self, type=None):
+    def get_age_range(self, type=None):
         age_result = {"low": None, "high": None}
         if type is "dist":
             age_result["low"] = self._run_query(base_text="SELECT age_low, COUNT(age_low) FROM sets",
@@ -187,29 +238,26 @@ class SetCollection(object):
 
     # #
     # Calculated Data
-    ##
-    def ppp(self, type=None):
+    # #
+    def get_ppp(self, type=None):
         pass
 
-    def ppg(self, type=None):
+    def get_ppg(self, type=None):
         pass
 
-    def unique_piece_count(self, type=None):
-        pass
-
-    ##
-    #CSV DUMP
-    ##
+    # #
+    # CSV DUMP
+    # #
     # @profile
     def csv_dump(self):
         csv_dump_string = ""
-        csv_dump_string += "id, set_num, set_name, set_theme, piece_count, figures, set_weight, year_released, date_released_us, date_ended_us, " \
+        csv_dump_string += "id, set_num, set_name, set_theme, get_piece_count, get_figures, set_weight, year_released, date_released_us, date_ended_us, " \
                            "date_released_uk, date_ended_uk, original_price_us, original_price_uk, age_low, age_high, box_size, box_volume, " \
-                           "last_updated, last_inv_updated_bl, last_inv_updated_re, last_daily_update, BASE CALC, ppp, ppp_uk, ppg, ppg_uk, " \
+                           "last_updated, last_inv_updated_bl, last_inv_updated_re, last_daily_update, BASE CALC, get_ppp, ppp_uk, get_ppg, ppg_uk, " \
                            "avg_piece_weight,INFLATION, price_inf, ppp_inf, ppg_inf, CALC PIECE/WEIGHT, calc_piece_count, calc_unique_piece_count, " \
                            "calc_unique_to_total_piece_count, calc_weight, calc_avg_piece_weight, CALC INFLATION, calc_ppp_inf, calc_ppg_inf\n"
         timer = syt.process_timer("BUILDING CSV")
-        sets = self.set_nums()
+        sets = self.get_set_nums()
         total_sets = len(sets)
         timer.log_time(1, total_sets)
         current_set_count = 0
@@ -223,9 +271,110 @@ class SetCollection(object):
         timer.end()
         return csv_dump_string
 
-    ##
+    # #
     # Advanced Data
-    ##
+    # #
+    R_STANDARD = 0
+    R_RELATIVE_DAY = 1
+    R_DELTA = 2
+    R_DELTA_DAY = 3
+
+    R_NOT_RELATIVE = 0
+    R_RETAIL_PRICE = 1
+    R_END_PRICE = 2
+
+    def choose_report_type(self):
+        """
+        Menu to choose a report type
+        @return:
+        """
+        report_type = []
+        return report_type
+
+    def build_report(self, sfilter=None, report_type=(R_STANDARD, R_NOT_RELATIVE)):
+        """
+            Take the set collection and layer a report on top of it
+        @param sfilter:
+        @param report_type:
+        @return:
+        """
+        price_sets = collections.defaultdict()
+        set_defs = collections.defaultdict()
+
+        date_list = []
+        date_range = [0, 0]
+
+        for snum in self.get_set_nums():
+            print("Getting snum {}".format(snum))
+            tHPA = HistoricPriceAnalyser(si=SetInfo(snum), select_filter=sfilter)
+
+            # Calculate the relative date range (+- the date the report is relative to)
+            if report_type[1] == self.R_RETAIL_PRICE:
+                tdate_range = tHPA.si.get_relative_start_date_range()
+            elif report_type[1] == self.R_END_PRICE:
+                tdate_range = tHPA.si.get_relative_end_date_range()
+            else:
+                tdate_range = tHPA.si.get_abs_date_range()
+
+            #   If there is no starting date, there is nothing to compare to, don't really need to check end date also
+            if tdate_range[0] is None:
+                continue
+            if tdate_range[0] is not None and tdate_range[0] < date_range[0]:
+                date_range[0] = tdate_range[0]
+            if tdate_range[1] is not None and tdate_range[1] > date_range[1]:
+                date_range[1] = tdate_range[1]
+            price_sets[snum], set_defs[snum] = tHPA.eval_report()
+
+        date_list.sort()
+        price_csv = "SET_NUM"
+        print("Building Price CSV")
+        for dte in range(date_range[0], date_range[1]):
+            price_csv += ",{}".format(dte)  # syt.get_date(dte))
+        price_csv += "\n"
+
+        for st in price_sets:
+            if len(price_sets[st]) < 2:
+                continue
+            price_csv += "{}".format(st)
+            for dte in range(date_range[0], date_range[1]):
+                if dte in price_sets[st]:
+                    if isinstance(price_sets[st][dte], list):
+                        price_csv += ",{}".format(price_sets[st][dte][0])
+                    else:
+                        price_csv += ",{}".format(price_sets[st][dte])
+                else:
+                    price_csv += ", "
+            price_csv += "\n"
+        print("Building Set DEF CSV")
+
+        set_csv = "SET_NUM, THEME, YEAR_RELEASED, ORIGINAL_PRICE, START_DATE, END_DATE\n"
+        for st in set_defs:
+            set_csv += syt.list2string(set_defs[st])
+            set_csv += "\n"
+
+        with open('{}-price-data.csv'.format(syt.get_timestamp()), "w") as f:
+            f.write(price_csv)
+
+        with open('{}-price-set-data.csv'.format(syt.get_timestamp()), "w") as f:
+            f.write(set_csv)
+
+            # Report Type
+
+    # Standard (no price adj)
+    #     relative to
+    #         start price of eval - relative to the first historic price in the database
+    #         original price - relative to the retail price
+    #         end price - relative to the price on the day it was discontinued
+    #
+    #     relative day
+    #     delta
+    #     delta day
+
+
+
+    def run_report(self):
+        pass
+
     def historic_price_trends(self, type="standard", price="standard", date="", inflation=None):
         """
 
@@ -234,7 +383,7 @@ class SetCollection(object):
         sfilter = ["AVG(historic_prices.qty_avg)",
                    "(price_types.price_type='historic_new' OR price_types.price_type='historic_used')",
                    True]  #Third option (Group) needs to be true if getting multiple values
-        for snum in self.set_nums():
+        for snum in self.get_set_nums():
             print("Getting snum {}".format(snum))
             tHPA = HistoricPriceAnalyser(si=SetInfo(snum), select_filter=sfilter)
             tHPA.set_base_price_date(date="end")
@@ -246,10 +395,10 @@ class SetCollection(object):
 
     def historic_price_report(self):
         """
-        Get all prices for sets between (filter text "(year_released BETWEEN 2008 AND 2014)") Relative to their end date
+        Get all get_prices for sets between (filter text "(year_released BETWEEN 2008 AND 2014)") Relative to their end date
             Day 0 is the end date, days before are negative, days after are positive
-            Values for prices are in percent change from original
-            Prices are the average of new and used historic qty avg prices
+            Values for get_prices are in percent change from original
+            Prices are the average of new and used historic qty avg get_prices
         """
         historic_price_sets = collections.defaultdict()
         historic_set_defs = collections.defaultdict()
@@ -258,7 +407,7 @@ class SetCollection(object):
                    True]  #Third option (Group) needs to be true if getting multiple values
         date_list = []
         date_range = [0, 0]
-        for snum in self.set_nums():
+        for snum in self.get_set_nums():
             print("Getting snum {}".format(snum))
             tHPA = HistoricPriceAnalyser(si=SetInfo(snum), select_filter=sfilter)
             tdate_range = tHPA.si.get_relative_end_date_range()
@@ -269,8 +418,7 @@ class SetCollection(object):
                 date_range[0] = tdate_range[0]
             if tdate_range[1] is not None and tdate_range[1] > date_range[1]:
                 date_range[1] = tdate_range[1]
-            historic_price_sets[snum], historic_set_defs[snum] = tHPA.eval_re
-            port()
+            historic_price_sets[snum], historic_set_defs[snum] = tHPA.eval_report()
 
         date_list.sort()
         price_csv = "SET_NUM"
@@ -309,6 +457,219 @@ class SetCollection(object):
     def historic_data_trends(self):
         pass
 
+    ##
+    # Static Methods
+    ##
+    @staticmethod
+    def build_filter(make=True):
+        """
+        menu to build a list to be used to make a filter
+        # Filters
+        #     date range min / max -  SQL where
+        #     piece count min / max - SQL where
+        #     original price min/max - SQL where
+        #     year released in date range - True False
+        #     set_name = True
+        #     theme
+        @return:
+        """
+        # High, Low, Required? (True/False-if true, don't allow null values), Logic (True/False = AND/OR)
+        date = [None, None, True, True]
+        piece = [None, None, True, False]
+        price = [None, None, False, False]
+        theme = [None, True, False]  # No high, low
+
+
+        def change_date_range():
+            nonlocal date
+            date_low = syt.int_null(input("What is the starting year? "))
+            date_high = syt.int_null(input("What is the ending year? "))
+            date_null = input("Don't include null dates? y/n ")
+            if date_null.lower() == 'y':
+                date_null = True
+            else:
+                date_null = False
+            date_req = input("Is fitting in the date range required? y/n ")
+            if date_req.lower() == 'y':
+                date_req = True
+            else:
+                date_req = False
+
+            date = [date_low, date_high, date_null, date_req]
+
+        def change_piece_count():
+            nonlocal piece
+            piece_low = syt.int_null(input("What is the lowest piece count? "))
+            piece_high = syt.int_null(input("What is the highest piece count? "))
+            piece_null = input("Don't include null piece count? y/n ")
+            if piece_null.lower() == 'y':
+                piece_null = True
+            else:
+                piece_null = False
+            piece_req = input("Is fitting in the piece count range required? y/n ")
+            if piece_req.lower() == 'y':
+                piece_req = True
+            else:
+                piece_req = False
+            piece = [piece_low, piece_high, piece_null, piece_req]
+
+        def change_price():
+            nonlocal price
+            price_low = syt.int_null(input("What is the lowest price? "))
+            price_high = syt.int_null(input("What is the highest price? "))
+            price_null = input("Don't include null price? y/n ")
+            if price_null.lower() == 'y':
+                price_null = True
+            else:
+                price_null = False
+            price_req = input("Is fitting in the price range required? y/n ")
+            if price_req.lower() == 'y':
+                price_req = True
+            else:
+                price_req = False
+            price = [price_low, price_high, price_null, price_req]
+
+        def change_theme():
+            nonlocal theme
+            theme_name = input("What theme would you like to report on? ")
+            if theme_name is "": theme_name = None
+            theme_null = input("Don't include null theme? y/n ")
+            if theme_null.lower() == 'y':
+                theme_null = True
+            else:
+                theme_null = False
+            theme_req = input("Is fitting in the theme required? y/n ")
+            if theme_req.lower() == 'y':
+                theme_req = True
+            else:
+                theme_req = False
+            theme = [theme_name, theme_null, theme_req]
+
+
+        def current_settings():
+            settings = "- Create Filter -\n"
+            settings += "| Date Range: {} to {} | Allow Null: {} | Required: {}\n".format(*date)
+            settings += "| Price Range: {} to {} | Allow Null: {} | Required: {}\n".format(*price)
+            settings += "| Piece Count Range: {} to {} | Allow Null: {} | Required: {}\n".format(*piece)
+            settings += "| Theme: {} | Allow Null: {} | Required: {}\n".format(*theme)
+            settings += "# Current Filter: {}".format(
+                SetCollection.make_filter({"piece": piece, "date": date, "price": price, "theme": theme}))
+            return settings
+
+        options = (
+            ("Date Range", change_date_range),
+            ("Piece Count", change_piece_count),
+            ("Original Price", change_price),
+            ("Theme", change_theme)
+        )
+        syt.Menu(name=current_settings, choices=options, quit_tag="Done").run()
+
+        if make:
+            return SetCollection.make_filter({"piece": piece, "date": date, "price": price, "theme": theme})
+        else:
+            return {"piece": piece, "date": date, "price": price, "theme": theme}
+
+    @staticmethod
+    def make_filter(filter_dict=None):
+        """
+        Take a filter list and turn it into a string that can be used to make a set collection
+        @param filter_list:
+        @return:
+        "(year_released BETWEEN 1980 AND 2015) AND ((get_piece_count >=25) OR (original_price_us >=4)) AND year_released IS NOT NULL AND set_name IS NOT NULL"
+        """
+        select_text = ""
+        required_text = "set_name IS NOT NULL"
+        and_list = []
+        or_list = []
+        year_text = ""
+        if filter_dict['date'][0] is not None or filter_dict['date'][1] is not None:
+            if filter_dict['date'][0] is None:
+                year_text += "(year_released <= {})".format(filter_dict['date'][1])
+            elif filter_dict['date'][1] is None:
+                year_text += "(year_released >= {})".format(filter_dict['date'][0])
+            else:
+                year_text += "(year_released BETWEEN {} AND {})".format(filter_dict['date'][0], filter_dict['date'][1])
+        if len(year_text):
+            if filter_dict['date'][3]:
+                and_list.append(year_text)
+            else:
+                or_list.append(year_text)
+        if filter_dict['date'][2]:
+            required_text += " AND year_released IS NOT NULL"
+
+        price_text = ""
+        if filter_dict['price'][0] is not None or filter_dict['price'][1] is not None:
+            if filter_dict['price'][0] is None:
+                price_text += "(original_price_us <= {})".format(filter_dict['price'][1])
+            elif filter_dict['price'][1] is None:
+                price_text += "(original_price_us >= {})".format(filter_dict['price'][0])
+            else:
+                price_text += "(original_price_us BETWEEN {} AND {})".format(filter_dict['price'][0],
+                                                                             filter_dict['price'][1])
+        if len(price_text):
+            if filter_dict['price'][3]:
+                and_list.append(price_text)
+            else:
+                or_list.append(price_text)
+        if filter_dict['price'][2]:
+            required_text += " AND original_price_us IS NOT NULL"
+
+        piece_text = ""
+        if filter_dict['piece'][0] is not None or filter_dict['piece'][1] is not None:
+            if filter_dict['piece'][0] is None:
+                piece_text += "(piece_count <= {})".format(filter_dict['piece'][1])
+            elif filter_dict['piece'][1] is None:
+                piece_text += "(piece_count >= {})".format(filter_dict['piece'][0])
+            else:
+                piece_text += "(piece_count BETWEEN {} AND {})".format(filter_dict['piece'][0], filter_dict['piece'][1])
+        if len(piece_text):
+            if filter_dict['piece'][3]:
+                and_list.append(piece_text)
+            else:
+                or_list.append(piece_text)
+        if filter_dict['piece'][2]:
+            required_text += " AND piece_count IS NOT NULL"
+
+        theme_text = ""
+        if filter_dict['theme'][0] is not None:
+            theme_text = "(theme = {})".format(filter_dict['theme'][0])
+        if len(theme_text):
+            if filter_dict['theme'][2]:
+                and_list.append(theme_text)
+            else:
+                or_list.append(theme_text)
+        if filter_dict['theme'][2]:
+            required_text += " AND them IS NOT NULL"
+
+        and_text = ""
+        if len(and_list):
+            and_text += "("
+            for idx, t in enumerate(and_list):
+                if idx != 0: and_text += " AND "
+                and_text += t
+            and_text += ")"
+
+        or_text = ""
+        if len(or_list):
+            or_text += "("
+            for idx, t in enumerate(or_list):
+                if idx != 0: or_text += " OR "
+                or_text += t
+            or_text += ")"
+
+        if len(and_text):
+            select_text += and_text
+
+        if len(or_text):
+            if len(select_text): select_text += " AND "
+            select_text += or_text
+
+        if len(required_text):
+            if len(select_text): select_text += " AND "
+            select_text += required_text
+
+        return select_text
+
 
 def _set_filter_creator(set_lists):
     """
@@ -345,47 +706,44 @@ def _validate_set_list(set_list, allow_set_nums=False):
     return False
 
 
-if __name__ == "__main__":
-    test_SC = None
+def SetCollection_menu():
+    """
+    Primary menu for building and playing with set collections
 
+    @return:
+    """
+    set_collection = None
 
-    def main_menu():
-
-        options = {}
-
-        options['1'] = "Create Set Collection", menu_createSC
-        options['2'] = "Get Historic", menu_test_historic
-        options['3'] = "Get all Set Data", menu_data_dump
-        options['9'] = "Quit", menu.quit
-
-        while True:
-            result = menu.options_menu(options)
-            if result is 'kill':
-                exit()
-
-    def menu_createSC():
-        global test_SC
-        filter_text = "(year_released BETWEEN 2008 AND 2015)"
-        test_SC = SetCollection(filter_text=filter_text)
-
-    def menu_test_historic():
-        global test_SC
-        filter_text = "(year_released BETWEEN 1980 AND 2015) AND ((piece_count >=25) OR (original_price_us >=4)) AND year_released IS NOT NULL AND set_name IS NOT NULL"
-        test_SC = SetCollection(filter_text=filter_text)
-        historic_data_sets = test_SC.historic_price_report()
-        syt.print4(historic_data_sets.items(), 20)
-
-    def menu_get_historic_prices():
-        global test_SC
-        filter_text = "(year_released BETWEEN 2008 AND 2015)"
-        test_SC = SetCollection(filter_text=filter_text)
+    def menu_create_sc():
+        nonlocal set_collection
+        set_collection = SetCollection(filter_text=SetCollection.build_filter())
 
     def menu_data_dump():
-        global test_SC
-        filter_text = "(year_released BETWEEN 1980 AND 2015) AND ((piece_count >=25) OR (original_price_us >=4)) AND year_released IS NOT NULL AND set_name IS NOT NULL"
-        test_SC = SetCollection(filter_text=filter_text)
-        csv_dump_text = test_SC.csv_dump()
+        nonlocal set_collection
+        if set_collection is None: menu_create_sc()
+        csv_dump_text = set_collection.csv_dump()
         with open('{}-set-collection-dump.csv'.format(syt.get_timestamp()), "w") as f:
             f.write(csv_dump_text)
 
-    main_menu()
+    def menu_build_report():
+        nonlocal set_collection
+        if set_collection is None: menu_create_sc()
+        set_collection.build_report()
+
+
+    def menu_title():
+        text = "- Set Collections -"
+        if set_collection is not None:
+            text = "\n| Collection filter text: {}".format(set_collection)
+        return text
+
+    options = (
+        ("Create Set Collection", menu_create_sc),
+        ("Build Report", menu_build_report),
+        ("Get all Set Data", menu_data_dump))
+
+    syt.Menu(name=menu_title, choices=options).run()
+
+
+if __name__ == "__main__":
+    SetCollection_menu()

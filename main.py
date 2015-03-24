@@ -7,21 +7,19 @@ import os
 import system as syt
 if __name__ == "__main__": syt.setup_logger()
 from database import database as db
-import navigation.menu as menu
 import navigation.menu_daily_price_capture as DPC
 import navigation.menu_update_all_basestats as UAB
 import navigation.menu_update_set as US
-import navigation.menu_get_set_info as GSI
+import navigation.menu_build_reports as GSI
 import navigation.menu_system as SYS
 import navigation.menu_update_all_inventories as INV
-
 
 def run_get_sets():
     return UAB.main()
 
 
 def run_get_prices():
-    return DPC.main()
+    return DPC.price_capture_menu()
 
 
 def run_update_set():
@@ -29,7 +27,7 @@ def run_update_set():
 
 
 def run_get_set_info():
-    return GSI.main()
+    return GSI.report_menu()
 
 
 def run_system():
@@ -48,7 +46,7 @@ def validate_database():
         syt.log_warning("No Database Found. Please locate it or create one in the system menu")
 
 
-def main():
+def main_menu():
     """
     Main launch menu
     @return:
@@ -57,20 +55,17 @@ def main():
     validate_database()
 
     syt.log_info("Running Main")
-    options = {}
 
-    options['1'] = "Run Daily Price Capture", run_get_prices
-    options['2'] = "Run Total Basestats refresh", run_get_sets
-    options['3'] = "Run Inventories Refresh", run_get_inv
-    options['4'] = "Update set", run_update_set
-    options['5'] = "Get Set Info", run_get_set_info
-    options['6'] = "System", run_system
-    options['9'] = "Quit", menu.quit
+    options = (
+        ("Run Daily Price Capture", run_get_prices),
+        ("Run Total Basestats refresh", run_get_sets),
+        ("Run Inventories Refresh", run_get_inv),
+        ("Update set", run_update_set),
+        ("Get Reports", run_get_set_info),
+        ("System", run_system)
+    )
+    syt.Menu(name="- Lego Brick Evaluator -", choices=options, quit_tag=True).run()
 
-    while True:
-        result = menu.options_menu(options)
-        if result is 'kill':
-            exit()
 
 if __name__ == "__main__":
-    main()
+    main_menu()

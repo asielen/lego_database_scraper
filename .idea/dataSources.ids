@@ -182,4 +182,16 @@
       <index name="inflation_idx" unique="true" columns="year"/>
     </table>
   </data-source>
+  <data-source name="system [2]" uuid="12fed6c7-34ca-4ee0-a4f5-822db9da5a58">
+    <database-info product="SQLite" version="3.7.6.3" jdbc-version="2.1" driver-name="SQLiteJDBC" driver-version="native"/>
+    <case-sensitivity plain-identifiers="mixed" quoted-identifiers="mixed"/>
+    <schema name="" catalog=""/>
+    <table name="inflation" schema="" catalog="" type="TABLE">
+      <column name="id" sqlType="INTEGER" precision="2000000000" scale="10" nullable="true" jdbcType="4"/>
+      <column name="year" sqlType="INTEGER" precision="2000000000" scale="10" nullable="true" jdbcType="4"/>
+      <column name="cpi" sqlType="REAL" precision="2000000000" scale="10" nullable="true" jdbcType="6"/>
+      <primary-key columns="id"/>
+      <index name="inflation_idx" unique="true" columns="year"/>
+    </table>
+  </data-source>
 </component>

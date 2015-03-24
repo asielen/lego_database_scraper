@@ -1,7 +1,6 @@
 # Internal
 from data.data_classes import SetInfo, HistoricPriceAnalyser
 from database import info
-import navigation as menu
 import system as syt
 
 if __name__ == "__main__": syt.setup_logger()
@@ -11,16 +10,12 @@ test_set = SetInfo()
 
 
 def main_menu():
-    options = {}
+    options = (
+        ("Test SetInfo Class", si_menu),
+        ("Test Historic Price Data Class", hpa_menu),
+    )
 
-    options['1'] = "Test SetInfo Class", si_menu
-    options['2'] = "Test Historic Price Data Class", hpa_menu
-    options['9'] = "Quit", menu.quit
-
-    while True:
-        result = menu.options_menu(options)
-        if result is 'kill':
-            exit()
+    syt.Menu(name="- Data Class Tests -", choices=options).run()
 
 
 def si_menu():
@@ -30,26 +25,24 @@ def si_menu():
     """
     syt.log_critical("Set Info testing")
 
-    options = {}
+    def menu_text():
+        text = "Current Set: {}".format(test_set.set_num)
+        return text
 
-    options['1'] = "Create Set from DB", si_menu_create_set_db
-    options['2'] = "Create Set from List", si_menu_create_set_lst
-    options['3'] = "Test Base Info", si_menu_get_base_info
-    options['4'] = "Test Basic Calcs", si_menu_get_basic_calcs
-    options['5'] = "Test Inflation", si_menu_test_inflation
-    options['6'] = "Test SQL Data", si_menu_test_sql_data
-    options['7'] = "Test Historic", si_menu_test_historic
-    options['8'] = "Test all Output", si_menu_test_all_output
-    # options['S'] = "Test SQL Historic", menu_test_sql_historic
-    options['D'] = "Get Date Min", si_menu_test_date_range
-    options['C'] = "Set Report", si_menu_text_csv_dump
-    options['9'] = "Quit", menu.quit
+    options = (
+        ("Create Set from DB", si_menu_create_set_db),
+        ("Create Set from List", si_menu_create_set_lst),
+        ("Test Base Info", si_menu_get_base_info),
+        ("Test Basic Calcs", si_menu_get_basic_calcs),
+        ("Test Inflation", si_menu_test_inflation),
+        ("Test SQL Data", si_menu_test_sql_data),
+        ("Test Historic", si_menu_test_historic),
+        ("Test all Output", si_menu_test_all_output),
+        ("Get Date Min", si_menu_test_date_range),
+        ("Set Report", si_menu_text_csv_dump),
+    )
 
-    while True:
-        print("Current Set: {}".format(test_set.set_num))
-        result = menu.options_menu(options)
-        if result is 'kill':
-            main_menu()
+    syt.Menu(name=menu_text, choices=options).run()
 
 
 def si_menu_create_set_db():
@@ -154,40 +147,99 @@ def hpa_menu():
     """
     # logger.critical("Set Info testing")
 
-    options = {}
-
-    options['1'] = "Test Historic", hpa_menu_test_historic
-    options['2'] = "Set Inflation Year", hpa_menu_inflation
-    options['3'] = "Set Report Type", hpa_menu_report_type
-    options['4'] = "Set Date Price", hpa_menu_date_price
-    options['5'] = "Reset", hpa_menu_clear
-    options['5'] = "Run", hpa_menu_get
-    options['6'] = "Full Test", hpa_menu_test
-    options['9'] = "Quit", menu.quit
-
-    while True:
+    def menu_text():
+        text = "- HPA Settings -\n"
         if test_HPA is not None:
-            print("Settings")
-            print("Set Num = {}".format(test_HPA.si.set_num))
-            print("Base Date = {}".format(syt.get_date(test_HPA.base_date)))
-            print("Base Price = {}".format(test_HPA.base_price))
-            print("Type = {}".format(test_HPA.type))
+            text += "Set Num = {}\n".format(test_HPA.si.set_num)
+            text += "Base Date = {}\n".format(syt.get_date(test_HPA.base_date))
+            text += "Base Price = {}\n".format(test_HPA.base_price)
+            text += "Type = {}\n".format(test_HPA.type)
             # if test_HPA.inf_year is not None:
-            print("Inflation = {}".format(test_HPA.inf_year))
-        result = menu.options_menu(options)
-        if result is 'kill':
-            main_menu()
+            text += "Inflation = {}\n".format(test_HPA.inf_year)
+        return text
+
+    options = (
+        ("Test Historic", hpa_menu_test_historic),
+        ("Set Inflation Year", hpa_menu_inflation),
+        ("Set Report Type", hpa_menu_report_type),
+        ("Set Date Price", hpa_menu_date_price),
+        ("Reset", hpa_menu_clear),
+        ("Run", hpa_menu_get),
+        ("Full Test", hpa_menu_test),
+    )
+
+    syt.Menu(name=menu_text, choices=options).run()
 
 
 def hpa_menu_test_historic():
+    """
+    The point is to test the ability of the historic price analyzer
+    @return:
+    """
     global test_HPA
 
     set_num = syt.input_set_num()
     test_set = SetInfo(set_num)
+    test_HPA = HistoricPriceAnalyser(si=test_set, select_filter=HistoricPriceAnalyser.build_filter())
 
-    test_HPA = HistoricPriceAnalyser(si=test_set)  #, select_filter=["AVG(historic_prices.piece_avg)",
-    #               "(price_types.price_type='historic_new' OR "
-    #               "price_types.price_type='historic_used')", True])
+
+# Now a static method in the HPA class
+# def hpa_builder():
+# """
+#     Through a set of menus, this creates the select string for a HPA class
+#     @return:
+#     """
+#     hpa_string = ""
+#
+#     def hpa_build_rating():
+#         qstring = ["",None,True]
+#         options = ["Want","Own","Rating","Want+Own","Want-Own"]
+#         choice = syt.Menu("- Create HPA Query Rating -", choices=options, type="return", quit=False, drop_down=True).choice
+#
+#         if choice == "Want":
+#             qstring[0] = "bs_ratings.want"
+#         elif choice == "Own":
+#             qstring[0] = "bs_ratings.own"
+#         elif choice == "Rating":
+#             qstring[0] = "bs_ratings.rating"
+#         elif choice == "Want+Own":
+#             qstring[0] = "(bs_ratings.want + bs_ratings.own)"
+#         elif choice == "Want-Own":
+#             qstring[0] = "(bs_ratings.want - bs_ratings.own)"
+#
+#         return qstring
+#
+#     def hpa_build_price():
+#
+#
+#         price_types = ["historic_new", "historic_used", "current_new", "current_used"]
+#         fields = ["avg", "lots", "max", "min", "qty", "qty_avg", "piece_avg"]
+#         group_functions = ["AVG","MIN","MAX","SUM"] # For price types
+#         aggregate_functions = ["AVG","SUM","DIFFERENCE"] # For fields
+#         c_price_types = []
+#         c_fields = []
+#         c_group_function = None
+#         c_aggregate_function = None
+#
+#         c_price_types = syt.MultiChoiceMenu(price_types)
+#         if len(c_price_types)>1:
+#             c_group_function = syt.Menu("- Choose group function -", choices=group_functions, drop_down=True, type=syt.Menu.RETURN).choice
+#         c_fields = syt.MultiChoiceMenu(fields)
+#         if len(c_fields)>1:
+#             c_aggregate_function = syt.Menu("- Choose aggregate function -", choices=aggregate_functions, drop_down=True, type=syt.Menu.RETURN).choice
+#
+#
+#         return {"price_type": c_price_types, "field": c_fields,
+#                 "group_function": c_group_function, "aggregate_function": c_aggregate_function}
+#
+#
+#
+#     options = [("Rating", hpa_build_rating),
+#                ("Price", hpa_build_price)]
+#     hpa_string = syt.Menu("- Create HPA Query -", choices=options, quit=False, drop_down=True).choice
+#
+#     return hpa_string
+
 
 
 def hpa_menu_inflation():

@@ -108,7 +108,7 @@ def get_avg_price_per_design(bl_design_num=None):
     if bl_design_num is None:
         avg_price = db.run_sql(
             "SELECT bricklink_id, average_weighted_price FROM parts AS P JOIN "
-            "(SELECT bl_inventories.piece_id, SUM((sets.original_price_us / sets.piece_count) "
+            "(SELECT bl_inventories.piece_id, SUM((sets.original_price_us / sets.get_piece_count) "
             "* bl_inventories.quantity) / SUM(bl_inventories.quantity) AS average_weighted_price "
             "FROM sets JOIN bl_inventories ON bl_inventories.set_id = sets.id "
             "WHERE sets.original_price_us IS NOT NULL GROUP BY bl_inventories.piece_id) AS R ON P.id=R.piece_id;")
@@ -117,7 +117,7 @@ def get_avg_price_per_design(bl_design_num=None):
     else:
         avg_price = db.run_sql(
             "SELECT average_weighted_price FROM parts AS P "
-            "JOIN (SELECT bl_inventories.piece_id, SUM((sets.original_price_us / sets.piece_count) "
+            "JOIN (SELECT bl_inventories.piece_id, SUM((sets.original_price_us / sets.get_piece_count) "
             "* bl_inventories.quantity) / SUM(bl_inventories.quantity) AS average_weighted_price "
             "FROM sets JOIN bl_inventories ON bl_inventories.set_id = sets.id "
             "WHERE sets.original_price_us IS NOT NULL GROUP BY bl_inventories.piece_id) "

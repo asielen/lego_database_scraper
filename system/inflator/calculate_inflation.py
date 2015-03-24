@@ -1,10 +1,12 @@
 __author__ = 'Andrew'
-
+# Todo, have an option to update the inflation rate automatically from here:
+#http://inflationdata.com/Inflation/Consumer_Price_Index/HistoricalCPI.aspx?reloaded=true#Table
 # External
 import csv
 import sqlite3 as lite
 
 import arrow
+
 
 
 
@@ -42,7 +44,8 @@ def adj_dict_for_inf(price_dict, inf_year=None):
     cpi_dict = get_cpis()
     inf_year = min(inf_year, max(cpi_dict.keys()))
     for pd in price_dict:
-        rate = _get_inflation_rate(cpi_dict[min(arrow.get(pd).year, inf_year)], cpi_dict[inf_year])
+        cyear = arrow.get(pd).year
+        rate = _get_inflation_rate(cpi_dict[min(cyear, inf_year)], cpi_dict[inf_year])
         price_dict[pd] = _get_adjusted_price(price_dict[pd], rate)
     return price_dict
 
@@ -54,7 +57,8 @@ def _get_inflation_rate(start_cpi, end_cpi):
 def _get_adjusted_price(price, inflation_rate):
     return (price * inflation_rate) + price
 
-def get_inflation_rate(year_start, year_end=2013):
+
+def get_inflation_rate(year_start, year_end=2015):
     """
 
     @param year_start:
@@ -88,6 +92,7 @@ def update_inflation_database():
     with open(inflation_sheet, 'r') as csvfile:
         inflation_chart = csv.reader(csvfile)
         inflation_chart = base.list_to_dict(inflation_chart)
+        del inflation_chart['year']
 
     con = lite.connect(database)
 
@@ -101,8 +106,7 @@ def update_inflation_database():
 
 def main():
     update_inflation_database()
-    print(get_inflation_rate(1915, 2013))
-
+    print(get_inflation_rate(1915, 2015))
 
 if __name__ == "__main__":
     main()

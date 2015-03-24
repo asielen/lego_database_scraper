@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="DataSourceManagerImpl" format="xml" hash="994757747">
+  <component name="DataSourceManagerImpl" format="xml" hash="1043457149">
     <data-source source="LOCAL" name="lego_eval" uuid="29a30c00-7e0e-4aa7-b81b-f991494e30f6">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
@@ -19,6 +19,20 @@
         </library>
         <library>
           <url>file://$APPLICATION_CONFIG_DIR$/jdbc-drivers/sqlite-jdbc-3.7.6.3-20110609.081603-3.jar</url>
+        </library>
+      </libraries>
+    </data-source>
+    <data-source source="LOCAL" name="system [2]" uuid="12fed6c7-34ca-4ee0-a4f5-822db9da5a58">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/system/system.sqlite</jdbc-url>
+      <libraries>
+        <library>
+          <url>file://$USER_HOME$/Library/Preferences/PyCharm30/jdbc-drivers/xerial-sqlite-license.txt</url>
+        </library>
+        <library>
+          <url>file://$USER_HOME$/Library/Preferences/PyCharm30/jdbc-drivers/sqlite-jdbc-3.7.6.3-20110609.081603-3.jar</url>
         </library>
       </libraries>
     </data-source>

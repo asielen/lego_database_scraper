@@ -10,7 +10,7 @@ if __name__ == "__main__": syt.setup_logger()
 def add_daily_set_data_to_database(daily_data):
     """
 
-    @param daily_data: in this format [{set_num: ((prices), (ratings))}, {set_num: ((prices), (ratings))}]
+    @param daily_data: in this format [{set_num: ((get_prices), (ratings))}, {set_num: ((get_prices), (ratings))}]
     @return:
     """
 
@@ -51,7 +51,7 @@ def add_daily_set_data_to_database(daily_data):
 
     # Now add everything to the database
 
-    # Add prices
+    # Add get_prices
     db.batch_update(
         'INSERT OR IGNORE INTO historic_prices(set_id, record_date, price_type, avg, lots, max, min, qty, qty_avg, piece_avg) '
         'VALUES (?,?,?,?,?,?,?,?,?,?)', cprices_list_to_insert)
@@ -156,11 +156,11 @@ def check_set_availability_dates(set_id, ratings):
                    set_id))
 
 
-        # def main():
+        # def price_capture_menu():
         # # SET = input("What is the set number?: ")
         # # print(get_daily(SET))
-        # # main()
+        # # price_capture_menu()
         #
         #
         # if __name__ == "__main__":
-        #     main()
+        # price_capture_menu()

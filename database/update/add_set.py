@@ -19,9 +19,9 @@ def add_set_to_database_from_dict(set):
                 TXT set_name
                 INT theme_id
                 TXT sub_theme
-                INT piece_count
-                INT unique_piece_count
-                INT figures
+                INT get_piece_count
+                INT get_unique_piece_count
+                INT get_figures
                 FLT set_weight
                 FLT piece_weight
                 INT year_released
@@ -46,8 +46,8 @@ def add_set_to_database_from_dict(set):
                   'item_seq=?,'
                   'theme=?,'
                   'subtheme=?,'
-                  'piece_count=?,'
-                  'figures=?,'
+                  'get_piece_count=?,'
+                  'get_figures=?,'
                   'set_weight=?,'
                   'year_released=?,'
                   'date_released_us=?,'
@@ -66,8 +66,8 @@ def add_set_to_database_from_dict(set):
                    set['item_seq'],
                    set['theme'],
                    set['subtheme'],
-                   set['piece_count'],
-                   set['figures'],
+                   set['get_piece_count'],
+                   set['get_figures'],
                    set['set_weight'],
                    set['year_released'],
                    set['date_released_us'],

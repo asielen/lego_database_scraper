@@ -31,8 +31,8 @@ if __name__ == "__main__": syt.setup_logger()
 #         'set_name, '
 #         'theme, '
 #         'subtheme, '
-#         'piece_count, '
-#         'figures, '
+# 'get_piece_count, '
+#         'get_figures, '
 #         'set_weight, '
 #         'year_released, '
 #         'date_released_us, '
@@ -91,8 +91,8 @@ def add_set_data_to_database(set_data):
                'set_name=?, '
                'theme=?, '
                'subtheme=?, '
-               'piece_count=?, '
-               'figures=?, '
+               'get_piece_count=?, '
+               'get_figures=?, '
                'set_weight=?, '
                'year_released=?, '
                'date_released_us=?, '
@@ -138,8 +138,8 @@ def add_set_data_to_database(set_data):
 #                'set_name=?, '
 #                'theme=?, '
 #                'subtheme=?, '
-#                'piece_count=?, '
-#                'figures=?, '
+#                'get_piece_count=?, '
+# 'get_figures=?, '
 #                'set_weight=?, '
 #                'year_released=?, '
 #                'date_released_us=?, '
@@ -166,7 +166,7 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
     @param set_id_list: list of set ids
     @param id_col: the column that set_ids are in
     @param update: 0 no updates, 1 basic updates, 2 all updates
-        Basic is everything but prices and dates
+        Basic is everything but get_prices and dates
     @return:
     """
     set_dict = info.read_bl_sets()
@@ -256,8 +256,8 @@ def add_sets_data_to_database(sets_to_insert):
                     'set_name=?, '
                     'theme=?, '
                     'subtheme=?, '
-                    'piece_count=?, '
-                    'figures=?, '
+                    'get_piece_count=?, '
+                    'get_figures=?, '
                     'set_weight=?, '
                     'year_released=?, '
                     'date_released_us=?, '

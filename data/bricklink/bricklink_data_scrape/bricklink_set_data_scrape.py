@@ -30,7 +30,7 @@ def get_basestats(set_num_primary, set_num_secondary=1):
     if parent_tags0 == None: return {}
     set_name = parent_tags0.string.strip()
 
-    # Get figures and parts
+    # Get get_figures and parts
     parent_tags1 = soup.find("td", {"width": "25%", "valign": "TOP", "class": "fv"})
     if not parent_tags1: return {}
     children_tags_text = parent_tags1.get_text()
@@ -69,7 +69,7 @@ def get_basestats(set_num_primary, set_num_secondary=1):
     parent_tags2 = soup.find("tr", {"align": "CENTER", "valign": "TOP"})
     parent_tags2.contents = parent_tags2.contents[1:-1]  #Remove the first and last elements because they are strings
 
-    dic = {"set_name": set_name, "pieces": piece_count, "figures": figures_count}
+    dic = {"set_name": set_name, "pieces": piece_count, "get_figures": figures_count}
     for i in parent_tags2:
         if "Box" in i.contents[0].string.strip():
             #Converts the dimension string to a tuple
@@ -97,7 +97,7 @@ def _scrub_base_data(dic):
     """
         Takes data scraped from Bricklink in this format:
         {   'Box Size (in cm):': (35.4, 19.0, 5.7),
-            'figures': 0,
+            'get_figures': 0,
             'Instructions:': 'Yes',
             'Item No:': '4431-1',
             'pieces': 0,
@@ -107,7 +107,7 @@ def _scrub_base_data(dic):
         And returns it in this format:
         {   'dimensions': (35.4, 19.0, 5.7),             #tuple of float Box Size (in cm): -> dimensions
             'volume' : 3833.82,                          #float
-            'figures': 0,                                #int
+            'get_figures': 0,                                #int
             'set_num': '4431-1',                         #text           Item No: -> set_num
             'pieces': 0,                                 #int
             'set_name': 'Ambulance',                     #text
@@ -128,8 +128,8 @@ def _scrub_base_data(dic):
         temp_dim_tup = _scrub_dimensions(dic['Box Size (in cm):'])
         if temp_dim_tup[0] or temp_dim_tup[1]:
             scrubbed_dic['dimensions'], scrubbed_dic['volume'] = temp_dim_tup
-    if "figures" in dic:
-        scrubbed_dic['figures'] = dic['figures']
+    if "get_figures" in dic:
+        scrubbed_dic['get_figures'] = dic['get_figures']
     if 'Weight (in grams):' in dic:
         scrubbed_dic['weight'] = dic['Weight (in grams):']
     if 'Year Released:' in dic:

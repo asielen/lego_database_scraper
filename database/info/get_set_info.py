@@ -91,7 +91,7 @@ def get_last_updated_for_daily_stats(set_num=None):
 def filter_list_on_dates(sets, year_sets, date_range=180):
     """
         Take a list of sets and a dictionary of sets and dates and returns a list of sets
-        that are only within [date_range] of today
+        that are only within [get_date_range] of today
             Used to check if a set needs to be updated
             Need to get the first two lists though from somewhere else
     @param sets: list of set nums [xxx–xx,yyy–y,zzz–z]
@@ -174,7 +174,7 @@ def get_set_price(set_num=None, inf_year=None):
     updated 20140908
     @param set_num: set num in xxxx–x
     @param inf_year: if this is not None, then get the original price
-    @return: the price or list of prices if set_num is omitted
+    @return: the price or list of get_prices if set_num is omitted
     """
     price = None
 
@@ -201,7 +201,7 @@ def get_set_price(set_num=None, inf_year=None):
 
     # All Set lookup
     else:
-        # if there is a an inflation year but no set specified. Get all sets from before this year and return their adjusted prices
+        # if there is a an inflation year but no set specified. Get all sets from before this year and return their adjusted get_prices
         if inf_year is not None:
             prices_raw = db.run_sql(
                 "SELECT set_num, original_price_us, year_released FROM sets WHERE set_num IS NOT NULL AND original_price_us IS NOT NULL AND year_released <= ?;",
@@ -211,7 +211,7 @@ def get_set_price(set_num=None, inf_year=None):
                 prices.append((s[0], (syt.get_inflation_rate(s[2], inf_year) * s[1]) + s[1], s[2], inf_year))
             return prices
         else:
-            # if there isn't a set specified or a inf_year specified, just return all set prices
+            # if there isn't a set specified or a inf_year specified, just return all set get_prices
             prices_raw = db.run_sql(
                 "SELECT set_num, original_price_us FROM sets WHERE set_num IS NOT NULL AND original_price_us IS NOT NULL;")
             return prices_raw
@@ -238,14 +238,14 @@ def get_piece_count(set_n=None, type=''):
                                " WHERE bl_inventories.set_id=?;", (set_id,), one=True)
 
         else:
-            count = db.run_sql("SELECT piece_count FROM sets WHERE id=?;", (set_id,), one=True)
+            count = db.run_sql("SELECT get_piece_count FROM sets WHERE id=?;", (set_id,), one=True)
 
     else:
         if type == 'bricklink':
             count = db.run_sql("SELECT set_num, pieces FROM sets AS S JOIN (SELECT set_id, SUM(quantity) AS pieces "
                                "FROM bl_inventories GROUP BY set_id) AS P ON S.id = P.set_id;")
         else:
-            count = db.run_sql("SELECT set_num, piece_count FROM sets;")
+            count = db.run_sql("SELECT set_num, get_piece_count FROM sets;")
 
     return count
 
@@ -310,7 +310,7 @@ def get_set_weight(set_num=None, type=''):
 # #Historic Info
 def get_historic_prices(set_num=None, set_id=None):
     """
-    Get historic prices
+    Get historic get_prices
     @param set_num: in format xxxx-xx
     @return: This format: id, set_num, record_date, price_type, lots, qty, min, max, avg, qty_avg, price_avg
     """

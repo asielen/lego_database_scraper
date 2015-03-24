@@ -18,7 +18,7 @@ def open_dm_csv(file_name='Eval_Data.csv'):
     @param file_name:
     @return:
     """
-    syt.log_info("$$$ Adding historic prices from csv file")
+    syt.log_info("$$$ Adding historic get_prices from csv file")
     set_id_dict = syt.list_to_dict(info.get_set_id())
 
     total_rows = 0
@@ -138,7 +138,7 @@ def scrub_row(set_id, date, row):
 
 def add_daily_prices_to_database(prices):
     """
-    (set_id, record_date, price_types[price], prices[price]['avg'], prices[price]['max'], prices[price]['min'], prices[price]['qty_avg'], prices[price]['piece_avg'])
+    (set_id, record_date, price_types[price], get_prices[price]['avg'], get_prices[price]['max'], get_prices[price]['min'], get_prices[price]['qty_avg'], get_prices[price]['piece_avg'])
     @param prices:
     @return:
     """
@@ -149,10 +149,10 @@ def add_daily_prices_to_database(prices):
     # with con:
     # c = con.cursor()
     #
-    # for price in prices:
+    # for price in get_prices:
     #         c.executemany(
     #             'INSERT OR IGNORE INTO historic_prices(set_id, record_date, price_type, avg, max, min, qty_avg, piece_avg)'
-    #             ' VALUES (?, ?, ?, ?, ?, ?, ?, ?)', prices)
+    # ' VALUES (?, ?, ?, ?, ?, ?, ?, ?)', get_prices)
 
 
 def add_daily_ratings_to_database(ratings):
@@ -181,10 +181,10 @@ def parse_date(s):
     #     return set_id_list
 
 
-    # def main():
+    # def price_capture_menu():
     # set = input("Press Enter")
     #     open_csv_file()
     #
     #
     # if __name__ == "__main__":
-    #     main()
+    #     price_capture_menu()

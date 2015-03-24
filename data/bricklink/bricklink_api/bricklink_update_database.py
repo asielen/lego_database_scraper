@@ -290,7 +290,7 @@ def _get_set_inventory(set_dat=None):
             if row[0] == 'S':  # All this stupid code takes care of subsets (sets of sets)
                 sub_set_id = _get_set_id(row[1], add=True)
                 sub_set = _get_set_inventory((row[1], sub_set_id))
-                for sr in sub_set:  # change the set id to the set main id
+                for sr in sub_set:  # change the set id to the set price_capture_menu id
                     sr[0] = set_id
                 syt.log_debug('Adding {} parts in subset {}'.format(len(sub_set), row[1]))
                 parts_to_insert.extend(sub_set)
