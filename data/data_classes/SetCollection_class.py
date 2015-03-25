@@ -70,7 +70,7 @@ class SetCollection(object):
 
         set_filters = ""
         if set_list is not None and isinstance(set_list, list):
-            set_filters = _set_filter_creator(set_list)
+            set_filters = SetCollection.build_filter_from_set_list(set_list)
         if filter_text is not None:
             set_filters = "(" + filter_text + ")" + set_filters
 
@@ -237,7 +237,7 @@ class SetCollection(object):
         return age_result
 
     # #
-    # Calculated Data
+    # Calculated Data Todo
     # #
     def get_ppp(self, type=None):
         pass
@@ -274,24 +274,24 @@ class SetCollection(object):
     # #
     # Advanced Data
     # #
-    R_STANDARD = 0
-    R_RELATIVE_DAY = 1
-    R_DELTA = 2
-    R_DELTA_DAY = 3
+    # R_STANDARD = 0
+    # R_RELATIVE_DAY = 1
+    # R_DELTA = 2
+    # R_DELTA_DAY = 3
+    #
+    # R_NOT_RELATIVE = 0
+    # R_RETAIL_PRICE = 1
+    # R_END_PRICE = 2
+    #
+    # def choose_report_type(self):
+    # """
+    #     Menu to choose a report type
+    #     @return:
+    #     """
+    #     report_type = []
+    #     return report_type
 
-    R_NOT_RELATIVE = 0
-    R_RETAIL_PRICE = 1
-    R_END_PRICE = 2
-
-    def choose_report_type(self):
-        """
-        Menu to choose a report type
-        @return:
-        """
-        report_type = []
-        return report_type
-
-    def build_report(self, sfilter=None, report_type=(R_STANDARD, R_NOT_RELATIVE)):
+    def build_report(self, sfilter=None, report_type=None):
         """
             Take the set collection and layer a report on top of it
         @param sfilter:
@@ -303,27 +303,37 @@ class SetCollection(object):
 
         date_list = []
         date_range = [0, 0]
+        if sfilter is None:
+            sfilter = HistoricPriceAnalyser.build_filter()
+        if report_type is None:
+            report_type = HistoricPriceAnalyser.build_report_type()
+        set_nums = self.get_set_nums()
+        for idx, snum in enumerate(set_nums):
+            print("{} of {} | Getting snum {} ".format(idx, len(set_nums), snum))
+            tHPA = HistoricPriceAnalyser(si=SetInfo(snum), select_filter=sfilter).set_options(**report_type)
 
-        for snum in self.get_set_nums():
-            print("Getting snum {}".format(snum))
-            tHPA = HistoricPriceAnalyser(si=SetInfo(snum), select_filter=sfilter)
-
+            ###########
             # Calculate the relative date range (+- the date the report is relative to)
-            if report_type[1] == self.R_RETAIL_PRICE:
+            # - This is for the overall report so everything is to one scale
+            # Todo check this
+            if report_type["report_type"] == tHPA.R_RETAIL_PRICE:
                 tdate_range = tHPA.si.get_relative_start_date_range()
-            elif report_type[1] == self.R_END_PRICE:
+            elif report_type["report_type"] == tHPA.R_END_PRICE:
                 tdate_range = tHPA.si.get_relative_end_date_range()
             else:
                 tdate_range = tHPA.si.get_abs_date_range()
 
-            #   If there is no starting date, there is nothing to compare to, don't really need to check end date also
             if tdate_range[0] is None:
+                # If there is no starting date, there is nothing to compare to, don't really need to check end date also
                 continue
             if tdate_range[0] is not None and tdate_range[0] < date_range[0]:
                 date_range[0] = tdate_range[0]
             if tdate_range[1] is not None and tdate_range[1] > date_range[1]:
                 date_range[1] = tdate_range[1]
-            price_sets[snum], set_defs[snum] = tHPA.eval_report()
+            #
+            ###########
+
+            price_sets[snum], set_defs[snum] = tHPA.run_report()
 
         date_list.sort()
         price_csv = "SET_NUM"
@@ -370,11 +380,7 @@ class SetCollection(object):
     #     delta
     #     delta day
 
-
-
-    def run_report(self):
-        pass
-
+    # Todo, is this still used?
     def historic_price_trends(self, type="standard", price="standard", date="", inflation=None):
         """
 
@@ -386,13 +392,13 @@ class SetCollection(object):
         for snum in self.get_set_nums():
             print("Getting snum {}".format(snum))
             tHPA = HistoricPriceAnalyser(si=SetInfo(snum), select_filter=sfilter)
-            tHPA.set_base_price_date(date="end")
-            historic_data_sets[snum] = tHPA.run_all([0, 1], by_date=True)
+            tHPA.set_base_price_date(date=tHPA.R_END_DATE, price=tHPA.R_END_PRICE)
+            historic_data_sets[snum] = tHPA.run_all_test([0, 1], by_date=True)
 
         print("Check")
         return historic_data_sets
 
-
+    # Todo is this still used?
     def historic_price_report(self):
         """
         Get all get_prices for sets between (filter text "(year_released BETWEEN 2008 AND 2014)") Relative to their end date
@@ -418,7 +424,7 @@ class SetCollection(object):
                 date_range[0] = tdate_range[0]
             if tdate_range[1] is not None and tdate_range[1] > date_range[1]:
                 date_range[1] = tdate_range[1]
-            historic_price_sets[snum], historic_set_defs[snum] = tHPA.eval_report()
+            historic_price_sets[snum], historic_set_defs[snum] = tHPA.test_eval_reports()
 
         date_list.sort()
         price_csv = "SET_NUM"
@@ -454,12 +460,32 @@ class SetCollection(object):
             f.write(set_csv)
 
 
-    def historic_data_trends(self):
-        pass
-
     ##
     # Static Methods
     ##
+    @staticmethod
+    def build_filter_from_set_list(set_lists):
+        """
+        Take a list of set lists and return a filter statement:  " OR set_num=xxx-xx OR ..."
+        @param set_lists:
+        @return:
+        """
+
+        def _validate_set_list(set_list, allow_set_nums=False):
+            if len(set_list) == 27 and isinstance(set_list[1], str):
+                return set_list[1]
+            elif allow_set_nums is True and isinstance(set_list, str):
+                return set_list
+            return False
+
+        set_num_filter = ""
+        for s in set_lists:
+            cset_num = _validate_set_list(s, allow_set_nums=True)
+            if cset_num:
+                set_num_filter += " OR sets.set_num = {}".format(cset_num)
+            cset_num = None
+        return set_num_filter
+
     @staticmethod
     def build_filter(make=True):
         """
@@ -670,40 +696,17 @@ class SetCollection(object):
 
         return select_text
 
-
-def _set_filter_creator(set_lists):
-    """
-    Take a list of set lists and return a filter statement:  " OR set_num=xxx-xx OR ..."
-    @param set_lists:
-    @return:
-    """
-    set_num_filter = ""
-    for s in set_lists:
-        cset_num = _validate_set_list(s, allow_set_nums=True)
-        if cset_num:
-            set_num_filter += " OR sets.set_num = {}".format(cset_num)
-        cset_num = None
-    return set_num_filter
-
-
-def _set_info_creator(set_list):
-    """
-
-    @param set_list: Take a list of set lists and return SetInfo objects
-    @return:
-    """
-    SetInfo_list = []
-    for s in set_list:
-        SetInfo_list.append(SetInfo(s))
-    return SetInfo_list
-
-
-def _validate_set_list(set_list, allow_set_nums=False):
-    if len(set_list) == 27 and isinstance(set_list[1], str):
-        return set_list[1]
-    elif allow_set_nums is True and isinstance(set_list, str):
-        return set_list
-    return False
+# Todo, still used?
+# def _set_info_creator(set_list):
+# """
+#
+#     @param set_list: Take a list of set lists and return SetInfo objects
+#     @return:
+#     """
+#     SetInfo_list = []
+#     for s in set_list:
+#         SetInfo_list.append(SetInfo(s))
+#     return SetInfo_list
 
 
 def SetCollection_menu():

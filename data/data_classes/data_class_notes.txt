@@ -1,0 +1,43 @@
+Historic SQL Exmples
+        @param select_filter: List: [select statement, where statement, group?]
+
+
+        @@BASE - can't be used, too many get_prices
+        SELECT sets.set_num, historic_prices.record_date, price_types.price_type,
+    historic_prices.lots, historic_prices.qty, historic_prices.min, historic_prices.max,
+    historic_prices.avg, historic_prices.qty_avg, historic_prices.piece_avg
+    FROM historic_prices
+    JOIN sets ON (sets.id=historic_prices.set_id)
+      JOIN price_types ON (price_types.id=historic_prices.price_type)
+    WHERE sets.set_num='10501-1';
+
+    @ AVERAGE 2+ fields
+        SELECT sets.set_num, historic_prices.record_date, price_types.price_type, (historic_prices.min+historic_prices.max)/2 # The 2 needs to be flexible TODO- what does this mean?
+        FROM historic_prices
+      JOIN sets ON (sets.id=historic_prices.set_id)
+      JOIN price_types ON (price_types.id=historic_prices.price_type)
+    WHERE sets.set_num='10501-1';
+
+    @@SUM
+        SELECT sets.set_num, historic_prices.record_date, price_types.price_type, (historic_prices.min+historic_prices.max) # Same thing, no division
+    FROM historic_prices
+      JOIN sets ON (sets.id=historic_prices.set_id)
+      JOIN price_types ON (price_types.id=historic_prices.price_type)
+    WHERE sets.set_num='10501-1';
+
+    @@COMBINE PRICE TYPES - AVERAGE THEM
+        SELECT sets.set_num, historic_prices.record_date, price_types.price_type, AVG(historic_prices.min+historic_prices.max)
+    FROM historic_prices
+      JOIN sets ON (sets.id=historic_prices.set_id)
+      JOIN price_types ON (price_types.id=historic_prices.price_type)
+    WHERE sets.set_num='10501-1' and (price_types.price_type='historic_used' OR price_types.price_type='historic_new')
+    GROUP BY historic_prices.record_date;
+
+        @@COMBINE PRICE TYPES - SUM THEM (ALSO CAN DO MIN AND MAX)
+        SELECT sets.set_num, historic_prices.record_date, price_types.price_type, SUM(historic_prices.min+historic_prices.max)
+    FROM historic_prices
+      JOIN sets ON (sets.id=historic_prices.set_id)
+      JOIN price_types ON (price_types.id=historic_prices.price_type)
+    WHERE sets.set_num='10501-1' and (price_types.price_type='historic_used' OR price_types.price_type='historic_new')
+    GROUP BY historic_prices.record_date;
+

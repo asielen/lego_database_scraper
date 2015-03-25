@@ -122,24 +122,6 @@ def si_menu_text_csv_dump():
     test_set.set_report()
 
 
-# def menu_test_sql_historic():
-# global test_set
-#     while not bool(test_set):
-#         menu_create_set_db()
-#     c_result = test_set.get_historic_price_trends()
-#     syt.print4(c_result, 5)
-#     c_result = test_set.get_historic_price_trends(
-#         select_filter=["(historic_prices.min+historic_prices.max)/2", None, False])
-#     syt.print4(c_result, 5)
-#     c_result = test_set.get_historic_price_trends(select_filter=["(historic_prices.min+historic_prices.max)",
-#                                                                  "(price_types.price_type='historic_used' OR price_types.price_type='historic_new')",
-#                                                                  False])
-#     syt.print4(c_result, 5)
-#     c_result = test_set.get_historic_price_trends(select_filter=["SUM(historic_prices.min+historic_prices.max)",
-#                                                                  "(price_types.price_type='historic_used' OR price_types.price_type='historic_new')",
-#                                                                  True])
-#     syt.print4(c_result, 5)
-
 def hpa_menu():
     """
     Main launch menu
@@ -159,7 +141,7 @@ def hpa_menu():
         return text
 
     options = (
-        ("Test Historic", hpa_menu_test_historic),
+        ("Test Historic", hpa_menu_create),
         ("Set Inflation Year", hpa_menu_inflation),
         ("Set Report Type", hpa_menu_report_type),
         ("Set Date Price", hpa_menu_date_price),
@@ -171,7 +153,7 @@ def hpa_menu():
     syt.Menu(name=menu_text, choices=options).run()
 
 
-def hpa_menu_test_historic():
+def hpa_menu_create():
     """
     The point is to test the ability of the historic price analyzer
     @return:
@@ -180,78 +162,26 @@ def hpa_menu_test_historic():
 
     set_num = syt.input_set_num()
     test_set = SetInfo(set_num)
-    test_HPA = HistoricPriceAnalyser(si=test_set, select_filter=HistoricPriceAnalyser.build_filter())
+    filter = HistoricPriceAnalyser.build_filter()
+    if filter is None:
+        syt.log_error("No filter created")
+        return None
+    test_HPA = HistoricPriceAnalyser(si=test_set, select_filter=filter)
+    return test_HPA
 
-
-# Now a static method in the HPA class
-# def hpa_builder():
-# """
-#     Through a set of menus, this creates the select string for a HPA class
-#     @return:
-#     """
-#     hpa_string = ""
-#
-#     def hpa_build_rating():
-#         qstring = ["",None,True]
-#         options = ["Want","Own","Rating","Want+Own","Want-Own"]
-#         choice = syt.Menu("- Create HPA Query Rating -", choices=options, type="return", quit=False, drop_down=True).choice
-#
-#         if choice == "Want":
-#             qstring[0] = "bs_ratings.want"
-#         elif choice == "Own":
-#             qstring[0] = "bs_ratings.own"
-#         elif choice == "Rating":
-#             qstring[0] = "bs_ratings.rating"
-#         elif choice == "Want+Own":
-#             qstring[0] = "(bs_ratings.want + bs_ratings.own)"
-#         elif choice == "Want-Own":
-#             qstring[0] = "(bs_ratings.want - bs_ratings.own)"
-#
-#         return qstring
-#
-#     def hpa_build_price():
-#
-#
-#         price_types = ["historic_new", "historic_used", "current_new", "current_used"]
-#         fields = ["avg", "lots", "max", "min", "qty", "qty_avg", "piece_avg"]
-#         group_functions = ["AVG","MIN","MAX","SUM"] # For price types
-#         aggregate_functions = ["AVG","SUM","DIFFERENCE"] # For fields
-#         c_price_types = []
-#         c_fields = []
-#         c_group_function = None
-#         c_aggregate_function = None
-#
-#         c_price_types = syt.MultiChoiceMenu(price_types)
-#         if len(c_price_types)>1:
-#             c_group_function = syt.Menu("- Choose group function -", choices=group_functions, drop_down=True, type=syt.Menu.RETURN).choice
-#         c_fields = syt.MultiChoiceMenu(fields)
-#         if len(c_fields)>1:
-#             c_aggregate_function = syt.Menu("- Choose aggregate function -", choices=aggregate_functions, drop_down=True, type=syt.Menu.RETURN).choice
-#
-#
-#         return {"price_type": c_price_types, "field": c_fields,
-#                 "group_function": c_group_function, "aggregate_function": c_aggregate_function}
-#
-#
-#
-#     options = [("Rating", hpa_build_rating),
-#                ("Price", hpa_build_price)]
-#     hpa_string = syt.Menu("- Create HPA Query -", choices=options, quit=False, drop_down=True).choice
-#
-#     return hpa_string
 
 
 
 def hpa_menu_inflation():
     if test_HPA is None:
-        hpa_menu_test_historic()
+        hpa_menu_create()
     inf_year = input("Enter Inflation Year: ")
     test_HPA.set_inflation_year(syt.int_null(inf_year))
 
 
 def hpa_menu_report_type():
     if test_HPA is None:
-        hpa_menu_test_historic()
+        hpa_menu_create()
     rtype = input("""Enter Report Type 0-4: \n
     STANDARD = 0
     RELATIVE = 1
@@ -263,7 +193,7 @@ def hpa_menu_report_type():
 
 def hpa_menu_date_price():
     if test_HPA is None:
-        hpa_menu_test_historic()
+        hpa_menu_create()
     rprice = input("Enter Comparison Price OR original: ")
     rprice = syt.float_null(rprice)
     rdate = input("Enter Comparison Date YYYY-MM-DD OR start or end: ")
@@ -272,20 +202,20 @@ def hpa_menu_date_price():
 
 def hpa_menu_get():
     if test_HPA is None:
-        hpa_menu_test_historic()
+        hpa_menu_create()
     result = test_HPA.run().items()
     syt.print4(result, 10)
 
 
 def hpa_menu_clear():
     if test_HPA is None:
-        hpa_menu_test_historic()
+        hpa_menu_create()
     test_HPA.clear()
 
 
 def hpa_menu_test():
     if test_HPA is None:
-        hpa_menu_test_historic()
+        hpa_menu_create()
     test_HPA.set_report_type(0)
     test_HPA.set_inflation_year(2014)
     test_HPA.set_base_price_date(price="original")

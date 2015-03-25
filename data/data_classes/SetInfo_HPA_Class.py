@@ -5,6 +5,7 @@ import collections
 import arrow
 
 
+
 # Internal
 from data import update_secondary
 import database as db
@@ -394,9 +395,9 @@ class SetInfo(object):
 
     # ###
     # # Calculated Properties
-    ####
+    # ###
 
-    ##Price per Piece
+    # Price per Piece
     @property
     def ppp(self):
         if self.original_price_us is None or self.piece_count is None:
@@ -411,7 +412,7 @@ class SetInfo(object):
         if self.piece_count is not None and self.piece_count > 0:
             return self.original_price_uk / self.piece_count
 
-    ##Price per Gram
+    # Price per Gram
     @property
     def ppg(self):
         if self.original_price_us is None or self.weight is None:
@@ -546,6 +547,20 @@ class SetInfo(object):
         select_filter = "historic_prices.{}".format(field)
         where_filter = "price_types.price_type = '{}'".format(price_type)
         return self._get_price_history(desc=filter, select_filter=[select_filter, where_filter, False])
+
+    def get_relative_date(self, date, reference_date=None):
+        """
+        Gets the distance from date to reference date
+
+        @param date: the date to compare
+        @param reference_date: the date 0
+        @return:
+        """
+        if syt.check_if_the_same_day(date, reference_date):
+            return 0
+        else:
+            return syt.get_days_between(date, reference_date)
+
 
     def get_relative_end_date(self, date):
         """
@@ -733,13 +748,14 @@ class SetInfo(object):
         """
         syt.log_info("Building CSV")
         csv_string = ""
-        csv_string += "Set Report, {}, {},\n".format(csv_replace_comma(self.set_num), csv_replace_comma(self.name))
+        csv_string += "Set Report, {}, {},\n".format(syt.csv_replace_comma(self.set_num),
+                                                     syt.csv_replace_comma(self.name))
         csv_string += "Database ID, {},\n".format(self.db_id)
         csv_string += "\n"
         csv_string += "Basic Info,\n"
-        csv_string += "Set Num, {},\n".format(csv_replace_comma(self.set_num))
-        csv_string += "Set Name, {},\n".format(csv_replace_comma(self.name))
-        csv_string += "Theme, {},\n".format(csv_replace_comma(self.theme))
+        csv_string += "Set Num, {},\n".format(syt.csv_replace_comma(self.set_num))
+        csv_string += "Set Name, {},\n".format(syt.csv_replace_comma(self.name))
+        csv_string += "Theme, {},\n".format(syt.csv_replace_comma(self.theme))
         csv_string += "Piece Count, {},\n".format(self.piece_count)
         csv_string += "Figures, {},\n".format(self.figures)
         csv_string += "Set Weight, {},\n".format(self.weight)
@@ -753,7 +769,7 @@ class SetInfo(object):
                                                                                         self.date_released_uk))
         csv_string += "UK Price, {},\n".format(self.original_price_uk)
         csv_string += "Age Range, {}, {},\n".format(self.age_low, self.age_high)
-        csv_string += "Box Dimensions, {},\n".format(csv_replace_comma(self.box_size))
+        csv_string += "Box Dimensions, {},\n".format(syt.csv_replace_comma(self.box_size))
         csv_string += "Box Volume, {},\n".format(self.box_volume)
         csv_string += "\n"
         csv_string += "Last Updated,\n"
@@ -892,12 +908,18 @@ class HistoricPriceAnalyser(object):
 
         @NOTE: it only works on one price type at a time.@ - But it can do aggregate prices/ratings
     """
+    # Price types
     STANDARD = 0
     RELATIVE = 1
     RELATIVE_DAY = 2
     DELTA = 3
     DELTA_DAY = 4
 
+    # Relative to
+    R_NOT_RELATIVE = 0
+    R_RETAIL_PRICE = 1
+    R_START_PRICE = R_START_DATE = 2
+    R_END_PRICE = R_END_DATE = 3
 
     def __init__(self, si=None, desc=None, select_filter=None, rating=False):
 
@@ -912,18 +934,19 @@ class HistoricPriceAnalyser(object):
         self.rating = rating  # If this is true, we are working with ratings not prices, so options like relative pricing is ignored
 
 
-        # The following two if statements create a list that can be used by _build_historic_data_sql to make the sql text
+        # The following two if statements create a list that can be used by _build_report_data_sql to make the sql text
         if select_filter is None:
             # If no select filter is provided, ask to make one
             select_filter = HistoricPriceAnalyser.build_filter(True)
+            print(select_filter)
         if isinstance(select_filter, dict):
             select_filter = HistoricPriceAnalyser.make_filter(select_filter)
         # Make the sql filter
         sql_query = None
         if isinstance(select_filter, list) and len(select_filter) >= 2:
-            sql_query = self._build_historic_data_sql(*select_filter)
+            sql_query = self._build_report_data_sql(*select_filter)
         else:
-            sql_query = self._build_historic_data_sql()
+            sql_query = self._build_report_data_sql()
 
         sql_result = self.sql(sql_query)
         if sql_result is not None and len(sql_result):
@@ -933,12 +956,14 @@ class HistoricPriceAnalyser(object):
             #   Store the sql so we can work it later, or rebuild it if needed
             self.sql_query = sql_query
             # Same as clear - but needs to be defined in __init__ (set the working data = to the original data)
-            self.working_data = copy.deepcopy(self.original_data)
-            # Working_data_format:
-            self.base_date = min(self.original_data.keys())  # The earliest date
-            self.base_price = self.original_data[self.base_date]  # The price at the earliest date
-            self.type = self.STANDARD
-            self.inf_year = None
+            self.clear()
+            # self.working_data = copy.deepcopy(self.original_data)
+            #
+            # # Working_data_format:
+            # self.base_date = None #min(self.original_data.keys())  # The earliest date
+            # self.base_price = None #self.original_data[self.base_date]  # The price at the earliest date
+            # self.type = self.STANDARD
+            # self.inf_year = None
         else:
             raise SyntaxError("Invalid HPA Formation")
 
@@ -960,6 +985,7 @@ class HistoricPriceAnalyser(object):
         dp_list.sort(key=lambda x: x[0])  # Sort the list by date
         dp_list_to_add = []  # date, price combos that need to be added
         DAY = 86400  # (60 * 60 * 24)  # Number of seconds in a day: 86400
+
         # If the list is longer than this, it returned a query with too many get_prices, only one at a time.
         #       May consider expanding this to multiple types at a time
         assert len(dp_list[0]) == 2
@@ -986,6 +1012,44 @@ class HistoricPriceAnalyser(object):
     def dates(self):
         return self.working_data.keys()
 
+    def set_options(self, report_type=STANDARD, base_price=None, base_date=None, inf_year=None):
+        """
+        Set the report options all in one place
+        @param report_type: in:
+            STANDARD = 0
+            RELATIVE = 1
+            RELATIVE_DAY = 2
+            DELTA = 3
+            DELTA_DAY = 4
+        @param base_price: in
+            R_NOT_RELATIVE = 0
+            R_RETAIL_PRICE = 1
+            R_START_PRICE = 2
+            R_END_PRICE = 3
+            price value
+        @param base_date:
+            R_NOT_RELATIVE = 0
+            R_START_DATE = 2
+            R_END_DATE = 3
+            date value  <- in any date format
+        @param inf_year: Year string
+        @return: None
+        """
+        # if options_dict:
+        # report_type = options_dict["report_type"]
+        #     base_price = options_dict["base_price"]
+        #     base_date = options_dict["base_date"]
+        #     inf_year = options_dict["inf_year"]
+        if inf_year is not None:
+            self.set_inflation_year(inf_year)
+        if report_type is not None:
+            self.set_report_type(report_type)
+        if base_price is not None:
+            self.set_base_price(price=base_price)
+        if base_date is not None:
+            self.set_base_date(date=base_date)
+        return self
+
     def set_inflation_year(self, year=None):
         """
         @param year: If none provided, it is set to None
@@ -1005,38 +1069,64 @@ class HistoricPriceAnalyser(object):
             delta - price change from start date
             delta_day - price change *day over day*  (does not take into account start price)
         """
+        self.type = self.STANDARD
         if rtype in (self.STANDARD, self.RELATIVE, self.RELATIVE_DAY, self.DELTA, self.DELTA_DAY):
             if rtype != self.type:
                 self.type = rtype
 
-
-    def set_base_price_date(self, price=None, date=None, region="us"):
+    def set_base_price(self, price=None, region="us"):
         """
         Sets the price to do all the calculations from. if none then calculations are done against the retail price
         - This has no effect in a standard report, only has effect in relative and delta reports (not day over day reports though)
 
         @param price: Options:
-                standard - compare price against historic get_prices (influenced by base date)
+                R_NOT_RELATIVE = 0 compare price against historic get_prices (influenced by base date)
             These can only be used with relative and delta [type]
-                original - compare price against us original
-                original - compare price against uk original
+                R_RETAIL_PRICE = 1 compare price against us/uk original
+                R_START_PRICE = 2
+                R_END_PRICE = 3
+                price value
+        @param region: Options:
+                us or uk
+        @return:
+        """
+
+        if price is None or price == "" or price == self.R_NOT_RELATIVE:
+            self.base_price = None
+
+        elif price == self.R_RETAIL_PRICE:
+            if region == "uk":
+                self.base_price = self.si.original_price_uk
+            else:
+                self.base_price = self.si.original_price_us
+        elif price == self.R_START_PRICE:
+            self.base_price = self._get_price_from_date(self.base_date)
+        elif price == self.R_END_PRICE:
+            self.base_price = self._get_price_from_date(self.base_date)
+        else:
+            self.price = syt.int_zero(price)
+
+    def set_base_date(self, date=None, region="us"):
+        """
+
+
+        price affects how the prices are calculated
+        date affects how the prices line up (where t0 is)
+
         @param date: Options:
                 a date to start on (in format YYYY-MM-DD)
-                start - list get_prices with start date as the focus
-                end - list get_prices with end date as the focus
+                R_START_DATE = 2 list get_prices with start date as the focus
+                R_END_DATE = 3 list get_prices with end date as the focus
+                R_NOT_RELATIVE = 0 = None
         @param region: Options:
                 us or uk
         """
-        if date is None or date == "":
-            self.base_date = None
-            if price == "original":
-                if region == "uk":
-                    self.base_price = self.si.original_price_uk
-                else:
-                    self.base_price = self.si.original_price_us
-            else:
-                self.base_price = None
-        elif date == "start":
+        # If no date, then we are not shiting the dates at all
+        if date is None or date == "" or date == self.R_NOT_RELATIVE:
+            self.base_date = None  # Date is not relative
+
+        #   Set the compare date as the start date (or the earlist date)
+        elif date == self.R_START_DATE:
             if region == "uk":
                 self.base_date = self.si.ts_date_released_uk
             else:
@@ -1044,91 +1134,71 @@ class HistoricPriceAnalyser(object):
 
             if self.base_date is None or self.base_date == "":
                 self.base_date = max(self.original_data.keys())
-            self.base_price = self._get_price_from_date(self.base_date)
-        elif date == "end":
+
+        #   Set the compare date as the end date
+        elif date == self.R_END_DATE:
             if region == "uk":
                 self.base_date = self.si.ts_date_ended_uk
             else:
                 self.base_date = self.si.ts_date_ended_us
             if self.base_date is None or self.base_date == "":
                 self.base_date = None
-            else:
-                self.base_price = self._get_price_from_date(self.base_date)
         else:
             self.base_date = syt.get_timestamp(date)
             self.base_price = self._get_price_from_date(self.base_date)
 
+    def set_base_price_date(self, price=None, date=None, region="us"):
+        self.set_base_price(price=price, region=region)
+        self.set_base_date(date=date, region=region)
 
-    def run(self, by_date=False, clear=True):
+    def clear(self):
         """
-
-        @param by_date:
-        @param clear: Default is to re-run from base. Can also set to False to rerun from existing
+        Reverts the working data back to the original state
         @return:
-        Default values:
-            self.base_date = min(self.original_data, key=self.original_data.get)
-            self.base_price = self.original_data[self.base_date]
-            self.type = self.STANDARD
-            self.inf_year = None
         """
-        if clear: self.working_data = copy.deepcopy(self.original_data)
-        if isinstance(self.inf_year, int):
-            self.working_data = syt.adj_dict_for_inf(self.working_data, self.inf_year)
-        self._process_change_list()
-        return self.get(by_date)
-
-
-    def run_all(self, types=None, by_date=False):
         self.working_data = copy.deepcopy(self.original_data)
-        results_dict = collections.defaultdict()
-        in_progress = []
-        range_types = range(0, 5)
-        if isinstance(types, list):
-            range_types = types
-        for n in range_types:
-            self.set_report_type(n)
-            self.set_base_price_date(date="end")
-            self.set_base_price_date(price="original")
-            self._process_change_list()
-            in_progress.append(self.get(by_date))
+        self.base_date = None
+        self.base_price = None
+        self.type = self.STANDARD
+        self.inf_year = None
 
-        for n in in_progress[0]:
-            next_row = []
-            for m in range(len(in_progress)):
-                next_row.append(in_progress[m][n])
-            if by_date is True:
-                results_dict[n] = next_row
-            else:
-                results_dict[syt.get_ts_day(n)] = next_row
-                # Note this returns a list not just a value, if you have one value (one price) you need to pull it out later
-
-        return results_dict
-
-
-    def _process_change_list(self):
+    def _process_prices(self):
         """
 
-        This updates the working_data dict with the new parameters
+        This updates (calculates the prices) the working_data dict with the new parameters
+        This does not modify the dates, that is done in
 
         STANDARD = 0
-        RELATIVE = 1  - percent change from start date
-        RELATIVE_DAY = 2 - percent change from previous day (does not take into account start price)
+        RELATIVE = 1  - %percent change from start date
+        RELATIVE_DAY = 2 - %percent change from previous day (does not take into account start price)
         DELTA = 3 - price change from start date
         DELTA_DAY = 4 - price change *day over day*  (does not take into account start price)
+
+        Uses these variables:
+        self.type - see above
+        self.base_date
+        self.base_price
+        self.inf_year
         @return:
         """
         new_dict = collections.defaultdict()
         if self.type == self.STANDARD:
-            return self.working_data  # standard type no change
+            return self.working_data  # standard type no change, Todo, should this clear?
+
+        # Delta simply means the difference from the base price
         elif self.type == self.DELTA:
             for db in self.working_data:
                 new_dict[db] = syt.float_zero(self.working_data[db]) - syt.float_zero(self.base_price)
+
+        # Delta simply means the %difference from the base price
         elif self.type == self.RELATIVE:
             for db in self.working_data:
                 try:
                     new_dict[db] = (syt.float_zero(self.working_data[db]) / syt.float_zero(self.base_price)) - 1
                 except ZeroDivisionError:
                     new_dict[db] = 0
+
+        #   Delta day simply means the difference from the day before, base price doesn't matter
         elif self.type == self.DELTA_DAY:
             for idx, db in enumerate(self.working_data.keys()):
                 if idx == 0:
@@ -1138,6 +1208,8 @@ class HistoricPriceAnalyser(object):
                     previous_value = self.working_data.previous_key(db)
                     new_dict[db] = syt.float_zero(self.working_data[db]) - syt.float_zero(
                         self.working_data[previous_value])
+
+        #   Delta day simply means the %difference from the day before, base price doesn't matter
         elif self.type == self.RELATIVE_DAY:
             for idx, db in enumerate(self.working_data.keys()):
                 if idx == 0:
@@ -1151,48 +1223,21 @@ class HistoricPriceAnalyser(object):
                     except ZeroDivisionError:
                         new_dict[db] = None
         self.working_data = syt.OrderedDictV2(sorted(new_dict.items(), key=lambda t: t[0]))
+
+        if self.inf_year is not None:
+            self.working_data = syt.adj_dict_for_inf(self.working_data, self.inf_year)
+
         return self.working_data
 
-
-    def clear(self):
+    def _process_dates(self):
         """
-        Reverts the working data back to the original state
+            Take self.base_date and return the working_data with the adjusted dates
         @return:
         """
-        self.working_data = copy.deepcopy(self.original_data)
-        self.base_date = min(self.original_data.keys())
-        self.base_price = self.original_data[self.base_date]
-        self.type = self.STANDARD
-        self.inf_year = None
-
-    def get_def(self, type="dict"):
-        if type == "list":
-            return [self.si.set_num, self.si.theme, self.si.year_released, self.si.original_price_us,
-                    self.si.date_released_us, self.si.date_ended_us]
-        else:
-            return {"set_num": self.si.set_num, "theme": self.si.theme, "date_release": self.si.date_released_us,
-                    "original_price": self.si.original_price_us, "base_date": syt.get_date(self.base_date),
-                    "base_date_ts": self.base_date, "inflation_year": self.inf_year, "base_price": self.base_price,
-                    "report_type": self.type, "records": len(self.working_data)}
-
-
-    def get(self, by_date=False):
-        """
-
-        @param by_date: If False, return just the working data
-                        If True... Todo - Explain this...
-        @return: the results of the current query, or the current working data
-        """
-        if by_date:
-            raw_dict = syt.OrderedDictV2({self.si.get_relative_end_date(d): self.working_data[d] for d in
-                                          self.working_data})  # if d >= self.base_date})
-            # return_dict = syt.OrderedDictV2()
-            # dates = sorted(raw_dict.keys())
-            # for i, dte in enumerate(dates):
-            # return_dict[i] = raw_dict[dte]
-            return raw_dict
-        else:
-            return self.working_data
+        if self.base_date is not None:
+            self.working_data = syt.OrderedDictV2({self.si.get_relative_date(d, self.base_date): self.working_data[d]
+                                                   for d in self.working_data})
+        return self.working_data
 
     def _get_price_from_date(self, date=None):
         """
@@ -1206,7 +1251,7 @@ class HistoricPriceAnalyser(object):
         self.base_date = date
         return self.working_data[closest_price_date]
 
-    def _build_historic_data_sql(self, select_=None, where_=None, group=True):
+    def _build_report_data_sql(self, select_=None, where_=None, group=True):
         """Takes what we got in the starter filter (either a complete filter string or a dict of filter options
             and returns a built out sql statement
         """
@@ -1214,7 +1259,8 @@ class HistoricPriceAnalyser(object):
         if select_ is not None:
             h_select += ", " + select_
         else:
-            raise SyntaxError
+            syt.log_error("Missing filter text")
+            return None
             # h_select = "SELECT historic_prices.record_date, price_types.price_type, historic_prices.lots, historic_prices.qty, historic_prices.min, historic_prices.max, historic_prices.avg, historic_prices.qty_avg, historic_prices.piece_avg"
         h_joins = " FROM historic_prices JOIN sets ON (sets.id=historic_prices.set_id) JOIN price_types ON (price_types.id=historic_prices.price_type) JOIN bs_ratings ON (bs_ratings.set_id=historic_prices.set_id AND bs_ratings.record_date=historic_prices.record_date)"
         h_filter = " WHERE sets.set_num='{}'".format(self.si.set_num)
@@ -1230,7 +1276,44 @@ class HistoricPriceAnalyser(object):
         """Not safe to have publicly exposed, but very handy for my own personal project"""
         return db.run_sql(sql_statement)
 
-    def eval_report(self):
+
+
+    def get_set_descs(self, type="dict"):
+        """
+        Gets basic information for every set in the HPA, basically a nice to have
+        @param type:
+        @return:
+        """
+        if type == "list":
+            return [self.si.set_num, self.si.theme, self.si.year_released, self.si.original_price_us,
+                    self.si.date_released_us, self.si.date_ended_us]
+        else:
+            return {"set_num": self.si.set_num, "theme": self.si.theme, "date_release": self.si.date_released_us,
+                    "original_price": self.si.original_price_us, "base_date": syt.get_date(self.base_date),
+                    "base_date_ts": self.base_date, "inflation_year": self.inf_year, "base_price": self.base_price,
+                    "report_type": self.type, "records": len(self.working_data)}
+
+    def prepare_report(self):
+        """
+        Setup the working list based on the current settings (type, inf etc)
+        @return:
+        """
+        self._process_prices()
+        self._process_dates()
+        return self
+
+    def run_report(self, prepare=True):
+        """
+        Run the report based on current settings and return two lists that can be turned into csv filed
+        @return:
+        """
+        if prepare: self.prepare_report()
+        set_descs = self.get_set_descs(type="list")
+        set_prices = self.working_data
+        return set_prices, set_descs
+
+
+    def test_eval_reports(self):
         """
         Returns two lists that can be turned into csv files
 
@@ -1240,20 +1323,147 @@ class HistoricPriceAnalyser(object):
         Price List
         set_num, date(price), date(price), date(price), date(price)
         @return:
+        set_descs = [["SET_NUM", "THEME", "YEAR_RELEASED", "ORIGINAL_PRICE", "DATE_START", "DATE_END"]]
         """
-        set_prices = []
-        # set_defs = [["SET_NUM", "THEME", "YEAR_RELEASED", "ORIGINAL_PRICE", "DATE_START", "DATE_END"]]
-        set_defs = self.get_def(type="list")
+        set_descs = self.get_set_descs(type="list")
         self.clear()
-        set_prices = self.run_all(types=[1], by_date=True)  #By date will start with the date ended
+        set_prices = self.run_all_test(report_types=[1])  # By date will start with the date ended
 
-        return set_prices, set_defs
+        return set_prices, set_descs
+
+    def run_all_test(self, report_types=None):
+        self.working_data = copy.deepcopy(self.original_data)
+        results_dict = collections.defaultdict()
+        in_progress = []
+
+        range_types = report_types
+        if range_types is None:
+            range_types = (self.STANDARD, self.RELATIVE, self.RELATIVE_DAY, self.DELTA, self.DELTA_DAY)
+
+        for n in range_types:
+            self.set_options(report_type=n, base_price=self.R_RETAIL_PRICE, base_date=self.R_END_DATE, inf_year=2015)
+            self.prepare_report()
+            in_progress.append(self.run_report())
+
+        for n in in_progress[0]:
+            next_row = []
+            for m in range(len(in_progress)):
+                next_row.append(in_progress[m][n])
+                results_dict[syt.get_ts_day(n)] = next_row
+
+        return results_dict
 
     ##
     # Static Methods
     ##
     @staticmethod
-    def build_filter(make=True):
+    def build_report_type():
+        """
+        -Report Type
+            STANDARD = 0
+            RELATIVE = 1
+            RELATIVE_DAY = 2
+            DELTA = 3
+            DELTA_DAY = 4
+        -Inflation Date
+        -Relative Date: (set_base_price_date) - start, end
+        -Relative Price: start, end, retail
+
+        @return:
+        """
+
+        def _get_report_type(type_text):
+            """
+            STANDARD = 0
+            RELATIVE = 1
+            RELATIVE_DAY = 2
+            DELTA = 3
+            DELTA_DAY = 4
+            """
+            report_types = {
+                "Standard": HistoricPriceAnalyser.STANDARD,
+                "Relative": HistoricPriceAnalyser.RELATIVE,
+                "Relative Day": HistoricPriceAnalyser.RELATIVE_DAY,
+                "Delta": HistoricPriceAnalyser.DELTA,
+                "Delta Day": HistoricPriceAnalyser.DELTA_DAY
+            }
+            return report_types[type_text]
+
+        options = (
+            "Standard",
+            "Relative",
+            "Relative Day",
+            "Delta",
+            "Delta Day"
+        )
+        report_type = syt.Menu('- Choose Report Type -', choices=options, function=_get_report_type, type=syt.Menu.LOAD)
+
+        def _get_base_price(type_text):
+            """
+            # Relative to
+            R_NOT_RELATIVE = 0
+            R_RETAIL_PRICE = 1
+            R_START_PRICE = R_START_DATE = 2
+            R_END_PRICE = R_END_DATE = 3
+            """
+            report_types = {
+                "None": HistoricPriceAnalyser.R_NOT_RELATIVE,
+                "Retail": HistoricPriceAnalyser.R_RETAIL_PRICE,
+                "Start Price": HistoricPriceAnalyser.R_START_PRICE,
+                "End Price": HistoricPriceAnalyser.R_END_PRICE
+            }
+            if type_text == "Custom":
+                price = input("What custom price would you like to compare to? ")
+                return price
+            else:
+                return report_types[type_text]
+
+        options = (
+            "None",
+            "Retail",
+            "Start Price",
+            "End Price",
+            "Custom"
+        )
+        base_price = syt.Menu('- Choose Base Price -', choices=options, function=_get_base_price, type=syt.Menu.LOAD)
+
+        def _get_base_date(type_text):
+            """
+            # Relative to
+            R_NOT_RELATIVE = 0
+            R_RETAIL_PRICE = 1
+            R_START_PRICE = R_START_DATE = 2
+            R_END_PRICE = R_END_DATE = 3
+            """
+            report_types = {
+                "None": HistoricPriceAnalyser.R_NOT_RELATIVE,
+                "Start Date": HistoricPriceAnalyser.R_START_DATE,
+                "End Date": HistoricPriceAnalyser.R_END_Date
+            }
+            if type_text == "Custom":
+                date = input("What custom date would you like to compare to? (yyyy-mm-dd) ")
+                return date
+            else:
+                return report_types[type_text]
+
+        options = (
+            "None",
+            "Retail",
+            "Start Price",
+            "End Price",
+            "Custom"
+        )
+        base_date = syt.Menu('- Choose Base Date -', choices=options, function=_get_base_date, type=syt.Menu.LOAD)
+
+        inf_year = input("What year do you want to use for inflation (blank for none)? ")
+        if inf_year == "":
+            inf_year = None
+
+        return report_type, base_price, base_date, inf_year
+
+
+    @staticmethod
+    def build_filter():
         """
         Through a set of menus, this creates the select string for a HPA class
         @return:
@@ -1276,6 +1486,8 @@ class HistoricPriceAnalyser(object):
                 qstring[0] = "(bs_ratings.want + bs_ratings.own)"
             elif choice == "Want-Own":
                 qstring[0] = "(bs_ratings.want - bs_ratings.own)"
+            else:
+                qstring = None
 
             return qstring
 
@@ -1307,6 +1519,7 @@ class HistoricPriceAnalyser(object):
         options = [("Rating", hpa_build_rating),
                    ("Price", hpa_build_price)]
         hpa_list = syt.Menu("- Create HPA Query -", choices=options, drop_down=True).run()
+        if hpa_list == 0: hpa_list = None
 
         return hpa_list
 
@@ -1320,6 +1533,9 @@ class HistoricPriceAnalyser(object):
         """
         if isinstance(filter_dict, list):
             return filter_dict
+
+        if len(filter_dict['field']) == 0 and len(filter_dict['price_type']) == 0:
+            return None
 
         sql_string = []
 
@@ -1361,91 +1577,6 @@ class HistoricPriceAnalyser(object):
 
 
 
-        #
-    # def get_historic_price_trends(self, select_filter=None, type="standard", price="standard", date=None,
-    # inflation=None):
-    # """
-    #     @param select_filter: List:
-    #                         [select statement, where statement, group?] See the end of this doc for examples
-    #
-    #     @param inflation: Options:
-    #                         a year to get inflation based on
-    #                         None - no changes
-    #
-    #     All this is done in the lists and not with sql
-    #     @return:
-    #          {data:{year:price,year:price},settings:{price_type:"",type:"",price:"",date:"",inflation:""}}
-    #     """
-    #     if isinstance(select_filter, list) and len(select_filter) >= 2:
-    #         sql_query = self._build_historic_data_sql(*select_filter)
-    #     else:
-        #         return self._get_price_history()
-    #
-    #     working_data = self.sql(sql_query)
-    #
-    #     base_date = None
-    #     base_price = None
-    #     if type != "standard":
-    #         if date is not None:
-    #             if date is "start":
-    #                 base_date = self.date_released_us
-    #             elif date is "end":
-    #                 base_date = self.date_ended_us
-    #             else:
-    #                 base_date = arrow.get(date)
-    #     if price != "standard":
-    #         if price == "original_us":
-    #             base_price = self.original_price_us
-    #         elif price == "original_uk":
-    #             base_price = self.original_price_uk
-    #
-    #     return working_data
-
-
-
-
-    # Historic SQL Exmples
-        # @param select_filter: List: [select statement, where statement, group?]
-
-
-        # @@BASE - can't be used, too many get_prices
-        # SELECT sets.set_num, historic_prices.record_date, price_types.price_type,
-    # historic_prices.lots, historic_prices.qty, historic_prices.min, historic_prices.max,
-    # historic_prices.avg, historic_prices.qty_avg, historic_prices.piece_avg
-    # FROM historic_prices
-    # JOIN sets ON (sets.id=historic_prices.set_id)
-    #   JOIN price_types ON (price_types.id=historic_prices.price_type)
-    # WHERE sets.set_num='10501-1';
-        #
-    # @ AVERAGE 2+ fields
-        # SELECT sets.set_num, historic_prices.record_date, price_types.price_type, (historic_prices.min+historic_prices.max)/2 # The 2 needs to be flexible TODO- what does this mean?
-        # FROM historic_prices
-    #   JOIN sets ON (sets.id=historic_prices.set_id)
-    #   JOIN price_types ON (price_types.id=historic_prices.price_type)
-    # WHERE sets.set_num='10501-1';
-        #
-    # @@SUM
-        # SELECT sets.set_num, historic_prices.record_date, price_types.price_type, (historic_prices.min+historic_prices.max) # Same thing, no division
-    # FROM historic_prices
-    #   JOIN sets ON (sets.id=historic_prices.set_id)
-    #   JOIN price_types ON (price_types.id=historic_prices.price_type)
-    # WHERE sets.set_num='10501-1';
-        #
-    # @@COMBINE PRICE TYPES - AVERAGE THEM
-        # SELECT sets.set_num, historic_prices.record_date, price_types.price_type, AVG(historic_prices.min+historic_prices.max)
-    # FROM historic_prices
-    #   JOIN sets ON (sets.id=historic_prices.set_id)
-    #   JOIN price_types ON (price_types.id=historic_prices.price_type)
-    # WHERE sets.set_num='10501-1' and (price_types.price_type='historic_used' OR price_types.price_type='historic_new')
-    # GROUP BY historic_prices.record_date;
-        #
-        # @@COMBINE PRICE TYPES - SUM THEM (ALSO CAN DO MIN AND MAX)
-        # SELECT sets.set_num, historic_prices.record_date, price_types.price_type, SUM(historic_prices.min+historic_prices.max)
-    # FROM historic_prices
-    #   JOIN sets ON (sets.id=historic_prices.set_id)
-    #   JOIN price_types ON (price_types.id=historic_prices.price_type)
-    # WHERE sets.set_num='10501-1' and (price_types.price_type='historic_used' OR price_types.price_type='historic_new')
-    # GROUP BY historic_prices.record_date;
 
 
 
