@@ -128,7 +128,6 @@ def get_avg_price_per_design(bl_design_num=None):
 
 
 if __name__ == "__main__":
-    from navigation import menu
 
     def main_menu():
         """
@@ -136,21 +135,15 @@ if __name__ == "__main__":
         @return:
         """
 
-        syt.log_critical("set_info.py testing")
-        options = {}
-
-        options['1'] = "Get Color ID", menu_get_color_id
-        options['2'] = "Get RE Part ID", menu_get_re_piece_id
-        options['3'] = "Get BL Part ID", menu_get_bl_piece_id
-        options['4'] = "Get #sets / design", menu_get_num_sets_for_part_design
-        options['5'] = "Get years available", menu_get_years_available
-        options['6'] = "AVG price by design", menu_get_avg_price_per_design
-        options['9'] = "Quit", menu.quit
-
-        while True:
-            result = menu.options_menu(options)
-            if result is 'kill':
-                exit()
+        options = (
+            ("Get Color ID", menu_get_color_id),
+            ("Get RE Part ID", menu_get_re_piece_id),
+            ("Get BL Part ID", menu_get_bl_piece_id),
+            ("Get #sets / design", menu_get_num_sets_for_part_design),
+            ("Get years available", menu_get_years_available),
+            ("AVG price by design", menu_get_avg_price_per_design)
+        )
+        syt.Menu(name="– piece_info.py Testing –", choices=options).run()
 
     def menu_get_color_id():
         color = input("What color number?")

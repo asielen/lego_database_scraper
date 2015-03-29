@@ -1,3 +1,6 @@
+
+
+
 __author__ = 'andrew.sielen'
 
 # external
@@ -7,6 +10,7 @@ from time import sleep
 # internal
 import data
 from data.bricklink.bricklink_api import bricklink_api as blapi
+from data.data_classes.SetInfo_HPA_Class import SetInfo
 import data.update_secondary as update
 import database as db
 import database.info as info
@@ -217,7 +221,7 @@ def add_bl_set_inventory_to_database(set_num):
     @return:
 
     """
-    set_id = info.get_set_id(set_num)
+    set_id = SetInfo.get_set_id(set_num)
     if set_id is None:
         return None
 
@@ -344,10 +348,10 @@ def _get_set_id(set_num, add=False):
     @param add: if True, Add the set if it is missing in the database
     @return: the id column num of the set in the database
     """
-    set_id = info.get_set_id(set_num)
+    set_id = SetInfo.get_set_id(set_num)
     if set_id is None and add:
         update.add_set_to_database(data.get_basestats(set_num))
-        return info.get_set_id(set_num)
+        return SetInfo.get_set_id(set_num)
     return set_id
 
 
@@ -365,7 +369,6 @@ def get_bl_piece_id(part_num, add=False):
 
 
 if __name__ == "__main__":
-    from navigation import menu
 
     def main_menu():
         """
@@ -374,23 +377,19 @@ if __name__ == "__main__":
         """
 
         syt.log_info("Bricklink Update Database testing")
-        options = {}
 
-        options['1'] = "Update Sets", menu_update_sets
-        options['2'] = "Init Categories", menu_init_categories
-        options['3'] = "Init Parts", menu_init_parts
-        options['4'] = "Init Minifigs", menu_pull_minifig_catalog
-        options['5'] = "Init Color Codes", menu_init_part_color_codes
-        options['6'] = "Update all inventories", menu_update_bl_set_inventories
-        options['7'] = "Update one inventory", menu_add_bl_set_inventory_to_database
-        options['8'] = "Add part to database", menu_add_part_to_database
-        options['9'] = "Quit", menu.quit
+        options = (
+            ("Update Sets", menu_update_sets),
+            ("Init Categories", menu_init_categories),
+            ("Init Parts", menu_init_parts),
+            ("Init Minifigs", menu_pull_minifig_catalog),
+            ("Init Color Codes", menu_init_part_color_codes),
+            ("Update all inventories", menu_update_bl_set_inventories),
+            ("Update one inventory", menu_add_bl_set_inventory_to_database),
+            ("Add part to database", menu_add_part_to_database)
+        )
 
-        while True:
-            result = menu.options_menu(options)
-            if result is 'kill':
-                exit()
-
+        syt.Menu(choices=options, name="– Bricklink Update Database Testing –", quit_tag="Exit").run()
 
     def menu_update_sets():
         update_sets()
@@ -415,7 +414,7 @@ if __name__ == "__main__":
 
 
     def menu_add_bl_set_inventory_to_database():
-        set_num = syt.input_set_num()
+        set_num = si.input_set_num()
         add_bl_set_inventory_to_database(set_num)
 
 

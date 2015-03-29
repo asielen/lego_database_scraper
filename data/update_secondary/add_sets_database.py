@@ -8,6 +8,7 @@ import data
 import database as db
 import database.info as info
 import system as syt
+from data.data_classes.SetInfo_HPA_Class import SetInfo
 if __name__ == "__main__": syt.setup_logger()
 
 
@@ -91,8 +92,8 @@ def add_set_data_to_database(set_data):
                'set_name=?, '
                'theme=?, '
                'subtheme=?, '
-               'get_piece_count=?, '
-               'get_figures=?, '
+               'piece_count=?, '
+               'figures=?, '
                'set_weight=?, '
                'year_released=?, '
                'date_released_us=?, '
@@ -256,8 +257,8 @@ def add_sets_data_to_database(sets_to_insert):
                     'set_name=?, '
                     'theme=?, '
                     'subtheme=?, '
-                    'get_piece_count=?, '
-                    'get_figures=?, '
+                    'piece_count=?, '
+                    'figures=?, '
                     'set_weight=?, '
                     'year_released=?, '
                     'date_released_us=?, '
@@ -287,10 +288,10 @@ def get_set_id(set_num, sets=None, add=False):
     try:
         set_id = sets[set_num]
     except:
-        set_id = info.get_set_id(set_num)
+        set_id = SetInfo.get_set_id(set_num)
     if set_id is None and add:
         add_set_to_database(set_num)
-        set_id = info.get_set_id(set_num)
+        set_id = SetInfo.get_set_id(set_num)
         if set_id is not None:
             sets[set_num] = set_id
     return set_id

@@ -1,4 +1,5 @@
 # internal
+from data.data_classes import SetInfo_support as si
 import system as syt
 if __name__ == "__main__": syt.setup_logger()
 
@@ -139,7 +140,6 @@ def pull_colors():
 
 
 if __name__ == "__main__":
-    import navigation.menu as menu
 
     def main_menu():
         """
@@ -147,23 +147,17 @@ if __name__ == "__main__":
         @return:
         """
 
-        syt.log_info("RUNNING: Rebrickable API testing")
-        options = {}
+        options = (
+            ("Pull Set Info", menu_pull_set_info),
+            ("Pull Set Inventory", menu_pull_set_inventory),
+            ("Pull Piece Info", menu_pull_piece_info),
+            ("Pull all Pieces", menu_pull_all_pieces),
+            ("Pull all set Parts", menu_pull_all_set_parts),
+            ("Pull all Sets", menu_pull_all_sets),
+            ("SYS Pull Colors", menu_pull_colors)
+        )
 
-        options['1'] = "Pull Set Info", menu_pull_set_info
-        options['2'] = "Pull Set Inventory", menu_pull_set_inventory
-        options['3'] = "Pull Piece Info", menu_pull_piece_info
-        options['4'] = "Pull all Pieces", menu_pull_all_pieces
-        options['5'] = "Pull all set Parts", menu_pull_all_set_parts
-        options['6'] = "Pull all Sets", menu_pull_all_sets
-        options['7'] = "SYS Pull Colors", menu_pull_colors
-        options['9'] = "Quit", menu.quit
-
-        while True:
-            result = menu.options_menu(options)
-            if result is 'kill':
-                exit()
-
+        syt.Menu(name="– Rebrickable API testing –", choices=options).run()
 
     def menu_pull_all_pieces():
         csvfile = pull_all_pieces()
@@ -181,13 +175,13 @@ if __name__ == "__main__":
         syt.print4(csvfile, 100)
 
     def menu_pull_set_info():
-        set_num = syt.input_set_num("What set num? ")
+        set_num = si.input_set_num()
         csvfile = pull_set_info(set_num)
         syt.print4(csvfile)
 
 
     def menu_pull_set_inventory():
-        set_num = syt.input_set_num("What set num? ")
+        set_num = si.input_set_num()
         csvfile = pull_set_inventory(set_num)
         for c in csvfile:
             print(c)

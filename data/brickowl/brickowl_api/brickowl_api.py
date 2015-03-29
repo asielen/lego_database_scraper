@@ -1,5 +1,4 @@
 # Internal
-import navigation.menu as menu
 import system as syt
 if __name__ == "__main__": syt.setup_logger()
 
@@ -81,24 +80,17 @@ def main_menu():
     Main launch menu
     @return:
     """
-    syt.log_info("RUNNING: Brickowl API testing")
-    options = {}
-
-    options['1'] = "Pull Catalog List", menu_pull_catalog_list
-    options['2'] = "Pull Item Info", menu_pull_catalog_item_info
-    options['3'] = "Search Item Ids", menu_pull_search_ID
-    options['4'] = "Pull Bulk Item list", menu_pull_bulk
-    options['5'] = "Pull Set Inventory", menu_pull_set_inventory
-    options['6'] = "SYS Pull Colors", menu_pull_colors
-    options['7'] = "SYS Pull Data Types", menu_pull_data_types
-    options['8'] = "SYS Pull Conditions", menu_pull_conditions
-    options['9'] = "Quit", menu.quit
-
-    while True:
-        result = menu.options_menu(options)
-        if result is 'kill':
-            exit()
-
+    options = (
+        ("Pull Catalog List", menu_pull_catalog_list),
+        ("Pull Item Info", menu_pull_catalog_item_info),
+        ("Search Item Ids", menu_pull_search_ID),
+        ("Pull Bulk Item list", menu_pull_bulk),
+        ("Pull Set Inventory", menu_pull_set_inventory),
+        ("SYS Pull Colors", menu_pull_colors),
+        ("SYS Pull Data Types", menu_pull_data_types),
+        ("SYS Pull Conditions", menu_pull_conditions)
+    )
+    syt.Menu(name="– Brickowl API testing –", choices=options).run()
 
 def menu_pull_catalog_list():
     jsonfile = pull_catalog_list()

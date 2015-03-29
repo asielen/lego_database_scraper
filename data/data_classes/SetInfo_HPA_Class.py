@@ -1,15 +1,14 @@
 # External
 import copy
 import collections
+import random
 
 import arrow
 
 
-
 # Internal
-from data import update_secondary
-import database as db
-from database import info
+# from data import update_secondary
+import database.database_support as db
 import system as syt
 
 
@@ -33,15 +32,15 @@ class SetInfo(object):
                     set_info_list = list(set_info)
                 elif len(set_info) > 2 and isinstance(set_info[1], str):
                     # If the list is the wrong size, it still trys to find a set_num
-                    s_num = syt.expand_set_num(set_info[1])[2]
+                    s_num = SetInfo.expand_set_num(set_info[1])[2]
             else:
                 if isinstance(set_info, str):
                     # If setup with a string
-                    s_num = syt.expand_set_num(set_info)[2]
+                    s_num = SetInfo.expand_set_num(set_info)[2]
 
         if s_num is not None:
             # Todo: Cant add set with this function here because it causes a circular import
-            set_info_list = info.get_set_info(set_info)  # , new=True)
+            set_info_list = SetInfo.get_set_info(set_info)  # , new=True)
 
         if set_info_list is None:
             self.set_info_list = [None] * 27  # New Empty Set
@@ -49,6 +48,83 @@ class SetInfo(object):
                 self.set_info_list[1] = s_num
         else:
             self.set_info_list = set_info_list
+
+    @staticmethod
+    def get_set_info(set_num, new=False):
+        """
+        @param set_num:
+        @return: the id column num of the set in the database
+        """
+
+        set_info_raw = db.run_sql('SELECT * FROM sets WHERE set_num=?', (set_num.lower(),), one=True)
+
+        # Circular import
+        # if set_id_raw is None and new is True: #If there is no data, try to add it
+        # add_set_to_database(set_num)
+        # set_id_raw = get_set_info(set_num)
+
+        return set_info_raw
+
+    @staticmethod
+    def get_set_id(set_num=None):
+        """
+        @param set_num:
+        @return: the id column num of the set in the database, or a list of all set ids with set num if no set num is provided
+        """
+        if set_num is None:
+            set_id_raw = db.run_sql('SELECT set_num, id FROM sets')
+        else:
+            set_id_raw = db.run_sql('SELECT id FROM sets WHERE set_num=?', (set_num.lower(),), one=True)
+            # if set_id_raw is not None:
+            # set_id_raw = set_id_raw[0]
+
+        return set_id_raw
+
+    @staticmethod
+    def get_random():
+        """
+
+        @return: Get a random set from the database (for testing)
+        """
+        set_list = db.run_sql('SELECT set_num FROM sets')
+        return random.choice(set_list)[0]
+
+    @staticmethod
+    def input_set_num(type=0):
+        """
+        @param type: 0 or 1
+        @return: if type == 1 xxxx, y, xxxx-y
+        @return: else return xxxx-y
+        """
+        set_num = input("What set num? ")
+        if set_num == "rand":
+            set_num = SetInfo.get_random()
+            print("Random Set: {}".format(set_num))
+        if type == 1:
+            return SetInfo.expand_set_num(set_num)
+        else:
+            return SetInfo.expand_set_num(set_num)[2]
+
+    @staticmethod
+    def expand_set_num(set_id):
+        """
+
+        @param set_id: in standard format xxxx-yy
+        @return: xxxx, yy, xxxx-yy
+        """
+
+        set_id = set_id.lower()
+        try:
+            if ' or ' in set_id:
+                set_id = set_id.split(' or ')[0]
+            set_list = set_id.split("-")
+            if len(set_list) > 2: return (None, None, set_id)
+            set_num = set_list[0]
+            set_seq = set_list[1]
+        except:
+            set_num = set_id
+            set_seq = '1'
+        return set_num, set_seq, set_num + '-' + set_seq
 
     # ###
     # # Basic Properties
@@ -70,7 +146,7 @@ class SetInfo(object):
     @set_num.setter
     def set_num(self, set_id):
         assert isinstance(set_id, str)
-        self.set_info_list[3], self.set_info_list[4], self.set_info_list[1] = syt.expand_set_num(set_id)
+        self.set_info_list[3], self.set_info_list[4], self.set_info_list[1] = SetInfo.expand_set_num(set_id)
 
     @property
     def bo_id(self):
@@ -443,13 +519,37 @@ class SetInfo(object):
 
 
     def get_calc_piece_count(self):
-        return info.get_piece_count(self.set_num, 'bricklink')
+        """
+        Returns the piece count of a set by either getting it straight from the piece count column or by
+        calculating it based on inventory
+
+        @return: the number of pieces
+        """
+
+        count = db.run_sql("SELECT SUM(bl_inventories.quantity) FROM bl_inventories "
+                           " WHERE bl_inventories.set_id=?;", (self.db_id,), one=True)
+        return count
 
     def get_calc_unique_pieces(self):
-        return info.get_unique_piece_count(self.set_num)
+        """
+        Returns the unique piece count of a set by calculating it based on inventory
+        """
+        # TODO: Make this work with rebrickable inventories
+        count = db.run_sql("SELECT COUNT(bl_inventories.quantity) FROM bl_inventories JOIN parts"
+                           " ON bl_inventories.piece_id = parts.id"
+                           " WHERE bl_inventories.set_id=?;", (self.db_id,), one=True)
+        return count
 
     def get_calc_weight(self):
-        return info.get_set_weight(self.set_num, 'bricklink')
+        """
+        Returns the weight of a set by either getting it straight from the set weight column or by
+        calculating it based on inventory
+        """
+        # TODO: Make sure piece weight is being imported correctly
+        weight = db.run_sql("SELECT SUM(bl_inventories.quantity * parts.weight) FROM bl_inventories JOIN parts"
+                                " ON bl_inventories.piece_id = parts.id"
+                                " WHERE bl_inventories.set_id=?;", (self.db_id,), one=True)
+        return weight
 
     def get_avg_piece_weight(self, calc=False):
         if calc is False:
@@ -645,23 +745,23 @@ class SetInfo(object):
         """Not safe to have publicly exposed, but very handy for my own personal project"""
         return db.run_sql(sql_statement)
 
-    def push_updates_to_db(self):
-        """Push Updates to the database"""
-        update_secondary.add_set_data_to_database(self.set_info_list)
-
-    def push(self):
-        self.push_updates_to_db()
-
-    def update_from_db(self):
-        """Wipe out changes and update with what the database shows"""
-        self.set_info_list = info.get_set_info(self.set_num)
-
-    def pull(self):
-        self.update_from_db()
-
-    def update_from_web(self):
-        """Get set data from the web"""
-        update_secondary.add_set_to_database(self.set_num)
+    # def push_updates_to_db(self):
+    #     """Push Updates to the database"""
+    #     update_secondary.add_set_data_to_database(self.set_info_list)
+    #
+    # def push(self):
+    #     self.push_updates_to_db()
+    #
+    # def update_from_db(self):
+    #     """Wipe out changes and update with what the database shows"""
+    #     self.set_info_list = info.get_set_info(self.set_num)
+    #
+    # def pull(self):
+    #     self.update_from_db()
+    #
+    # def update_from_web(self):
+    #     """Get set data from the web"""
+    #     update_secondary.add_set_to_database(self.set_num)
 
     def __repr__(self):
         """The representation of the class"""
@@ -877,7 +977,7 @@ class SetInfo(object):
         if self.year_released is None:
             inf_year = 5
         else:
-            inf_year = self.year_released + 5
+            inf_year = min(self.year_released,2015)
         base_text_string = "#### Set Info Class - Test Inflation Calcs {} -> {}\n".format(self.year_released, inf_year)
         base_text_string += "### Database ID {0}\n".format(self.db_id)
         base_text_string += "Set: {} | {}\n".format(self.set_num, self.name)
@@ -900,6 +1000,7 @@ class SetInfo(object):
 
     def test_historic(self):
         return self.get_price_history_all()  # , self.get_rating_history()
+
 
 class HistoricPriceAnalyser(object):
     """
@@ -947,7 +1048,7 @@ class HistoricPriceAnalyser(object):
             sql_query = self._build_report_data_sql(*select_filter)
         else:
             sql_query = self._build_report_data_sql()
-
+        self.sql_query = sql_query
         sql_result = self.sql(sql_query)
         if sql_result is not None and len(sql_result):
             base_dict = syt.list_to_dict(self._process_date_price_list(sql_result))
@@ -997,6 +1098,9 @@ class HistoricPriceAnalyser(object):
                 continue
             elif days_between == 0:
                 syt.log_error("Days between two dates is zero.")
+                syt.log.error("  {}  –   {}".format(dp_list[idx][0], dp_list[idx - 1][0]))
+                modified_q = "{} AND historic_prices.record_date={};".format(self.sql_query[:-1], dp_list[idx][0])
+                print(db.run_sql(modified_q))
                 raise ZeroDivisionError
             else:
                 increment = round(
@@ -1396,7 +1500,7 @@ class HistoricPriceAnalyser(object):
             "Delta",
             "Delta Day"
         )
-        report_type = syt.Menu('- Choose Report Type -', choices=options, function=_get_report_type, type=syt.Menu.LOAD)
+        report_type = syt.Menu('- Choose Report Type -', choices=options, function=_get_report_type, type=syt.Menu.LOAD).run()
 
         def _get_base_price(type_text):
             """
@@ -1425,7 +1529,7 @@ class HistoricPriceAnalyser(object):
             "End Price",
             "Custom"
         )
-        base_price = syt.Menu('- Choose Base Price -', choices=options, function=_get_base_price, type=syt.Menu.LOAD)
+        base_price = syt.Menu('- Choose Base Price -', choices=options, function=_get_base_price, type=syt.Menu.LOAD).run()
 
         def _get_base_date(type_text):
             """
@@ -1453,7 +1557,7 @@ class HistoricPriceAnalyser(object):
             "End Price",
             "Custom"
         )
-        base_date = syt.Menu('- Choose Base Date -', choices=options, function=_get_base_date, type=syt.Menu.LOAD)
+        base_date = syt.Menu('- Choose Base Date -', choices=options, function=_get_base_date, type=syt.Menu.LOAD).run()
 
         inf_year = input("What year do you want to use for inflation (blank for none)? ")
         if inf_year == "":
@@ -1574,10 +1678,3 @@ class HistoricPriceAnalyser(object):
             group_by = True
 
         return [select_string, where_string, group_by]
-
-
-
-
-
-
-

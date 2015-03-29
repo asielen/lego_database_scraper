@@ -4,6 +4,7 @@ import sqlite3 as lite
 # Internal
 from database import database
 import database.info as info
+from data.data_classes.SetInfo_HPA_Class import SetInfo
 import data.bricklink.bricklink_api as blapi
 import system as syt
 if __name__ == "__main__": syt.setup_logger()
@@ -18,7 +19,7 @@ def add_bl_set_pieces_to_database(set_num, bricklink_pieces):
 
     con = lite.connect(database)
 
-    set_id = info.get_set_id(set_num)
+    set_id = SetInfo.get_set_id(set_num)
 
     if set_id is not None:
         add_bl_inventory_to_database(set_id, bricklink_pieces)

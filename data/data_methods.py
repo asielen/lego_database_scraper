@@ -1,4 +1,5 @@
 # Internal
+
 import system as syt
 if __name__ == "__main__": syt.setup_logger()
 from data.bricklink import bricklink_data_scrape as blds
@@ -6,7 +7,7 @@ from data.bricklink.bricklink_api import bricklink_api as blapi
 from data.brickset.brickset_api import brickset_set_data as BS
 from data.rebrickable import rebrickable_api as reapi
 from data.peeron.peeron_api import peeron_api as perapi
-
+from data.data_classes import SetInfo_support as si
 
 def get_colors():
     """
@@ -226,7 +227,7 @@ def get_basestats(o_set, type=1):
         syt.log_warning("Trying to update a set but there is none to update")
         return None
 
-    set_num, set_seq, o_set = syt.expand_set_num(o_set)
+    set_num, set_seq, o_set = si.expand_set_num(o_set)
     if set_num is None:  # If it is an invalid setnum then return Num, this happens for rebrickable alternate sets that have multiple dashes in the setnum
         return None
 
@@ -253,15 +254,15 @@ def get_basestats(o_set, type=1):
     if 'set_num' in brickset_stats:
         # if brickset_stats['set_num'] == '':
         # return None
-        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = syt.expand_set_num(
+        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = si.expand_set_num(
             brickset_stats['set_num'])
     elif 'set_num' in bricklink_stats:
         # if bricklink_stats['set_num'] == '':
         # return None
-        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = syt.expand_set_num(
+        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = si.expand_set_num(
             bricklink_stats['set_num'])
     else:
-        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = syt.expand_set_num(
+        scrubbed_dic['item_num'], scrubbed_dic['item_seq'], scrubbed_dic['set_num'] = si.expand_set_num(
             o_set)
 
 

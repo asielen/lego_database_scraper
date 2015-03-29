@@ -3,6 +3,7 @@ import arrow
 
 # Internal
 import system as syt
+from data.data_classes import SetInfo_support as si
 
 # http://brickset.com/inventories/[set-num]-[set-seq] <- THe set inventory
 # http://brickset.com/parts/[piece number] <-Gives you element number, element name, design number, color,
@@ -437,8 +438,7 @@ def main():
     import pprint
 
     pp = pprint.PrettyPrinter(indent=4)
-    set = syt.input_set_num("What is the set num? ")
-    set_num, set_seq, set = syt.expand_set_num(set)
+    set_num, set_seq, set = si.input_set_num(type=1)
     pp.pprint(get_basestats(set_num, set_seq))
     pp.pprint(get_daily_data(set_num, set_seq))
     main()

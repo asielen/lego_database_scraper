@@ -1,5 +1,5 @@
 # Internal
-import navigation.menu
+import system as syt
 from data.bricklink.bricklink_api import pull_set_catalog
 from data.update_secondary import add_inventories_database as secondary
 from data.update_secondary import add_sets_database as add_sets
@@ -7,16 +7,11 @@ from database.info import database_info
 
 
 def main():
-    options = {}
-    options['1'] = "Update inventories in Database", update_in_database  # Working 2014-10-5
-    options['2'] = "UPDATE from API get new sets AND UPDATE", update_from_api  # Working 2014-10-5
-    options['9'] = "Back", navigation.menu.back
-
-    while True:
-        result = navigation.menu.options_menu(options)
-        if result is 'back':
-            break
-
+    options = (
+        ("Update inventories in Database", update_in_database),
+        ("Update from API get new sets", update_from_api)
+    )
+    syt.Menu("– Update Inventories –", choices=options).run()
 
 def update_in_database():
     print("Please enter the start and end years you would like to update. "

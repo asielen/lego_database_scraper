@@ -9,6 +9,7 @@ from data.rebrickable.rebrickable_api import rebrickable_api as reapi
 import data.update_secondary as update
 import database.info as info
 import database as db
+from data.data_classes import SetInfo_support as si
 import system as syt
 if __name__ == "__main__": syt.setup_logger()
 
@@ -171,7 +172,6 @@ def get_re_piece_id(part_num, parts=None, add=False):
 
 
 if __name__ == "__main__":
-    import navigation.menu as menu
 
     def main_menu():
         """
@@ -179,20 +179,14 @@ if __name__ == "__main__":
         @return:
         """
 
-        syt.log_info("RUNNING: Rebrickable API testing")
-        options = {}
+        options = (
+            ("Update Parts", menu_update_parts),
+            ("Update Sets", menu_update_sets),
+            ("Update One set Inventory", menu_update_one_set_inventory),
+            ("Update Set Inventories", menu_update_set_inventories)
 
-        options['1'] = "Update Parts", menu_update_parts
-        options['2'] = "Update Sets", menu_update_sets
-        options['3'] = "UPDATE One SET Inventory", menu_update_one_set_inventory
-        options['4'] = "Update Set Inventories", menu_update_set_inventories
-        options['9'] = "Quit", menu.quit
-
-        while True:
-            result = menu.options_menu(options)
-            if result is 'kill':
-                exit()
-
+        )
+        syt.Menu(name="– Rebrickable API testing –", choices=options, quit_tag="Exit").run()
 
     def menu_update_parts():
         update_parts()
@@ -202,7 +196,7 @@ if __name__ == "__main__":
         update_sets()
 
     def menu_update_one_set_inventory():
-        set_num = syt.input_set_num()
+        set_num = si.input_set_num()
         update_one_set_inventory(set_num)
 
     def menu_update_set_inventories():

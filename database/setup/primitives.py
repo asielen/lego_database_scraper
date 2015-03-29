@@ -72,7 +72,6 @@ def run_primitives():
 
 
 if __name__ == "__main__":
-    from navigation import menu
 
     def main_menu():
         """
@@ -80,18 +79,14 @@ if __name__ == "__main__":
         @return:
         """
         syt.log_critical("Primitives testing")
-        options = {}
+        options = (
+            ("Initiate Colors", menu_init_colors),
+            ("Initiate Parts", menu_init_parts),
+            ("Initiate Pricetypes", menu_init_price_types),
+            ("Initiate BL Categories", menu_init_bl_categories)
+        )
 
-        options['1'] = "Initiate Colors", menu_init_colors
-        options['2'] = "Initiate Parts", menu_init_parts
-        options['3'] = "Initiate Pricetypes", menu_init_price_types
-        options['4'] = "Initiate BL Categories", menu_init_bl_categories
-        options['9'] = "Quit", menu.quit
-
-        while True:
-            result = menu.options_menu(options)
-            if result is 'kill':
-                exit()
+        syt.Menu(name="– Primitives testing –", choices=options, quit_tag="Exit").run()
 
 
     def menu_init_colors():

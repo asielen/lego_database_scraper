@@ -267,7 +267,6 @@ def _parse_get_re_pieceinfo(part_num):
 
 
 if __name__ == "__main__":
-    import navigation.menu as menu
 
     def main_menu():
         """
@@ -275,16 +274,11 @@ if __name__ == "__main__":
         @return:
         """
 
-        syt.log_info("RUNNING: Update Database - add parts")
-        options = {}
+        options = (
+            ("Add Part", menu_add_part_to_database),
+        )
 
-        options['1'] = "Add Part", menu_add_part_to_database
-        options['9'] = "Quit", menu.quit
-
-        while True:
-            result = menu.options_menu(options)
-            if result is 'kill':
-                exit()
+        syt.Menu("– Update Database – add parts –", choices=options).run()
 
 
     def menu_add_part_to_database():

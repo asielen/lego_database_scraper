@@ -4,28 +4,26 @@
 #
 #
 
-import navigation.menu
+
+
+from data.data_classes import SetInfo_support as si
 from data import update_secondary as secondary
 import system as syt
 
 
 def main():
-    options = {}
-    options['1'] = "Update Basestats", update_baseStats  # Todo: Check to see if this works
-    options['2'] = "Update Prices", update_prices  # Todo
-    options['3'] = "Manual Update", manual_Update  # Todo
-    options['9'] = "Back", navigation.menu.back
+    options = (
+        ("Update Basestats", update_baseStats), # Todo: Check to see if this works
+        ("Update Prices", update_prices),
+        ("Manual Update", manual_Update)
+    )
 
-    while True:
-        result = navigation.menu.options_menu(options)
-        if result is 'back':
-            break
-    print("Run Update Set")
+    syt.Menu("– Update Set –",choices=options, drop_down=True).run()
 
 
 def update_baseStats():
     print("Update Base Stats")
-    set_id = syt.input_set_num()
+    set_id = si.input_set_num()
     secondary.add_set_to_database(set_id)
 
 

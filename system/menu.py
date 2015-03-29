@@ -78,7 +78,7 @@ class Menu(object):
 
         # Create the choice list. - Could have just used a sorted dict.
         self.options_list = list(self.choices.keys())
-        self.options_list.sort()
+        self.options_list.sort(key = lambda s: int(s))
 
         # For any menu type, this is just a text string that triggers a return instead of an action
         if quit_tag == True:
@@ -160,7 +160,7 @@ class Load_Menu(Menu):
     """
 
     def __init__(self, name=None, choices=None, function=None):
-        super(Load_Menu, self).__init__(name=name, choices=choices, function=function, drop_down=True, type=Menu.LOAD)
+        super(Load_Menu, self).__init__(name=name, choices=choices, function=function, drop_down=True, type=Menu.LOAD).run()
 
 
 def MultiChoiceMenu(choice_list=None):

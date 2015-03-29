@@ -15,6 +15,9 @@ import arrow
 
 
 
+
+
+
 # THIS FILE SHOULD HAVE NO INTERNAL DEPENDENCIES
 
 
@@ -290,25 +293,7 @@ def scrub_text2float(s):
 # #
 # Set Methods - Todo: Move to SetInfo Class?
 ##
-def expand_set_num(set_id):
-    """
 
-    @param set_id: in standard format xxxx-yy
-    @return: xxxx, yy, xxxx-yy
-    """
-
-    set_id = set_id.lower()
-    try:
-        if ' or ' in set_id:
-            set_id = set_id.split(' or ')[0]
-        set_list = set_id.split("-")
-        if len(set_list) > 2: return (None, None, set_id)
-        set_num = set_list[0]
-        set_seq = set_list[1]
-    except:
-        set_num = set_id
-        set_seq = '1'
-    return set_num, set_seq, set_num + '-' + set_seq
 
 
 # Todo, I think i can trash this because all dates are now stored as timestamps 20141008
@@ -434,17 +419,7 @@ def get_days_between(dateA, dateB):
     return date_dif.days
 
 
-def input_set_num(type=0):
-    """
-    @param type: 0 or 1
-    @return: if type == 1 xxxx, y, xxxx-y
-    @return: else return xxxx-y
-    """
-    set_num = input("What set num? ")
-    if type == 1:
-        return expand_set_num(set_num)
-    else:
-        return expand_set_num(set_num)[2]
+
 
 
 def input_part_num():

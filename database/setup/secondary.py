@@ -9,7 +9,6 @@
 
 import data.bricklink.bricklink_api as blapi
 import data.rebrickable.rebrickable_api as reapi
-from navigation import menu
 
 import system as syt
 if __name__ == "__main__": syt.setup_logger()
@@ -55,17 +54,13 @@ if __name__ == "__main__":
         @return:
         """
         syt.log_critical("Secondary testing")
-        options = {}
+        options = (
+            ("Initiate Color Codes", menu_init_part_color_codes),
+            ("Initiate Sets", menu_init_sets),
+            ("Initiate Inventories", menu_init_re_inventories)
+        )
 
-        options['1'] = "Initiate Color Codes", menu_init_part_color_codes
-        options['2'] = "Initiate Sets", menu_init_sets
-        options['3'] = "Initiate Inventories", menu_init_re_inventories
-        options['9'] = "Quit", menu.quit
-
-        while True:
-            result = menu.options_menu(options)
-            if result is 'kill':
-                exit()
+        syt.Menu("– Secondary testing –", choices=options, quit_tag="Exit").run()
 
 
     def menu_init_part_color_codes():

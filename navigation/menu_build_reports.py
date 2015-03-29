@@ -1,5 +1,6 @@
 # Internal
 import database.info as info
+from data.data_classes import SetInfo_support as si
 import system as syt
 from data import data_classes as dc
 
@@ -13,15 +14,15 @@ def report_menu():
         ("Make Collection Evaluator", make_collectionReport)
     )
 
-    syt.Menu("- Build Set Report -", choices=options)
+    syt.Menu("- Build Set Report -", choices=options).run()
 
 
 def quick_info():
-    set_num = syt.input_set_num()
+    set_num = si.input_set_num()
     info.get_set_dump(set_num)
 
 def make_setReport():
-    set_num = syt.input_set_num()
+    set_num = si.input_set_num()
     test_set = dc.SetInfo(set_num)
     test_set.set_report()
 
@@ -100,13 +101,13 @@ def sec_collection_menu():
         test_SC = dc.SetCollection(filter_text=filter_text)
         csv_dump_text = test_SC.csv_dump()
         with open('{}-set-dump.csv'.format(syt.get_timestamp()), "w") as f:
-
+            f.write(csv_dump_text)
 
     options = (
         ("Get Historic", menu_test_historic),
         ("Get all Set Data", menu_data_dump)
     )
-    syt.Menu("- Set Collections -", choices=options, drop_down=True)
+    syt.Menu("- Set Collections -", choices=options, drop_down=True).run()
 
 
 

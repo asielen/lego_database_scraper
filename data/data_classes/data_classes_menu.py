@@ -1,8 +1,6 @@
 # Internal
 from data.data_classes import SetInfo, HistoricPriceAnalyser
-from database import info
 import system as syt
-
 if __name__ == "__main__": syt.setup_logger()
 
 test_HPA = None
@@ -47,14 +45,14 @@ def si_menu():
 
 def si_menu_create_set_db():
     global test_set
-    set_num = syt.input_set_num()
+    set_num = SetInfo.input_set_num()
     test_set = SetInfo(set_num)
 
 
 def si_menu_create_set_lst():
     global test_set
-    set_num = syt.input_set_num()
-    set_info_list = info.get_set_info(set_num)
+    set_num = SetInfo.input_set_num()
+    set_info_list = SetInfo.get_set_info(set_num) #This is probably a stupid thing to test
     test_set = SetInfo(set_info_list)
 
 
@@ -160,7 +158,7 @@ def hpa_menu_create():
     """
     global test_HPA
 
-    set_num = syt.input_set_num()
+    set_num = SetInfo.input_set_num()
     test_set = SetInfo(set_num)
     filter = HistoricPriceAnalyser.build_filter()
     if filter is None:

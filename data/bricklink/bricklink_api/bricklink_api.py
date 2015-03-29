@@ -1,6 +1,7 @@
 # Internal
-from navigation import menu
+
 import system as syt
+from data.data_classes import SetInfo_support as si
 if __name__ == "__main__": syt.setup_logger()
 
 # TODO: Add return specs for all api calls
@@ -237,24 +238,18 @@ if __name__ == "__main__":
         @return:
         """
 
-        syt.log_critical("Bricklink API testing")
-        options = {}
+        options = (
+            ("Pull Set Inventory", menu_pull_set_inventory),
+            ("Pull Set Catalog", menu_pull_set_catalog),
+            ("Pull Part Catalog", menu_pull_part_catalog),
+            ("Pull Minifig Catalog", menu_pull_minifig_catalog),
+            ("SYS Pull Item Types", menu_pull_item_types),
+            ("SYS Pull Categories", menu_pull_categories),
+            ("SYS Pull Colors", menu_pull_colors),
+            ("SYS Pull Part Codes", menu_pull_part_color_codes)
+        )
 
-        options['1'] = "Pull Set Inventory", menu_pull_set_inventory
-        options['2'] = "Pull Set Catalog", menu_pull_set_catalog
-        options['3'] = "Pull Part Catalog", menu_pull_part_catalog
-        options['4'] = "Pull Minifig Catalog", menu_pull_minifig_catalog
-        options['5'] = "SYS Pull Item Types", menu_pull_item_types
-        options['6'] = "SYS Pull Categories", menu_pull_categories
-        options['7'] = "SYS Pull Colors", menu_pull_colors
-        options['8'] = "SYS Pull Part Codes", menu_pull_part_color_codes
-        options['9'] = "Quit", menu.quit
-
-        while True:
-            result = menu.options_menu(options)
-            if result is 'kill':
-                exit()
-
+        syt.Menu(name="– Bricklink API Testing –", choices=options, quit_tag="Exit").run()
 
     def menu_pull_set_catalog():
         csvfile = pull_set_catalog()
@@ -292,7 +287,7 @@ if __name__ == "__main__":
 
 
     def menu_pull_set_inventory():
-        set_num = syt.input_set_num()
+        set_num = si.input_set_num()
         csvfile = pull_set_inventory(set_num)
         syt.print4(csvfile)
 

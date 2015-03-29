@@ -5,6 +5,8 @@ from time import sleep
 # Internal
 from data.brickset.brickset_api import brickset_set_data as BS
 from data.bricklink import bricklink_data_scrape as BLDS
+from data.data_classes import SetInfo_support as si
+from database.info.database_info import get_last_updated_for_daily_stats
 from database.update import add_daily_stats as ADS
 from database import info
 import system as syt
@@ -20,7 +22,7 @@ def get_all_daily_set_data(set_list):
 
     sets = info.read_bl_set_num_id()  # Gets a list of sets and set ids
 
-    last_updated = info.get_last_updated_for_daily_stats()  # List of when each set was last updated
+    last_updated = get_last_updated_for_daily_stats()  # List of when each set was last updated
 
     num_sets = len(set_list)  # Total number of sets to update
 
@@ -89,7 +91,7 @@ def get_all_daily_set_data(set_list):
 def _get_daily_set_data(set_tags):
     if set_tags[1] is None or set_tags[0] is None:
         return {None: ((), ())}
-    set_num, set_seq, set_n = syt.expand_set_num(set_tags[1])
+    set_num, set_seq, set_n = si.expand_set_num(set_tags[1])
     price_dict = BLDS.get_all_prices(set_num, set_seq)
     daily_data = BS.get_daily_data(set_num, set_seq)
 
@@ -99,35 +101,10 @@ def _get_daily_set_data(set_tags):
 def _add_daily_set_data_to_database(set_data):
     ADS.add_daily_set_data_to_database(set_data)
 
-# Not used
-# def get_daily_set_data(set_num):
-#     """
-#
-#     @param set_num: a set num in format xxxx-yy (text)
-#     @return:
-#     """
-#     if set_num is None:
-#         return None
-#
-#     if info.get_last_updated_for_daily_stats(set_num) == False:
-#         set_num, set_seq, set_num = syt.expand_set_num(set_num)
-#
-#         price_dict = BLDS.get_all_prices(set_num, set_seq)
-#         daily_data = BS.get_daily_data(set_num, set_seq)
-#
-#         ADS.add_daily_set_data_to_database(daily_data)
-#         #ADS.add_daily_set_data_to_database(set_num, price_dict, daily_data) old format
-#
-#         return set_num, price_dict, daily_data
-#
-#     else:
-#         return None
-
-
 def main():
     import pprint as pp
 
-    set = syt.input_set_num("What is the set num? ")
+    set = si.input_set_num()
     pp.pprint(_get_daily_set_data(set))
     main()
 
