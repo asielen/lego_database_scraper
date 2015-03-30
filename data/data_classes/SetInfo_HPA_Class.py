@@ -6,6 +6,7 @@ import random
 import arrow
 
 
+
 # Internal
 # from data import update_secondary
 import database.database_support as db
@@ -1098,7 +1099,7 @@ class HistoricPriceAnalyser(object):
                 continue
             elif days_between == 0:
                 syt.log_error("Days between two dates is zero.")
-                syt.log.error("  {}  –   {}".format(dp_list[idx][0], dp_list[idx - 1][0]))
+                syt.log.error("  {}  –   {}".format(arrow.get(dp_list[idx][0]).date(), arrow.get(dp_list[idx - 1][0]).date()))
                 modified_q = "{} AND historic_prices.record_date={};".format(self.sql_query[:-1], dp_list[idx][0])
                 print(db.run_sql(modified_q))
                 raise ZeroDivisionError
