@@ -5,8 +5,7 @@ import collections
 import database as db
 from data.data_classes.SetInfo_HPA_Class import HistoricPriceAnalyser, SetInfo
 import system as syt
-# Todo:
-# """
+
 # TODO All of this
 # Need to be able to build reports by
 # Filters
@@ -470,7 +469,6 @@ class SetCollection(object):
         @param set_lists:
         @return:
         """
-
         def _validate_set_list(set_list, allow_set_nums=False):
             if len(set_list) == 27 and isinstance(set_list[1], str):
                 return set_list[1]

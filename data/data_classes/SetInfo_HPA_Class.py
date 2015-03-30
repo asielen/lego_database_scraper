@@ -7,6 +7,7 @@ import arrow
 
 
 
+
 # Internal
 # from data import update_secondary
 import database.database_support as db
@@ -1050,9 +1051,15 @@ class HistoricPriceAnalyser(object):
         else:
             sql_query = self._build_report_data_sql()
         self.sql_query = sql_query
+        self.select_filter = select_filter
         sql_result = self.sql(sql_query)
         if sql_result is not None and len(sql_result):
-            base_dict = syt.list_to_dict(self._process_date_price_list(sql_result))
+            clean_dict = False
+            while clean_dict is False:
+                base_dict = syt.list_to_dict(self._process_date_price_list(sql_result))
+                sql_result = self.sql(sql_query)
+                if "rerun" not in base_dict: clean_dict = True
+
             # Store the results of the original query so we can restore it later
             self.original_data = syt.OrderedDictV2(sorted(base_dict.items(), key=lambda t: t[0]))
             #   Store the sql so we can work it later, or rebuild it if needed
@@ -1100,22 +1107,70 @@ class HistoricPriceAnalyser(object):
             elif days_between == 0:
                 syt.log_error("Days between two dates is zero.")
                 syt.log.error("  {}  –   {}".format(arrow.get(dp_list[idx][0]).date(), arrow.get(dp_list[idx - 1][0]).date()))
-                modified_q = "{} AND historic_prices.record_date={};".format(self.sql_query[:-1], dp_list[idx][0])
-                print(db.run_sql(modified_q))
-                raise ZeroDivisionError
+                delete_sql = self.convert_select_to_delete(dp_list[idx][0])
+                print("sql string: " + delete_sql)
+                delete_dup = input("Delete the duplicate date? (y/n) ")
+                if delete_dup is "y":
+                    db.run_sql(delete_sql)
+                    return [["rerun", None]]
+                else:
+                    raise ZeroDivisionError
             else:
-                increment = round(
-                    (syt.float_zero(dp_list[idx][1]) - syt.float_zero(dp_list[idx - 1][1])) / days_between, ndigits=2)
+                current_price = dp_list[idx][1]
+                previous_price = dp_list[idx - 1][1]
+                increment = 0
+                # If the start and end prices are None, make the inbetween prices None
+                # print(days_between)
+                price_is_none = False
+                if current_price is None and previous_price is None:
+                    price_is_none = True
+
+                    #   If a previous price exists but a current price doesn't, then guess prices
+                    #   If a current price exists but a previous price doesn't, don't guess if more than 35 days
+                elif current_price is None:
+                    pass  # current price isn't used so no need to do anything since increment will still be zero
+                elif previous_price is None:
+                    if days_between > 35:
+                        price_is_none = True
+                        print("None")
+                    else:
+                        previous_price = current_price
+
+                else:
+                    #Get the number of days between (price delta)
+                    increment = round((syt.float_zero(current_price) - syt.float_zero(previous_price)) / days_between,
+                                      ndigits=2)
+
                 for n in range(1, days_between):
-                    # next_date = arrow.get(arrow.get(dp_list[idx-1][0]).replace(days=+n).timestamp).format("YYYY-MM-DD")
-                    dp_list_to_add.append([arrow.get(dp_list[idx - 1][0]).replace(days=+n).timestamp,
-                                           round((syt.float_zero(dp_list[idx - 1][1]) + (increment * n)), ndigits=2)])
+                    if price_is_none is False:
+                        dp_list_to_add.append([arrow.get(dp_list[idx - 1][0]).replace(days=+n).timestamp,
+                                               round((syt.float_zero(previous_price) + (increment * n)), ndigits=2)])
+                    else:
+                        dp_list_to_add.append([arrow.get(dp_list[idx - 1][0]).replace(days=+n).timestamp, None])
+
         dp_list.extend(dp_list_to_add)
         return dp_list
 
     @property
     def dates(self):
         return self.working_data.keys()
+
+    def convert_select_to_delete(self, record_date):
+        """
+        Create a sql string to use to delete based on the select string
+        @param record_date:
+        @return:
+        """
+        del_sql = " WHERE record_date={} AND set_id in (SELECT id from sets WHERE set_num='{}')".format(record_date,
+                                                                                                        self.si.set_num)
+        if 'bs_ratings' in self.select_filter[0]:
+            del_sql = "DELETE FROM bs_ratings" + del_sql + ";"
+        else:
+            del_sql = "DELETE FROM historic_prices" + del_sql
+            if self.select_filter[1] is not None:
+                del_sql += " AND price_type in (SELECT id from price_types WHERE {});".format(self.select_filter[1])
+        return del_sql
+
 
     def set_options(self, report_type=STANDARD, base_price=None, base_date=None, inf_year=None):
         """
@@ -1226,7 +1281,7 @@ class HistoricPriceAnalyser(object):
         @param region: Options:
                 us or uk
         """
-        # If no date, then we are not shiting the dates at all
+        # If no date, then we are not shifting the dates at all
         if date is None or date == "" or date == self.R_NOT_RELATIVE:
             self.base_date = None  # Date is not relative
 

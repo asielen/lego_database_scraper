@@ -38,6 +38,10 @@ def run_get_inv():
     return INV.main()
 
 
+def run_get_links():
+    # Todo
+    pass
+
 def validate_database():
     if os.path.isfile(db):
         syt.log_info("Database Found")
@@ -62,6 +66,7 @@ def main_menu():
         ("Run Inventories Refresh", run_get_inv),
         ("Update set", run_update_set),
         ("Get Reports", run_get_set_info),
+        ("Get Links"), run_get_links),
         ("System", run_system)
     )
     syt.Menu(name="- Lego Brick Evaluator -", choices=options, quit_tag=True).run()
