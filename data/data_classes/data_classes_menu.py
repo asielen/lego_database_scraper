@@ -67,14 +67,14 @@ def si_menu_get_basic_calcs():
     global test_set
     while not bool(test_set):
         si_menu_create_set_db()
-    print(test_set.test_basic_calcs())
+    print(test_set.debug_dump_basic_calcs())
 
 
 def si_menu_test_inflation():
     global test_set
     while not bool(test_set):
         si_menu_create_set_db()
-    print(test_set.test_inflation())
+    print(test_set.debug_dump_inflation())
 
 
 def si_menu_test_date_range():
@@ -88,14 +88,14 @@ def si_menu_test_sql_data():
     global test_set
     while not bool(test_set):
         si_menu_create_set_db()
-    print(test_set.test_sql_data())
+    print(test_set.debug_dump_sql_data())
 
 
 def si_menu_test_historic():
     global test_set
     while not bool(test_set):
         si_menu_create_set_db()
-    price_history = test_set.test_historic()
+    price_history = test_set.debug_dump_historic()
     print("Price History")
     syt.print4(price_history)
     # print("Rating History")

@@ -367,7 +367,7 @@ class SetCollection(object):
         with open('{}-price-set-data.csv'.format(syt.get_timestamp()), "w") as f:
             f.write(set_csv)
 
-            # Report Type
+    # Report Type
 
     # Standard (no price adj)
     #     relative to

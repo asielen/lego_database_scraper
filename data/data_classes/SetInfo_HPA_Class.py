@@ -8,6 +8,7 @@ import arrow
 
 
 
+
 # Internal
 # from data import update_secondary
 import database.database_support as db
@@ -946,8 +947,15 @@ class SetInfo(object):
             f.write(csv_string)
 
 
-    # For testing
-    def test_base_info(self):
+    # For Quick output
+    def debug_dump_all(self):
+        dump_string = self.debug_dump_base_info()
+        dump_string += self.debug_dump_basic_calcs()
+        dump_string += self.debug_dump_inflation()
+        dump_string += self.debug_dump_sql_data()
+        return dump_string
+
+    def debug_dump_base_info(self):
         base_text_string = "\n#### Set Info Class - Test Base Info\n"
         base_text_string += "Database ID: {0}\n".format(self.db_id)
         base_text_string += "Set: {} | {}\n".format(self.set_num, self.name)
@@ -967,7 +975,7 @@ class SetInfo(object):
         base_text_string += "Daily Last Updated: {}\n".format(self.last_daily_update)
         return base_text_string
 
-    def test_basic_calcs(self):
+    def debug_dump_basic_calcs(self):
         base_text_string = "#### Set Info Class - Test Basic Calcs\n"
         base_text_string += "### Database ID {0}\n".format(self.db_id)
         base_text_string += "Set: {} | {}\n".format(self.set_num, self.name)
@@ -975,11 +983,12 @@ class SetInfo(object):
         base_text_string += "PPG: {} | PPG UK: {}\n".format(self.ppg, self.ppg_uk)
         return base_text_string
 
-    def test_inflation(self):
-        if self.year_released is None:
-            inf_year = 5
+    def debug_dump_inflation(self):
+        if self.year_released is not None:
+            inf_year = min(self.year_released + 10, 2015)
         else:
-            inf_year = min(self.year_released,2015)
+            inf_year = 2015
+
         base_text_string = "#### Set Info Class - Test Inflation Calcs {} -> {}\n".format(self.year_released, inf_year)
         base_text_string += "### Database ID {0}\n".format(self.db_id)
         base_text_string += "Set: {} | {}\n".format(self.set_num, self.name)
@@ -988,7 +997,7 @@ class SetInfo(object):
         base_text_string += "PPG: {} | Adjusted: {}\n".format(self.get_ppg_adj(), self.get_ppg_adj(inf_year))
         return base_text_string
 
-    def test_sql_data(self):
+    def debug_dump_sql_data(self):
         base_text_string = "#### Set Info Class - Test SQL Data\n"
         base_text_string += "### Database ID {0}\n".format(self.db_id)
         base_text_string += "Set: {} | {}\n".format(self.set_num, self.name)
@@ -1000,8 +1009,8 @@ class SetInfo(object):
         base_text_string += "PPG Count Adj {}\n".format(self.get_ppg_adj(calc=True))
         return base_text_string
 
-    def test_historic(self):
-        return self.get_price_history_all()  # , self.get_rating_history()
+    def debug_dump_historic(self):
+        return self.get_price_history_all(), self.get_rating_history_all()
 
 
 class HistoricPriceAnalyser(object):

@@ -1,5 +1,4 @@
 # Internal
-import database.info as info
 from data.data_classes import SetInfo_support as si
 import system as syt
 from data import data_classes as dc
@@ -19,7 +18,9 @@ def report_menu():
 
 def quick_info():
     set_num = si.input_set_num()
-    info.get_set_dump(set_num)
+    set = dc.SetInfo(set_num)
+    print(set.debug_dump_all())
+
 
 def make_setReport():
     set_num = si.input_set_num()
@@ -84,19 +85,19 @@ def sec_collection_menu():
     test_SC = None
 
     def menu_createSC():
-        global test_SC
+        nonlocal test_SC
         filter_text = "(year_released BETWEEN 2008 AND 2015)"
         test_SC = dc.SetCollection(filter_text=filter_text)
 
-    def menu_test_historic():
-        global test_SC
-
-        historic_data_sets = test_SC.historic_price_report()
+    def menu_test_setcollection():
+        nonlocal test_SC
+        if test_SC is None: menu_createSC()
+        test_SC.build_report()
         # syt.print4(historic_data_sets.items(), 20)
 
 
     def menu_data_dump():
-        global test_SC
+        nonlocal test_SC
         filter_text = "(year_released BETWEEN 1980 AND 2015) AND ((get_piece_count >=25) OR (original_price_us >=4)) AND year_released IS NOT NULL AND set_name IS NOT NULL"
         test_SC = dc.SetCollection(filter_text=filter_text)
         csv_dump_text = test_SC.csv_dump()
@@ -104,7 +105,7 @@ def sec_collection_menu():
             f.write(csv_dump_text)
 
     options = (
-        ("Get Historic", menu_test_historic),
+        ("Test Set Collection", menu_test_setcollection),
         ("Get all Set Data", menu_data_dump)
     )
     syt.Menu("- Set Collections -", choices=options, drop_down=True).run()
