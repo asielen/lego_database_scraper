@@ -5,11 +5,11 @@ from time import sleep
 # Internal
 from data.brickset.brickset_api import brickset_set_data as BS
 from data.bricklink import bricklink_data_scrape as BLDS
-from data.data_classes import SetInfo_support as si
 from database.info.database_info import get_last_updated_for_daily_stats
 from database.update import add_daily_stats as ADS
 from database import info
 import system as syt
+from data.data_classes import SetInfo
 if __name__ == "__main__": syt.setup_logger()
 
 
@@ -91,7 +91,7 @@ def get_all_daily_set_data(set_list):
 def _get_daily_set_data(set_tags):
     if set_tags[1] is None or set_tags[0] is None:
         return {None: ((), ())}
-    set_num, set_seq, set_n = si.expand_set_num(set_tags[1])
+    set_num, set_seq, set_n = SetInfo.expand_set_num(set_tags[1])
     price_dict = BLDS.get_all_prices(set_num, set_seq)
     daily_data = BS.get_daily_data(set_num, set_seq)
 
@@ -104,7 +104,7 @@ def _add_daily_set_data_to_database(set_data):
 def main():
     import pprint as pp
 
-    set = si.input_set_num()
+    set = SetInfo.input_set_num()
     pp.pprint(_get_daily_set_data(set))
     main()
 

@@ -6,7 +6,7 @@
 
 
 
-from data.data_classes import SetInfo_support as si
+from data.data_classes import SetInfo
 from data import update_secondary as secondary
 import system as syt
 
@@ -23,7 +23,7 @@ def main():
 
 def update_baseStats():
     print("Update Base Stats")
-    set_id = si.input_set_num()
+    set_id = SetInfo.input_set_num()
     secondary.add_set_to_database(set_id)
 
 

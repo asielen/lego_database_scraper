@@ -9,7 +9,7 @@ from data.rebrickable.rebrickable_api import rebrickable_api as reapi
 import data.update_secondary as update
 import database.info as info
 import database as db
-from data.data_classes import SetInfo_support as si
+from data.data_classes import SetInfo
 import system as syt
 if __name__ == "__main__": syt.setup_logger()
 
@@ -186,7 +186,7 @@ if __name__ == "__main__":
             ("Update Set Inventories", menu_update_set_inventories)
 
         )
-        syt.Menu(name="– Rebrickable API testing –", choices=options, quit_tag="Exit").run()
+        syt.Menu(name="– Debug Rebrickable API testing –", choices=options, quit_tag="Exit").run()
 
     def menu_update_parts():
         update_parts()
@@ -196,7 +196,7 @@ if __name__ == "__main__":
         update_sets()
 
     def menu_update_one_set_inventory():
-        set_num = si.input_set_num()
+        set_num = SetInfo.input_set_num()
         update_one_set_inventory(set_num)
 
     def menu_update_set_inventories():

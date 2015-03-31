@@ -1,6 +1,3 @@
-
-
-
 __author__ = 'andrew.sielen'
 
 # external

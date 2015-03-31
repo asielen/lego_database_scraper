@@ -9,6 +9,7 @@ import arrow
 
 
 
+
 # Internal
 # from data import update_secondary
 import database.database_support as db
@@ -100,7 +101,7 @@ class SetInfo(object):
         @return: else return xxxx-y
         """
         set_num = input("What set num? ")
-        if set_num == "rand":
+        if set_num == "rand" or set_num == "r":
             set_num = SetInfo.get_random()
             print("Random Set: {}".format(set_num))
         if type == 1:

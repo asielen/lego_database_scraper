@@ -1,5 +1,5 @@
 # internal
-from data.data_classes import SetInfo_support as si
+from data.data_classes import SetInfo
 import system as syt
 if __name__ == "__main__": syt.setup_logger()
 
@@ -175,13 +175,13 @@ if __name__ == "__main__":
         syt.print4(csvfile, 100)
 
     def menu_pull_set_info():
-        set_num = si.input_set_num()
+        set_num = SetInfo.input_set_num()
         csvfile = pull_set_info(set_num)
         syt.print4(csvfile)
 
 
     def menu_pull_set_inventory():
-        set_num = si.input_set_num()
+        set_num = SetInfo.input_set_num()
         csvfile = pull_set_inventory(set_num)
         for c in csvfile:
             print(c)

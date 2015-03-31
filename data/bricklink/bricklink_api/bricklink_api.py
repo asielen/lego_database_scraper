@@ -1,7 +1,7 @@
 # Internal
 
 import system as syt
-from data.data_classes import SetInfo_support as si
+from data.data_classes import SetInfo
 if __name__ == "__main__": syt.setup_logger()
 
 # TODO: Add return specs for all api calls
@@ -287,7 +287,7 @@ if __name__ == "__main__":
 
 
     def menu_pull_set_inventory():
-        set_num = si.input_set_num()
+        set_num = SetInfo.input_set_num()
         csvfile = pull_set_inventory(set_num)
         syt.print4(csvfile)
 

@@ -1,5 +1,5 @@
 # Internal
-from data.data_classes import SetInfo_support as si
+from data.data_classes import SetInfo
 import system as syt
 from data import data_classes as dc
 
@@ -17,13 +17,13 @@ def report_menu():
 
 
 def quick_info():
-    set_num = si.input_set_num()
+    set_num = SetInfo.input_set_num()
     set = dc.SetInfo(set_num)
     print(set.debug_dump_all())
 
 
 def make_setReport():
-    set_num = si.input_set_num()
+    set_num = SetInfo.input_set_num()
     test_set = dc.SetInfo(set_num)
     test_set.set_report()
 

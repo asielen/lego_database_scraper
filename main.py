@@ -13,6 +13,7 @@ import navigation.menu_update_set as US
 import navigation.menu_build_reports as GSI
 import navigation.menu_system as SYS
 import navigation.menu_update_all_inventories as INV
+import data.lego_urls as URL
 
 def run_get_sets():
     return UAB.main()
@@ -39,8 +40,7 @@ def run_get_inv():
 
 
 def run_get_links():
-    # Todo
-    pass
+    URL.get_links()
 
 def validate_database():
     if os.path.isfile(db):
@@ -61,12 +61,12 @@ def main_menu():
     syt.log_info("Running Main")
 
     options = (
-        ("Run Daily Price Capture", run_get_prices),
-        ("Run Total Basestats refresh", run_get_sets),
-        ("Run Inventories Refresh", run_get_inv),
+        ("Run Historic Price Capture", run_get_prices),
+        ("Run Set Database Update", run_get_sets),
+        ("Run Inventories Update", run_get_inv),
+        ("Create Reports", run_get_set_info),
+        ("Get Links", run_get_links),
         ("Update set", run_update_set),
-        ("Get Reports", run_get_set_info),
-        ("Get Links"), run_get_links),
         ("System", run_system)
     )
     syt.Menu(name="- Lego Brick Evaluator -", choices=options, quit_tag=True).run()
