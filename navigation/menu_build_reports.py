@@ -25,7 +25,7 @@ def quick_info():
 def make_setReport():
     set_num = SetInfo.input_set_num()
     test_set = dc.SetInfo(set_num)
-    test_set.set_report()
+    test_set.make_set_report()
 
 def make_priceReport():
     pass

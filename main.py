@@ -3,10 +3,16 @@ __author__ = 'andrew.sielen'
 # External
 import os
 
-# Internal
+# System
 import system as syt
 if __name__ == "__main__": syt.setup_logger()
+
+# Validation
 from database import database as db
+
+# Menu
+
+from navigation.M0_main_menu import main_menu
 import navigation.menu_daily_price_capture as DPC
 import navigation.menu_update_all_basestats as UAB
 import navigation.menu_update_set as US
@@ -50,13 +56,12 @@ def validate_database():
         syt.log_warning("No Database Found. Please locate it or create one in the system menu")
 
 
-def main_menu():
+def b_main_menu():
     """
     Main launch menu
     @return:
     """
 
-    validate_database()
 
     syt.log_info("Running Main")
 
@@ -73,4 +78,5 @@ def main_menu():
 
 
 if __name__ == "__main__":
+    validate_database()
     main_menu()

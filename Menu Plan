@@ -1,0 +1,85 @@
+This file is a reference for all the functionality I want to be able to access through menus
+as of 3/31/15
+
+
+
+@ M                                             <- Menu Identifier
+# Main Menu                                     <- Menu Name
+ $ Run Daily Update                             <- Menu option
+    -   Prompt user for start and end           <- Description (with Menu Identifier if it redirects somewhere)
+        date used to update historic data
+ $ Quick Data
+    -   Open the quick data menu [M1]
+ $ Make Reports
+    -   Open the make report menu [M2]
+ $ Update Database
+    -   Open the update database menu [M3]
+ $ System
+    -   Open the system menu [M4]
+
+@ M1
+# Quick Data Menu
+ $ Get set info
+    -   Prompt for a set number and return
+        a dump of that set info
+ $ Create set report
+    -   Prompt for a set number and create
+        a csv report for that set
+ $ Get Set links
+    -   Return a list of links for that set
+        from the main sites
+
+@ M2
+# Make Reports
+ $ Build historic set report
+    - Open Set Report menu [M2.1]
+    -   Will build a report for a single set
+        on <PPG, PPP, Historic Prices, Inflation>
+ $ Build Multi set report
+    - Open Multi set Report menu [M2.2]
+
+
+@ M2.1 & M2.2
+# Make Set Report Menu
+ $ Build New Report
+    -   Will prompt for options to create the report
+ $ Edit Report Parameters
+    -   Change the parameters to run the report differently
+ $ Run Report
+    -   Will run the report and create a cvs
+ $ Save Current Report
+    -   Will save the report as a text file
+ $ Load Report
+    -   Will load the report from a text file
+
+@ M3
+# Update Database Menu
+ $ Run Daily Update
+    -   Same as in first Menu
+ $ Run Set Data Update
+    -   Will prompt for parameters to update the
+        sets in the database
+ $ Run inventory update
+    -   Will prompt for parameters to update the
+        set inventories in the database
+ $ Run Base update
+    -   Run all base data updates (make sure they are safe)
+
+@ M4
+# Sytem Menu
+ $ Backup Database
+    -   This should just make a copy of the sqlite file
+        Should run automatically
+ $ Check database stats
+    -   Run an eval of the database
+        - Number of sets
+        - Number of pieces
+        - Total value of database (other fun stats)
+        - Percent complete data
+ $ Check database health
+    -   Run health checks on the database
+        - Duplicate data
+
+
+
+

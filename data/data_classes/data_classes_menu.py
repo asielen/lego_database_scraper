@@ -117,7 +117,7 @@ def si_menu_text_csv_dump():
     global test_set
     while not bool(test_set):
         si_menu_create_set_db()
-    test_set.set_report()
+    test_set.make_set_report()
 
 
 def hpa_menu():
