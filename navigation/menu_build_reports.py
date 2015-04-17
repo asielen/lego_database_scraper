@@ -8,7 +8,7 @@ from data import data_classes as dc
 def report_menu():
     options = (
         ("Quick Info", quick_info),  # Working 2014-10-5
-        ("Make single set report", make_setReport),
+        ("Make single _set report", make_setReport),
         ("Make price report", make_priceReport),  # Todo: See DM report for example
         ("Make Collection Evaluator", make_collectionReport)
     )
@@ -48,7 +48,7 @@ def sec_collection_menu():
         year released in date range - True False
         set_name = True
         theme
-        set size buckets
+        _set size buckets
         price buckets
 
     Broken out by: Buckets - these are not filters but rather aggregatetors
@@ -101,7 +101,7 @@ def sec_collection_menu():
         filter_text = "(year_released BETWEEN 1980 AND 2015) AND ((get_piece_count >=25) OR (original_price_us >=4)) AND year_released IS NOT NULL AND set_name IS NOT NULL"
         test_SC = dc.SetCollection(filter_text=filter_text)
         csv_dump_text = test_SC.csv_dump()
-        with open('{}-set-dump.csv'.format(syt.get_timestamp()), "w") as f:
+        with open('{}-_set-dump.csv'.format(syt.get_timestamp()), "w") as f:
             f.write(csv_dump_text)
 
     options = (

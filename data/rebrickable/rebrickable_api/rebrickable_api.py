@@ -56,7 +56,7 @@ def pull_set_catalog():
 def pull_set_info(set_num):
     """
     key - API Key
-    set - The Set num to look up (e.g. 8043-1)
+    _set - The Set num to look up (e.g. 8043-1)
     format - How to display output data. Valid values: xml, json, csv, tsv
     @param set_num:
     @return:
@@ -68,12 +68,12 @@ def pull_set_info(set_num):
 def pull_set_inventory(set_num):
     """
     key - API Key
-    set - The Set ID to look up (e.g. 8258-1)
+    _set - The Set ID to look up (e.g. 8258-1)
     format - How to display output data. Valid values: xml, json, csv, tsv
     @param set_num:
     @return:
     """
-    parameters = {'key': KEY, 'set': set_num, 'format': 'csv'}
+    parameters = {'key': KEY, '_set': set_num, 'format': 'csv'}
     return syt.read_csv_from_url(url + '/get_set_parts', params=parameters)
 
 
@@ -152,7 +152,7 @@ if __name__ == "__main__":
             ("Pull Set Inventory", menu_pull_set_inventory),
             ("Pull Piece Info", menu_pull_piece_info),
             ("Pull all Pieces", menu_pull_all_pieces),
-            ("Pull all set Parts", menu_pull_all_set_parts),
+            ("Pull all _set Parts", menu_pull_all_set_parts),
             ("Pull all Sets", menu_pull_all_sets),
             ("SYS Pull Colors", menu_pull_colors)
         )

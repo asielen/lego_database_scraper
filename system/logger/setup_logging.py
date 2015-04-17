@@ -10,6 +10,7 @@ import arrow
 from system import base
 
 logging_level = logging.INFO
+file_level = logging.WARNING
 
 notes_file = "notes.txt"
 
@@ -27,23 +28,22 @@ def setup_logger():
     log_path = base.make_project_path(get_week_for_log())
     print("Logging to " + log_path)
     fh = logging.FileHandler(log_path)
-    fh.setLevel(logging.WARNING)
-    ff = logging.Formatter('%(asctime)s %(name)s %(levelname)-8s: %(message)s')
+    fh.setLevel(file_level)
+    ff = logging.Formatter('%(asctime)s %(levelname)-8s: %(message)s')
     fh.setFormatter(ff)
     log.addHandler(fh)
 
     ch = logging.StreamHandler()
     ch.setLevel(logging_level)
-    cf = logging.Formatter('%(name)s %(levelname)s: %(message)s')
+    cf = logging.Formatter('%(levelname)s: %(message)s')
     ch.setFormatter(cf)
     log.addHandler(ch)
 
-    #return log
 
 
 log = logging.getLogger('LBEF')
 
-# Needed to set these up because i over
+# Needed to _set these up because i over
 def log_info(string): log.info(string)
 def log_critical(string): log.critical(string)
 def log_debug(string): log.debug(string)

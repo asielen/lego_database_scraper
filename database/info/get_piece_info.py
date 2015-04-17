@@ -4,7 +4,7 @@ import system as syt
 if __name__ == "__main__": syt.setup_logger()
 
 
-# Todo: 20140908 Add type
+# Todo: 20140908 Add _type
 def get_color_id(color_num, colors=None, type='bl'):
     """
 
@@ -74,7 +74,7 @@ def get_years_available(bl_design_num=None):
     """
 
     @param bl_design_num: the design id used by bricklink
-    @return: the first and last year a design was used in a set calculated by bl inventories
+    @return: the first and last year a design was used in a _set calculated by bl inventories
     """
     years = None
     if bl_design_num is None:
@@ -96,11 +96,11 @@ def get_years_available(bl_design_num=None):
 
 def get_avg_price_per_design(bl_design_num=None):
     """
-        if a piece is 10 cents in one set and 20 in another this returns 15
-        This is also weighted for the number in a set, so if one set has 1000 at .10 and another has 100 at .5
+        if a piece is 10 cents in one _set and 20 in another this returns 15
+        This is also weighted for the number in a _set, so if one _set has 1000 at .10 and another has 100 at .5
         it will be closer to .10
     @param bl_design_num: the design id used by bricklink
-    @return: taking the price per piece of a set, this calculates the average price per piece of a piece; or if no
+    @return: taking the price per piece of a _set, this calculates the average price per piece of a piece; or if no
         bl_design_num is given it returns the values for all pieces by bl_design
     """
 

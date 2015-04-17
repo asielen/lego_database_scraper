@@ -50,7 +50,7 @@ def init_categories():
 
 def _fix_part_data_order(pl):
     """
-    Takes part data in this format: [bl_category, bricklink_id, design_name, weight, type]
+    Takes part data in this format: [bl_category, bricklink_id, design_name, weight, _type]
     And returns this format: [bricklink_id, brickowl_id, rebrickable_id, lego_id, design_name, weight, bl_type, bl_category]
     @param pl:
     @return:
@@ -213,7 +213,7 @@ def update_bl_set_inventories(check_update=0):
 
 def add_bl_set_inventory_to_database(set_num):
     """
-    Adds a single set inventory, mostly this is for testing
+    Adds a single _set inventory, mostly this is for testing
     @param set_num:
     @return:
 
@@ -234,7 +234,7 @@ def _add_bl_inventories_to_database(invs):
         With - 2 - lines for heading
     @return:
     """
-    set_ids_to_delete = set([n[0] for n in invs])  # list of just the set ids to remove them from the database
+    set_ids_to_delete = set([n[0] for n in invs])  # list of just the _set ids to remove them from the database
 
     timestamp = syt.get_timestamp()
     for s in set_ids_to_delete:
@@ -281,7 +281,7 @@ def _get_set_inventory(set_dat=None):
 
     parts = blapi.pull_set_inventory(set_num)
     if parts is None:
-        syt.log_warning("### Could not find set inventory for {}".format(set_num))
+        syt.log_warning("### Could not find _set inventory for {}".format(set_num))
         return []
     parts_to_insert = []
     for row in parts:
@@ -291,12 +291,12 @@ def _get_set_inventory(set_dat=None):
             if row[0] == 'S':  # All this stupid code takes care of subsets (sets of sets)
                 sub_set_id = _get_set_id(row[1], add=True)
                 sub_set = _get_set_inventory((row[1], sub_set_id))
-                for sr in sub_set:  # change the set id to the set price_capture_menu id
+                for sr in sub_set:  # change the _set id to the _set price_capture_menu id
                     sr[0] = set_id
                 syt.log_debug('Adding {} parts in subset {}'.format(len(sub_set), row[1]))
                 parts_to_insert.extend(sub_set)
                 continue
-            row.pop(0)  # remove the type which can be found in the pieces table
+            row.pop(0)  # remove the _type which can be found in the pieces table
             row[0] = get_bl_piece_id(row[0], add=True)
             row.pop(1)  # remove the item name which can be found in the pieces table
             row[1] = int(row[1])  # Make the qty a number not a string
@@ -342,8 +342,8 @@ def _get_set_id(set_num, add=False):
     """
     Wrapper for the get_set_id method in db.info
     @param set_num:
-    @param add: if True, Add the set if it is missing in the database
-    @return: the id column num of the set in the database
+    @param add: if True, Add the _set if it is missing in the database
+    @return: the id column num of the _set in the database
     """
     set_id = SetInfo.get_set_id(set_num)
     if set_id is None and add:

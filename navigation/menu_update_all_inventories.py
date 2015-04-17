@@ -51,7 +51,7 @@ def update_from_api():
 # with open("Sets.txt", encoding='utf-8', errors='ignore') as f:
 # set_list_raw = f.readlines()
 #         set_list_raw = set_list_raw[3:]
-#         set_list = [set.split("\t")[-2].strip().lower() for set in set_list_raw]
+# set_list = [_set.split("\t")[-2].strip().lower() for _set in set_list_raw]
 #
 #     basics.get_all_basestats(set_list)
 

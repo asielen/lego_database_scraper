@@ -138,7 +138,7 @@ def _process_categories(parts_to_insert, bl_categories):
                 part_row[7] = bl_categories[current_cat]
             else:
                 part_row[7] = None
-                syt.log_note("Missing Category: Category {} could not be found. For set bl_id={}".format(current_cat,
+                syt.log_note("Missing Category: Category {} could not be found. For _set bl_id={}".format(current_cat,
                                                                                                       part_row[0]))
         except:
             import pprint as pp
@@ -178,7 +178,7 @@ def add_part_data_to_database(insert_list, basics=0):
         len(lg_add), round(len(lg_add) / len(insert_list) * 100, 2),
         len(insert_list)))
 
-    if len(bl_add) > 0:  # If Bricklink Id is set
+    if len(bl_add) > 0:  # If Bricklink Id is _set
         try:
             syt.log_info("adding {} bl_rows".format(len(bl_add)))
             db.batch_update(
@@ -197,7 +197,7 @@ def add_part_data_to_database(insert_list, basics=0):
             for r in bl_add:
                 syt.log_note("Can't insert row: {}".format(syt.list2string(r)))
 
-    if len(ol_add) > 0:  # If BrickOwl Id is set and not bricklink
+    if len(ol_add) > 0:  # If BrickOwl Id is _set and not bricklink
         try:
             syt.log_info("adding {} bo_rows".format(len(ol_add)))
             db.batch_update(
@@ -212,7 +212,7 @@ def add_part_data_to_database(insert_list, basics=0):
             for r in ol_add:
                 syt.log_note("Can't insert row: {}".format(syt.list2string(r)))
 
-    if len(re_add) > 0:  # If rebrickable ID is set and not brickowl or bricklink
+    if len(re_add) > 0:  # If rebrickable ID is _set and not brickowl or bricklink
         try:
             syt.log_info("adding {} re_rows".format(len(re_add)))
             db.batch_update(
@@ -228,7 +228,7 @@ def add_part_data_to_database(insert_list, basics=0):
             for r in re_add:
                 syt.log_note("Can't insert row: {}".format(syt.list2string(r)))
 
-    if len(lg_add) > 0:  # only lego ID is set
+    if len(lg_add) > 0:  # only lego ID is _set
         try:
             syt.log_info("adding {} lg_rows".format(len(lg_add)))
             db.batch_update(

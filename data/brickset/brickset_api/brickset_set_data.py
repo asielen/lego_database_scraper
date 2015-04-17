@@ -5,14 +5,14 @@ import arrow
 import system as syt
 from data.data_classes import SetInfo
 
-# http://brickset.com/inventories/[set-num]-[set-seq] <- THe set inventory
+# http://brickset.com/inventories/[_set-num]-[_set-seq] <- THe _set inventory
 # http://brickset.com/parts/[piece number] <-Gives you element number, element name, design number, color,
 
 
 def get_basestats(set_num_primary, set_num_secondary=1):
     """
         Return a dictionary of base stats pulled from brickset.com
-            Set type
+            Set _type
             Theme group
             Theme
             SubTheme
@@ -45,7 +45,7 @@ def get_daily_data(set_num_primary, set_num_secondary=1):
     """
         Returns a dictionary with the following data
             avilability dates
-            rating
+            _rating
             want/own dates
 
         This is needed daily
@@ -105,7 +105,7 @@ def _parse_set_dimensions(d_string):
 
 # def _parse_set_name(soup):
 # """
-# Finds the set name in the soup
+# Finds the _set name in the soup
 # """
 # parent_tags0 = soup.find("h1")
 # if not parent_tags0:
@@ -213,9 +213,9 @@ def get_bs_rating(set_num_primary, set_num_secondary=1):
 
 def _parse_rating(soup):
     """
-        Finds the rating on the site and returns it in the format {'bs_rating':n}
+        Finds the _rating on the site and returns it in the format {'bs_rating':n}
     """
-    parent_tag = soup.find("div", {"class": "rating"})
+    parent_tag = soup.find("div", {"class": "_rating"})
     if parent_tag is None: return {'bs_score': None}
     return {'bs_score': float(parent_tag.attrs['title'])}
 
@@ -238,7 +238,7 @@ def scrub_data(dic):
             'Price per piece': '7.533p / 10.045c',
             'RRP': '14.99 / US$19.99',                     #Should have a pound sign but the debugger doesn't play well
             'Name': '4431-1: Ambulance',                with them in doc strings
-            'Set type': 'Normal',
+            'Set _type': 'Normal',
             'Subtheme': 'Medical',
             'Theme': 'City',
             'Theme group': 'Modern day',
@@ -297,10 +297,10 @@ def scrub_data(dic):
         scrubbed_dic['available_uk'] = dic['United Kingdom']
     if 'United States' in dic:
         scrubbed_dic['available_us'] = dic['United States']
-    if 'people own this set' in dic:
-        scrubbed_dic['bs_own'] = syt.only_numerics_int(dic['people own this set'])
-    if 'want this set' in dic:
-        scrubbed_dic['bs_want'] = syt.only_numerics_int(dic['want this set'])
+    if 'people own this _set' in dic:
+        scrubbed_dic['bs_own'] = syt.only_numerics_int(dic['people own this _set'])
+    if 'want this _set' in dic:
+        scrubbed_dic['bs_want'] = syt.only_numerics_int(dic['want this _set'])
     if 'bs_score' in dic:
         scrubbed_dic['bs_score'] = dic['bs_score']
 
@@ -325,7 +325,7 @@ def scrub_daily_data(dic):
             'Price per piece': '7.533p / 10.045c',
             'RRP': '14.99 / US$19.99',                     #Should have a pound sign but the debugger doesn't play well
             'Name': '4431-1: Ambulance',                with them in doc strings
-            'Set type': 'Normal',
+            'Set _type': 'Normal',
             'Subtheme': 'Medical',
             'Theme': 'City',
             'Theme group': 'Modern day',
@@ -359,12 +359,12 @@ def scrub_daily_data(dic):
         scrubbed_dic['available_us'] = dic['United States']
     else:
         scrubbed_dic['available_us'] = (None, None)
-    if 'people own this set' in dic:
-        scrubbed_dic['bs_own'] = syt.only_numerics_int(dic['people own this set'])
+    if 'people own this _set' in dic:
+        scrubbed_dic['bs_own'] = syt.only_numerics_int(dic['people own this _set'])
     else:
         scrubbed_dic['bs_own'] = None
-    if 'want this set' in dic:
-        scrubbed_dic['bs_want'] = syt.only_numerics_int(dic['want this set'])
+    if 'want this _set' in dic:
+        scrubbed_dic['bs_want'] = syt.only_numerics_int(dic['want this _set'])
     else:
         scrubbed_dic['bs_want'] = None
     if 'bs_score' in dic:

@@ -158,7 +158,7 @@ def _initiate_database():
                     "set_id INTEGER,"
                     "want INTEGER,"
                     "own INTEGER,"
-                    "rating INTEGER,"
+                    "_rating INTEGER,"
                     "record_date INTEGER,"
                     "FOREIGN KEY (set_id) REFERENCES sets(id));")
         con.execute("CREATE UNIQUE INDEX IF NOT EXISTS rating_type_date_idx ON bs_ratings(set_id, record_date)")

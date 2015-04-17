@@ -1,10 +1,13 @@
 # External
-import collections
+import pickle
+import os
 
 # Internal
 import database as db
 from data.data_classes.SetInfo_HPA_Class import HistoricPriceAnalyser, SetInfo
 import system as syt
+
+if __name__ == "__main__": syt.setup_logger()
 
 # TODO All of this
 # Need to be able to build reports by
@@ -15,7 +18,7 @@ import system as syt
 #     year released in date range - True False
 #     set_name = True
 #     theme
-#     set size buckets
+# _set size buckets
 #     price buckets
 #
 # Broken out by: Buckets - these are not filters but rather aggregatetors
@@ -53,7 +56,7 @@ import system as syt
 class SetCollection(object):
     """
         This stores a list of sets, but it also stores the filter list to get that list of text
-        This makes it easier to do mass things to it because we can then do it just in sql instead
+        This makes it easier to do mass things to it because we can then do it just in _sql instead
         of loops
 
         There is the base filter, and then there is the report creation.
@@ -66,7 +69,7 @@ class SetCollection(object):
         @param filter_text: Filter Text e.g. "year_released = 2014, theme = city
         @return:
         """
-
+        self.name = None
         set_filters = ""
         if set_list is not None and isinstance(set_list, list):
             set_filters = SetCollection.build_filter_from_set_list(set_list)
@@ -136,7 +139,7 @@ class SetCollection(object):
         return theme_list
 
     def get_set_nums(self):
-        """List of all set nums"""
+        """List of all _set nums"""
         nums_list = self._run_query(base_text="SELECT set_num FROM sets", filter_text=None)
         nums_list = [n[0] for n in nums_list]
         return nums_list
@@ -144,7 +147,7 @@ class SetCollection(object):
     def _get_num_value(self, field="", type=None):
         """
 
-        Used for any of the fields on a set record that could contain a value that is worth summing counting etc
+        Used for any of the fields on a _set record that could contain a value that is worth summing counting etc
         """
         result = None
         if field is None: return None
@@ -284,7 +287,7 @@ class SetCollection(object):
     #
     # def choose_report_type(self):
     # """
-    #     Menu to choose a report type
+    # Menu to choose a report _type
     #     @return:
     #     """
     #     report_type = []
@@ -292,80 +295,95 @@ class SetCollection(object):
 
     def build_report(self, sfilter=None, report_type=None):
         """
-            Take the set collection and layer a report on top of it
+            Take the _set collection and layer a report on top of it
         @param sfilter:
         @param report_type:
         @return:
         """
-        price_sets = collections.defaultdict()
-        set_defs = collections.defaultdict()
 
-        date_list = []
-        date_range = [0, 0]
-        if sfilter is None:
-            sfilter = HistoricPriceAnalyser.build_filter()
-        if report_type is None:
-            report_type = HistoricPriceAnalyser.build_report_type()
+        tHPA = HistoricPriceAnalyser().create()
+
+        report_data = []  # This holds all the report data
+
+        # date_list = []
+        # date_range = [0, 0]
+        # if sfilter is None:
+        # sfilter = HistoricPriceAnalyser.build_filter()
+        # if sfilter is None: return None
+        # if report_type is None:
+        #     report_type = HistoricPriceAnalyser.build_report_type()
         set_nums = self.get_set_nums()
+        timer = syt.process_timer("Building Set Collection Report")
         for idx, snum in enumerate(set_nums):
-            print("{} of {} | Getting snum {} ".format(idx, len(set_nums), snum))
-            tHPA = HistoricPriceAnalyser(si=SetInfo(snum), select_filter=sfilter).set_options(**report_type)
+            syt.log_info("   Getting set info on {} ".format(snum))
+            try:
+                report_data.append(tHPA.run_report(si=SetInfo(snum)))
+            except ValueError as v:
+                syt.log_warning(" ##  Skipped {} because {}".format(snum, v))
+            timer.log_time(1, len(set_nums) - idx, verbose=False)
+            # tHPA = HistoricPriceAnalyser.create(si=SetInfo(snum), select_filter=sfilter).set_options(**report_type) #Todo this throws an error with certain report_types, when report_type is not a dict
+            # tHPA = HistoricPriceAnalyser(si=SetInfo(snum), _select_filter=sfilter).set_options(**report_type)
 
-            ###########
-            # Calculate the relative date range (+- the date the report is relative to)
-            # - This is for the overall report so everything is to one scale
-            # Todo check this
-            if report_type["report_type"] == tHPA.R_RETAIL_PRICE:
-                tdate_range = tHPA.si.get_relative_start_date_range()
-            elif report_type["report_type"] == tHPA.R_END_PRICE:
-                tdate_range = tHPA.si.get_relative_end_date_range()
-            else:
-                tdate_range = tHPA.si.get_abs_date_range()
+        timer.log_time(len(set_nums))
+        timer.end()
+        HistoricPriceAnalyser.csv_write(report_data, self.name)
 
-            if tdate_range[0] is None:
-                # If there is no starting date, there is nothing to compare to, don't really need to check end date also
-                continue
-            if tdate_range[0] is not None and tdate_range[0] < date_range[0]:
-                date_range[0] = tdate_range[0]
-            if tdate_range[1] is not None and tdate_range[1] > date_range[1]:
-                date_range[1] = tdate_range[1]
-            #
-            ###########
+        # ###########
+        # # Calculate the relative date range (+- the date the report is relative to)
+        # # - This is for the overall report so everything is to one scale
+        # # Todo check this
+        # if report_type["report_type"] == tHPA.R_RETAIL_PRICE:
+        # tdate_range = tHPA.si.get_relative_start_date_range()
+        # elif report_type["report_type"] == tHPA.R_END_PRICE:
+        #     tdate_range = tHPA.si.get_relative_end_date_range()
+        # else:
+        #     tdate_range = tHPA.si.get_abs_date_range()
+        #
+            # if tdate_range[0] is None:
+        # # If there is no starting date, there is nothing to compare to, don't really need to check end date also
+        #     continue
+        # if tdate_range[0] is not None and tdate_range[0] < date_range[0]:
+        #     date_range[0] = tdate_range[0]
+        # if tdate_range[1] is not None and tdate_range[1] > date_range[1]:
+        #     date_range[1] = tdate_range[1]
+        # #
+        # ###########
+        #
+        # price_sets[snum], set_defs[snum] = tHPA.run_report()
 
-            price_sets[snum], set_defs[snum] = tHPA.run_report()
+        # date_list.sort()
+        # price_csv = "SET_NUM"
+        # print("Building Price CSV")
+        # for dte in range(date_range[0], date_range[1]):
+        # price_csv += ",{}".format(dte)  # syt.get_date(dte))
+        # price_csv += "\n"
+        #
+        # for st in price_sets:
+        #     if len(price_sets[st]) < 2:
+        #         continue
+        #     price_csv += "{}".format(st)
+        #     for dte in range(date_range[0], date_range[1]):
+        #         if dte in price_sets[st]:
+        #             if isinstance(price_sets[st][dte], list):
+        #                 price_csv += ",{}".format(price_sets[st][dte][0])
+        #             else:
+        #                 price_csv += ",{}".format(price_sets[st][dte])
+        #         else:
+        #             price_csv += ", "
+        #     price_csv += "\n"
+        # print("Building Set DEF CSV")
+        #
+        # set_csv = "SET_NUM, THEME, YEAR_RELEASED, ORIGINAL_PRICE, START_DATE, END_DATE\n"
+        # for st in set_defs:
+        #     set_csv += syt.list2string(set_defs[st])
+        #     set_csv += "\n"
+        #
+        # with open('{}-price-data.csv'.format(syt.get_timestamp()), "w") as f:
+        #     f.write(price_csv)
+        #
+        # with open('{}-price-_set-data.csv'.format(syt.get_timestamp()), "w") as f:
+        #     f.write(set_csv)
 
-        date_list.sort()
-        price_csv = "SET_NUM"
-        print("Building Price CSV")
-        for dte in range(date_range[0], date_range[1]):
-            price_csv += ",{}".format(dte)  # syt.get_date(dte))
-        price_csv += "\n"
-
-        for st in price_sets:
-            if len(price_sets[st]) < 2:
-                continue
-            price_csv += "{}".format(st)
-            for dte in range(date_range[0], date_range[1]):
-                if dte in price_sets[st]:
-                    if isinstance(price_sets[st][dte], list):
-                        price_csv += ",{}".format(price_sets[st][dte][0])
-                    else:
-                        price_csv += ",{}".format(price_sets[st][dte])
-                else:
-                    price_csv += ", "
-            price_csv += "\n"
-        print("Building Set DEF CSV")
-
-        set_csv = "SET_NUM, THEME, YEAR_RELEASED, ORIGINAL_PRICE, START_DATE, END_DATE\n"
-        for st in set_defs:
-            set_csv += syt.list2string(set_defs[st])
-            set_csv += "\n"
-
-        with open('{}-price-data.csv'.format(syt.get_timestamp()), "w") as f:
-            f.write(price_csv)
-
-        with open('{}-price-set-data.csv'.format(syt.get_timestamp()), "w") as f:
-            f.write(set_csv)
 
     # Report Type
 
@@ -379,85 +397,111 @@ class SetCollection(object):
     #     delta
     #     delta day
 
-    # Todo, is this still used?
-    def historic_price_trends(self, type="standard", price="standard", date="", inflation=None):
+    # # Todo, is this still used?
+    # def historic_price_trends(self, _type="standard", price="standard", date="", inflation=None):
+    # """
+    #
+    #     """
+    #     historic_data_sets = collections.defaultdict()
+    #     sfilter = ["AVG(historic_prices.qty_avg)",
+    #                "(price_types.price_type='historic_new' OR price_types.price_type='historic_used')",
+    #                True]  #Third option (Group) needs to be true if getting multiple values
+    #     for snum in self.get_set_nums():
+    #         print("Getting snum {}".format(snum))
+    #         tHPA = HistoricPriceAnalyser(si=SetInfo(snum), _select_filter=sfilter)
+    #         tHPA._set_base_price_date(date=tHPA.R_END_DATE, price=tHPA.R_END_PRICE)
+    #         historic_data_sets[snum] = tHPA.run_all_test([0, 1], by_date=True)
+    #
+    #     print("Check")
+    #     return historic_data_sets
+    #
+    # # Todo is this still used?
+    # def historic_price_report(self):
+    #     """
+    #     Get all get_prices for sets between (filter text "(year_released BETWEEN 2008 AND 2014)") Relative to their end date
+    #         Day 0 is the end date, days before are negative, days after are positive
+    #         Values for get_prices are in percent change from original
+    #         Prices are the average of new and used historic qty avg get_prices
+    #     """
+    #     historic_price_sets = collections.defaultdict()
+    #     historic_set_defs = collections.defaultdict()
+    #     sfilter = ["AVG(historic_prices.qty_avg)",
+    #                "(price_types.price_type='historic_used')",
+    #                True]  #Third option (Group) needs to be true if getting multiple values
+    #     date_list = []
+    #     date_range = [0, 0]
+    #     for snum in self.get_set_nums():
+    #         print("Getting snum {}".format(snum))
+    #         tHPA = HistoricPriceAnalyser(si=SetInfo(snum), _select_filter=sfilter)
+    #         tdate_range = tHPA.si.get_relative_end_date_range()
+    #         if tdate_range[
+    #             0] is None:  #If there is no starting date, there is nothing to compare to, don't really need to check end date also
+    #             continue
+    #         if tdate_range[0] is not None and tdate_range[0] < date_range[0]:
+    #             date_range[0] = tdate_range[0]
+    #         if tdate_range[1] is not None and tdate_range[1] > date_range[1]:
+    #             date_range[1] = tdate_range[1]
+    #         historic_price_sets[snum], historic_set_defs[snum] = tHPA.test_eval_reports()
+    #
+    #     date_list.sort()
+    #     price_csv = "SET_NUM"
+    #     print("Building Price CSV")
+    #     for dte in range(date_range[0], date_range[1]):
+    #         price_csv += ",{}".format(dte)  #syt.get_date(dte))
+    #     price_csv += "\n"
+    #
+    #     for st in historic_price_sets:
+    #         if len(historic_price_sets[st]) < 2:
+    #             continue
+    #         price_csv += "{}".format(st)
+    #         for dte in range(date_range[0], date_range[1]):
+    #             if dte in historic_price_sets[st]:
+    #                 if isinstance(historic_price_sets[st][dte], list):
+    #                     price_csv += ",{}".format(historic_price_sets[st][dte][0])
+    #                 else:
+    #                     price_csv += ",{}".format(historic_price_sets[st][dte])
+    #             else:
+    #                 price_csv += ", "
+    #         price_csv += "\n"
+    #     print("Building Set DEF CSV")
+    #
+    #     set_csv = "SET_NUM, THEME, YEAR_RELEASED, ORIGINAL_PRICE, START_DATE, END_DATE\n"
+    #     for st in historic_set_defs:
+    #         set_csv += syt.list2string(historic_set_defs[st])
+    #         set_csv += "\n"
+    #
+    #     with open('{}-price-data.csv'.format(syt.get_timestamp()), "w") as f:
+    #         f.write(price_csv)
+    #
+    #     with open('{}-price-_set-data.csv'.format(syt.get_timestamp()), "w") as f:
+    #         f.write(set_csv)
+
+    def save(self):
+        if self.name is None:
+            self.name = input("What do you want to call this collection? ")
+        pickle.dump(self, open("{}_{}.sc".format(self.name, syt.get_timestamp()), "wb"))
+        print("Set Collection Saved")
+
+    @staticmethod
+    def load():
         """
-
+        Static method because it can be used before the class is created
+        @return: The loaded class
         """
-        historic_data_sets = collections.defaultdict()
-        sfilter = ["AVG(historic_prices.qty_avg)",
-                   "(price_types.price_type='historic_new' OR price_types.price_type='historic_used')",
-                   True]  #Third option (Group) needs to be true if getting multiple values
-        for snum in self.get_set_nums():
-            print("Getting snum {}".format(snum))
-            tHPA = HistoricPriceAnalyser(si=SetInfo(snum), select_filter=sfilter)
-            tHPA.set_base_price_date(date=tHPA.R_END_DATE, price=tHPA.R_END_PRICE)
-            historic_data_sets[snum] = tHPA.run_all_test([0, 1], by_date=True)
+        set_col = None
 
-        print("Check")
-        return historic_data_sets
+        def find_savefiles():
+            filenames = os.listdir(os.getcwd())
+            setcollections = []
+            for file in filenames:
+                if file.endswith(".sc"):
+                    setcollections.append(file)
+            return setcollections
 
-    # Todo is this still used?
-    def historic_price_report(self):
-        """
-        Get all get_prices for sets between (filter text "(year_released BETWEEN 2008 AND 2014)") Relative to their end date
-            Day 0 is the end date, days before are negative, days after are positive
-            Values for get_prices are in percent change from original
-            Prices are the average of new and used historic qty avg get_prices
-        """
-        historic_price_sets = collections.defaultdict()
-        historic_set_defs = collections.defaultdict()
-        sfilter = ["AVG(historic_prices.qty_avg)",
-                   "(price_types.price_type='historic_used')",
-                   True]  #Third option (Group) needs to be true if getting multiple values
-        date_list = []
-        date_range = [0, 0]
-        for snum in self.get_set_nums():
-            print("Getting snum {}".format(snum))
-            tHPA = HistoricPriceAnalyser(si=SetInfo(snum), select_filter=sfilter)
-            tdate_range = tHPA.si.get_relative_end_date_range()
-            if tdate_range[
-                0] is None:  #If there is no starting date, there is nothing to compare to, don't really need to check end date also
-                continue
-            if tdate_range[0] is not None and tdate_range[0] < date_range[0]:
-                date_range[0] = tdate_range[0]
-            if tdate_range[1] is not None and tdate_range[1] > date_range[1]:
-                date_range[1] = tdate_range[1]
-            historic_price_sets[snum], historic_set_defs[snum] = tHPA.test_eval_reports()
+        def _load(file_name):
+            return pickle.load(open(file_name, "rb"))
 
-        date_list.sort()
-        price_csv = "SET_NUM"
-        print("Building Price CSV")
-        for dte in range(date_range[0], date_range[1]):
-            price_csv += ",{}".format(dte)  #syt.get_date(dte))
-        price_csv += "\n"
-
-        for st in historic_price_sets:
-            if len(historic_price_sets[st]) < 2:
-                continue
-            price_csv += "{}".format(st)
-            for dte in range(date_range[0], date_range[1]):
-                if dte in historic_price_sets[st]:
-                    if isinstance(historic_price_sets[st][dte], list):
-                        price_csv += ",{}".format(historic_price_sets[st][dte][0])
-                    else:
-                        price_csv += ",{}".format(historic_price_sets[st][dte])
-                else:
-                    price_csv += ", "
-            price_csv += "\n"
-        print("Building Set DEF CSV")
-
-        set_csv = "SET_NUM, THEME, YEAR_RELEASED, ORIGINAL_PRICE, START_DATE, END_DATE\n"
-        for st in historic_set_defs:
-            set_csv += syt.list2string(historic_set_defs[st])
-            set_csv += "\n"
-
-        with open('{}-price-data.csv'.format(syt.get_timestamp()), "w") as f:
-            f.write(price_csv)
-
-        with open('{}-price-set-data.csv'.format(syt.get_timestamp()), "w") as f:
-            f.write(set_csv)
-
+        return syt.Load_Menu(name="- Load Email- ", choices=find_savefiles(), function=_load).run()
 
     ##
     # Static Methods
@@ -465,7 +509,7 @@ class SetCollection(object):
     @staticmethod
     def build_filter_from_set_list(set_lists):
         """
-        Take a list of set lists and return a filter statement:  " OR set_num=xxx-xx OR ..."
+        Take a list of _set lists and return a filter statement:  " OR set_num=xxx-xx OR ..."
         @param set_lists:
         @return:
         """
@@ -596,7 +640,7 @@ class SetCollection(object):
     @staticmethod
     def make_filter(filter_dict=None):
         """
-        Take a filter list and turn it into a string that can be used to make a set collection
+        Take a filter list and turn it into a string that can be used to make a _set collection
         @param filter_list:
         @return:
         "(year_released BETWEEN 1980 AND 2015) AND ((get_piece_count >=25) OR (original_price_us >=4)) AND year_released IS NOT NULL AND set_name IS NOT NULL"
@@ -698,8 +742,8 @@ class SetCollection(object):
 # def _set_info_creator(set_list):
 # """
 #
-#     @param set_list: Take a list of set lists and return SetInfo objects
-#     @return:
+#     @param set_list: Take a list of _set lists and return SetInfo objects
+# @return:
 #     """
 #     SetInfo_list = []
 #     for s in set_list:
@@ -709,7 +753,7 @@ class SetCollection(object):
 
 def SetCollection_menu():
     """
-    Primary menu for building and playing with set collections
+    Primary menu for building and playing with _set collections
 
     @return:
     """
@@ -723,7 +767,7 @@ def SetCollection_menu():
         nonlocal set_collection
         if set_collection is None: menu_create_sc()
         csv_dump_text = set_collection.csv_dump()
-        with open('{}-set-collection-dump.csv'.format(syt.get_timestamp()), "w") as f:
+        with open('{}-_set-collection-dump.csv'.format(syt.get_timestamp()), "w") as f:
             f.write(csv_dump_text)
 
     def menu_build_report():
@@ -731,6 +775,14 @@ def SetCollection_menu():
         if set_collection is None: menu_create_sc()
         set_collection.build_report()
 
+    def menu_save_collection():
+        nonlocal set_collection
+        if set_collection is None: menu_create_sc()
+        set_collection.save()
+
+    def menu_load_collection():
+        nonlocal set_collection
+        set_collection = SetCollection.load()
 
     def menu_title():
         text = "- Set Collections -"
@@ -741,7 +793,9 @@ def SetCollection_menu():
     options = (
         ("Create Set Collection", menu_create_sc),
         ("Build Report", menu_build_report),
-        ("Get all Set Data", menu_data_dump))
+        ("Get all Set Data", menu_data_dump),
+        ("Save Collection", menu_save_collection),
+        ("Load Collection", menu_load_collection))
 
     syt.Menu(name=menu_title, choices=options).run()
 

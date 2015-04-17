@@ -71,7 +71,7 @@ def b_main_menu():
         ("Run Inventories Update", run_get_inv),
         ("Create Reports", run_get_set_info),
         ("Get Links", run_get_links),
-        ("Update set", run_update_set),
+        ("Update _set", run_update_set),
         ("System", run_system)
     )
     syt.Menu(name="- Lego Brick Evaluator -", choices=options, quit_tag=True).run()

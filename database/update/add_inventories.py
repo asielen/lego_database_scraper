@@ -29,7 +29,7 @@ def add_bl_inventory_to_database(set_id, set_dict):
     """
 
     @param set_id: the row id from the sets table
-    @param set_dict: the dictionary of the inventory of a set [element, qty]
+    @param set_dict: the dictionary of the inventory of a _set [element, qty]
     @return:
     """
 

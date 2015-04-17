@@ -8,7 +8,7 @@ if __name__ == "__main__": syt.setup_logger()
 
 # parameter info
 # itemType =
-# S : set
+# S : _set
 # P : parts
 # M : minifig
 # B : books

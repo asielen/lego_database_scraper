@@ -22,13 +22,13 @@ def main_menu():
         quick_data_menu()
 
     def make_reports():
-        make_report_menu()
+        make_report_menu()  # Todo
 
     def update_database():
-        database_update_menu()
+        database_update_menu()  # Todo
 
     def system():
-        system_menu()
+        system_menu()  # Todo
 
     options = (
         ("Run Daily Update", daily_update),

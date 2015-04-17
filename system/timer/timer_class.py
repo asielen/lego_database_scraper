@@ -32,14 +32,17 @@ class process_timer():
         logger.log_info("Timer {} Ended".format(self.name))
         del self
 
-    def log_time(self, num_of_tasks, remaining_tasks=None):  # num_of_tasks is number of last completed tasks
+    def log_time(self, num_of_tasks, remaining_tasks=None,
+                 verbose=True):  # num_of_tasks is number of last completed tasks
         time_diff = self._get_run_time()
         self._update_tasks(num_of_tasks)
-        logger.log_info("@ Process Time: {} seconds FOR {} objects processed".format(time_diff, self.tasks))
+        if verbose is True or remaining_tasks is None and verbose is False:
+            logger.log_info("@ Process Time: {} seconds FOR {} objects processed".format(time_diff, self.tasks))
         tasks_per_second = self.tasks / max(1, time_diff)
-        logger.log_info(
-            "@@ Process Time: {} per min IS {} objects per second".format(round(60 * tasks_per_second),
-                                                                          round(tasks_per_second)))
+        if verbose:
+            logger.log_info(
+                "@@ Process Time: {} per min IS {} objects per second".format(round(60 * tasks_per_second),
+                                                                              round(tasks_per_second)))
         if remaining_tasks is not None:
             logger.log_info(
                 "@@ Process Time: ETR: {} mins FOR {} objects".format(round(remaining_tasks / (60 * tasks_per_second)),

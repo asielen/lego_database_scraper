@@ -8,10 +8,10 @@ import database as db
 def add_set_to_database_from_dict(set):
     """
 
-    @param set: a set dictionary, typically created by get_basestats()
+    @param set: a _set dictionary, typically created by get_basestats()
     @return:
 
-     Takes a set with all the appropriate fields and adds it to the database
+     Takes a _set with all the appropriate fields and adds it to the database
                 INT idz
                 TXT set_num
                 TXT item_num

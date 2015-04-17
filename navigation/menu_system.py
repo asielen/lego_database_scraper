@@ -11,7 +11,7 @@ def main():
     options = (
         ("Backup Database", backup_database),
         ("Database Stat Report", run_databaseReport),
-        ("Dump all set data", run_dumpSets),
+        ("Dump all _set data", run_dumpSets),
         ("Initiate New Database", init_new_database),
         ("Initiate Primitives", menu_run_primitives),
         ("Build All", menu_build_all),

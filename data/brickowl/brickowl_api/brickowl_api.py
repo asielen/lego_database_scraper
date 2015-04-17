@@ -11,7 +11,7 @@ def pull_catalog_list(type=None):
 
     @return:
     """
-    parameters = {'key': KEY, 'type': type}
+    parameters = {'key': KEY, '_type': type}
     return syt.read_json_from_url(url + '/list', params=parameters)
 
 
@@ -26,10 +26,10 @@ def pull_catalog_item_info(boid):
 
 def pull_search_ID(lookup_id, type='Part', id_type=None):
     """
-    type: Set, Part, Minifigure, Gear, Sticker, Packaging
+    _type: Set, Part, Minifigure, Gear, Sticker, Packaging
     @return:
     """
-    parameters = {'key': KEY, 'id': lookup_id, 'type': type, 'id_type': id_type}
+    parameters = {'key': KEY, 'id': lookup_id, '_type': type, 'id_type': id_type}
     return syt.read_json_from_url(url + '/id_lookup', params=parameters)
 
 
@@ -98,7 +98,7 @@ def menu_pull_catalog_list():
 
 
 def menu_pull_catalog_item_info():
-    set_num = input("What set num? ")
+    set_num = input("What _set num? ")
     jsonfile = pull_catalog_item_info(set_num)
     print(jsonfile)
 
@@ -116,7 +116,7 @@ def menu_pull_bulk():
 
 
 def menu_pull_set_inventory():
-    set_num = input("What set num? ")
+    set_num = input("What _set num? ")
     jsonfile = pull_set_inventory(set_num)
     print(jsonfile)
 

@@ -172,7 +172,7 @@ def _search_piece(design_num, element_num):
 def main():
     set = input("What is the piece num? ")
     pprint.pprint(get_pieceinfo(set))
-    # pprint.pprint(get_pieceinfo_bl(set))
+    # pprint.pprint(get_pieceinfo_bl(_set))
     main()
 
 

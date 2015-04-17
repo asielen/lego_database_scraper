@@ -10,6 +10,7 @@ import arrow
 
 
 
+
 # Internal - Should have none outside system
 from system import base
 from system.system_database import database
@@ -55,6 +56,8 @@ def _get_inflation_rate(start_cpi, end_cpi):
 
 
 def _get_adjusted_price(price, inflation_rate):
+    if price is None:
+        print("ERROR")
     return (price * inflation_rate) + price
 
 

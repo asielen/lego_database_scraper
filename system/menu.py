@@ -38,7 +38,7 @@ class Menu(object):
                     [("Choice1",Function1),("Choice2",Function2)]
                 2) Names
                     ["Name1","Name2","Name3"]
-        :param function: if type == LOAD, you need a function to call on the choice
+        :param function: if _type == LOAD, you need a function to call on the choice
         :param drop_down:
             False = Keep loading this menu until option back/quit_tag is chosen
             True = load the menu once and then quit_tag
@@ -59,12 +59,12 @@ class Menu(object):
         else:
             self.function = function
 
-        # Make sure that the choices is in the right format for the type
+        # Make sure that the choices is in the right format for the _type
         if type == self.STANDARD:
             # Should be in the format listed above, so each element should be a tuple of two elements
             assert len(choices[0]) == 2
         elif type == self.LOAD:
-            # If the type isn't standard, we need a function to run
+            # If the _type isn't standard, we need a function to run
             assert function != None
 
         self.drop_down = drop_down
@@ -80,7 +80,7 @@ class Menu(object):
         self.options_list = list(self.choices.keys())
         self.options_list.sort(key = lambda s: int(s))
 
-        # For any menu type, this is just a text string that triggers a return instead of an action
+        # For any menu _type, this is just a text string that triggers a return instead of an action
         if quit_tag == True:
             self.choices["0"] = ("Quit", self.back)
         elif quit_tag is None:
@@ -93,7 +93,7 @@ class Menu(object):
 
     def return_string(self, str):
         """
-        For the type: return. Returns the string instead of working it with the function
+        For the _type: return. Returns the string instead of working it with the function
         :return:
         """
         return str
@@ -149,7 +149,7 @@ class Menu(object):
                 break
         return result
 
-    def run(self):
+    def run(self, ):
         self.result = self._choose_loop()
         return self.result
 
@@ -160,19 +160,19 @@ class Load_Menu(Menu):
     """
 
     def __init__(self, name=None, choices=None, function=None):
-        super(Load_Menu, self).__init__(name=name, choices=choices, function=function, drop_down=True, type=Menu.LOAD).run()
+        super(Load_Menu, self).__init__(name=name, choices=choices, function=function, drop_down=True, type=Menu.LOAD)
 
 
-def MultiChoiceMenu(choice_list=None):
+def MultiChoiceMenu(name="- Current List -", choice_list=None):
     """
     Class for making multi-select menus
     """
-
+    choice_list.sort()
     selected_choices = []
     current_choice = None
     while current_choice != Menu.KILL:
         options = ["Add", ] + selected_choices
-        current_choice = Menu("- Current List - (select add to add, others to remove)", choices=options,
+        current_choice = Menu("{} (select add to add, others to remove)".format(name), choices=options,
                               type=Menu.RETURN, drop_down=True, quit_tag="Done").run()
         print(current_choice)
         if current_choice == 'Add':

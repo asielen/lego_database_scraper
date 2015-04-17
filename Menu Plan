@@ -19,24 +19,24 @@ as of 3/31/15
 
 @ M1
 # Quick Data Menu
- $ Get set info
-    -   Prompt for a set number and return
-        a dump of that set info
- $ Create set report
-    -   Prompt for a set number and create
-        a csv report for that set
+ $ Get _set info
+    -   Prompt for a _set number and return
+        a dump of that _set info
+ $ Create _set report
+    -   Prompt for a _set number and create
+        a csv report for that _set
  $ Get Set links
-    -   Return a list of links for that set
+    -   Return a list of links for that _set
         from the main sites
 
 @ M2
 # Make Reports
- $ Build historic set report
+ $ Build historic _set report
     - Open Set Report menu [M2.1]
-    -   Will build a report for a single set
+    -   Will build a report for a single _set
         on <PPG, PPP, Historic Prices, Inflation>
- $ Build Multi set report
-    - Open Multi set Report menu [M2.2]
+ $ Build Multi _set report
+    - Open Multi _set Report menu [M2.2]
 
 
 @ M2.1 & M2.2
@@ -61,7 +61,7 @@ as of 3/31/15
         sets in the database
  $ Run inventory update
     -   Will prompt for parameters to update the
-        set inventories in the database
+        _set inventories in the database
  $ Run Base update
     -   Run all base data updates (make sure they are safe)
 

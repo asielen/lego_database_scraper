@@ -1,7 +1,7 @@
 __author__ = 'andrew.sielen'
 
 # 20140603 It looks like this will still be needed, there doesn't seem to be an easy way to get this data as a one off,
-# all of this should be included in the master set file
+# all of this should be included in the master _set file
 
 # http://www.bricklink.com/catalogItem.asp?P=[piece number] <- gives you weight
 
@@ -25,7 +25,7 @@ def get_basestats(set_num_primary, set_num_secondary=1):
     soup = syt.soupify(url)
     if soup is None: return {}
 
-    # Get the set name
+    # Get the _set name
     parent_tags0 = soup.find("font", {"size": "+0"})
     if parent_tags0 == None: return {}
     set_name = parent_tags0.string.strip()
@@ -152,7 +152,7 @@ def _scrub_dimensions(tup):
 
 if __name__ == "__main__":
     def main():
-        SET = input("What is the set number?: ")
+        SET = input("What is the _set number?: ")
         print(get_basestats(SET))
         main()
 

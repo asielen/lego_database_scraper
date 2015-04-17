@@ -126,29 +126,30 @@ def hpa_menu():
     @return:
     """
     # logger.critical("Set Info testing")
-
-    def menu_text():
-        text = "- HPA Settings -\n"
-        if test_HPA is not None:
-            text += "Set Num = {}\n".format(test_HPA.si.set_num)
-            text += "Base Date = {}\n".format(syt.get_date(test_HPA.base_date))
-            text += "Base Price = {}\n".format(test_HPA.base_price)
-            text += "Type = {}\n".format(test_HPA.type)
-            # if test_HPA.inf_year is not None:
-            text += "Inflation = {}\n".format(test_HPA.inf_year)
-        return text
-
-    options = (
-        ("Test Historic", hpa_menu_create),
-        ("Set Inflation Year", hpa_menu_inflation),
-        ("Set Report Type", hpa_menu_report_type),
-        ("Set Date Price", hpa_menu_date_price),
-        ("Reset", hpa_menu_clear),
-        ("Run", hpa_menu_get),
-        ("Full Test", hpa_menu_test),
-    )
-
-    syt.Menu(name=menu_text, choices=options).run()
+    HistoricPriceAnalyser.create()
+    #
+    # def menu_text():
+    # text = "- HPA Settings -\n"
+    #     if test_HPA is not None:
+    #         text += "Set Num = {}\n".format(test_HPA.si.set_num)
+    #         text += "Base Date = {}\n".format(syt.get_date(test_HPA._base_date))
+    #         text += "Base Price = {}\n".format(test_HPA._base_price)
+    #         text += "Type = {}\n".format(test_HPA._type)
+    #         # if test_HPA._inf_year is not None:
+    #         text += "Inflation = {}\n".format(test_HPA._inf_year)
+    #     return text
+    #
+    # options = (
+    #     ("Test Historic", hpa_menu_create),
+    #     ("Set Inflation Year", hpa_menu_inflation),
+    #     ("Set Report Type", hpa_menu_report_type),
+    #     ("Set Date Price", hpa_menu_date_price),
+    #     ("Reset", hpa_menu_clear),
+    #     ("Run", hpa_menu_get),
+    #     ("Full Test", hpa_menu_test),
+    # )
+    #
+    # syt.Menu(name=menu_text, choices=options).run()
 
 
 def hpa_menu_create():
@@ -157,17 +158,8 @@ def hpa_menu_create():
     @return:
     """
     global test_HPA
-
-    set_num = SetInfo.input_set_num()
-    test_set = SetInfo(set_num)
-    filter = HistoricPriceAnalyser.build_filter()
-    if filter is None:
-        syt.log_error("No filter created")
-        return None
-    test_HPA = HistoricPriceAnalyser(si=test_set, select_filter=filter)
+    test_HPA = HistoricPriceAnalyser.create()
     return test_HPA
-
-
 
 
 def hpa_menu_inflation():

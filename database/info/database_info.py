@@ -15,7 +15,7 @@ def get_sets_between_years(start_year, end_year=None):
 
     @param start_year:
     @param end_year:
-    @return: returns all the set ids between start_year and end_year
+    @return: returns all the _set ids between start_year and end_year
     """
 
     if start_year is None: return None
@@ -165,7 +165,7 @@ def read_bl_price_types():
 def read_bl_sets():
     """
 
-    @return: a dict in this format {set_num: [set]}
+    @return: a dict in this format {set_num: [_set]}
     """
     bl_set_list = db.run_sql('SELECT * FROM sets')
     return {b[1]: b[:] for b in bl_set_list}  # 1 is the position of the bricklink column
@@ -193,7 +193,7 @@ def read_inv_update_date(date='last_updated'):
     """
 
     @param date: last_updated,
-    @return: a list in the format {set_num: last_updated} for the date type in list:
+    @return: a list in the format {set_num: last_updated} for the date _type in list:
         # last_updated pos = 22
         # last_inv_updated_bo = 23
         # last_inv_updated_bl = 24
@@ -281,10 +281,10 @@ def get_last_updated_for_daily_stats(set_num=None):
 #     """
 #         Take a list of sets and a dictionary of sets and dates and returns a list of sets
 #         that are only within [get_date_range] of today
-#             Used to check if a set needs to be updated
+    # Used to check if a _set needs to be updated
 #             Need to get the first two lists though from somewhere else
-#     @param sets: list of set nums [xxx–xx,yyy–y,zzz–z]
-#     @param year_sets: dict of a list of sets with last updated dates {xxx–x:2014-05-12}
+#     @param sets: list of _set nums [xxx–xx,yyy–y,zzz–z]
+    #     @param year_sets: dict of a list of sets with last updated dates {xxx–x:2014-05-12}
 #     @param date_range: the number of days on either side of the date
 #     @return: a list of sets that need to be updated
 #     """
@@ -358,12 +358,12 @@ def get_last_updated_for_daily_stats(set_num=None):
 #
 
 # # # Basic information
-# def get_set_price(set_num=None, inf_year=None):
-#     """
-#     updated 20140908
-#     @param set_num: set num in xxxx–x
-#     @param inf_year: if this is not None, then get the original price
-#     @return: the price or list of get_prices if set_num is omitted
+# def get_set_price(set_num=None, _inf_year=None):
+    # """
+    #     updated 20140908
+#     @param set_num: _set num in xxxx–x
+    # @param _inf_year: if this is not None, then get the original price
+    #     @return: the price or list of get_prices if set_num is omitted
 #     """
 #     price = None
 #
@@ -377,32 +377,32 @@ def get_last_updated_for_daily_stats(set_num=None):
 #         if price is None:
 #             return None
 #
-#         if inf_year is not None and price is not None:
-#             year_released = db.run_sql("SELECT year_released FROM sets WHERE id=?;", (set_id,), one=True)
+#         if _inf_year is not None and price is not None:
+    #             year_released = db.run_sql("SELECT year_released FROM sets WHERE id=?;", (set_id,), one=True)
 #             if year_released is None:
 #                 return None
-#             if inf_year >= year_released:
-#                 return price
-#             price_inflated = (syt.get_inflation_rate(year_released, inf_year) * price) + price
-#             return price_inflated, year_released, inf_year
-#         else:
-#             return price
+#             if _inf_year >= year_released:
+    #                 return price
+#             price_inflated = (syt.get_inflation_rate(year_released, _inf_year) * price) + price
+    # return price_inflated, year_released, _inf_year
+    #         else:
+    #             return price
 #
 #     # All Set lookup
 #     else:
-#         # if there is a an inflation year but no set specified. Get all sets from before this year and return their adjusted get_prices
-#         if inf_year is not None:
-#             prices_raw = db.run_sql(
+#         # if there is a an inflation year but no _set specified. Get all sets from before this year and return their adjusted get_prices
+    # if _inf_year is not None:
+    #             prices_raw = db.run_sql(
 #                 "SELECT set_num, original_price_us, year_released FROM sets WHERE set_num IS NOT NULL AND original_price_us IS NOT NULL AND year_released <= ?;",
-#                 (inf_year,))
+#                 (_inf_year,))
 #             prices = []
-#             for s in prices_raw:
-#                 prices.append((s[0], (syt.get_inflation_rate(s[2], inf_year) * s[1]) + s[1], s[2], inf_year))
-#             return prices
-#         else:
-#             # if there isn't a set specified or a inf_year specified, just return all set get_prices
-#             prices_raw = db.run_sql(
-#                 "SELECT set_num, original_price_us FROM sets WHERE set_num IS NOT NULL AND original_price_us IS NOT NULL;")
+    #             for s in prices_raw:
+#                 prices.append((s[0], (syt.get_inflation_rate(s[2], _inf_year) * s[1]) + s[1], s[2], _inf_year))
+    # return prices
+    #         else:
+#             # if there isn't a _set specified or a _inf_year specified, just return all _set get_prices
+    # prices_raw = db.run_sql(
+    #                 "SELECT set_num, original_price_us FROM sets WHERE set_num IS NOT NULL AND original_price_us IS NOT NULL;")
 #             return prices_raw
 #
 
@@ -439,18 +439,18 @@ def get_last_updated_for_daily_stats(set_num=None):
 #     if set_id is None:
 #         set_id = get_set_id(set_num)
 #     ratings = db.run_sql(
-#         "SELECT bs_ratings.id, sets.set_num, bs_ratings.record_date, want, own, rating FROM bs_ratings "
-#         "JOIN sets ON (sets.id=bs_ratings.set_id) WHERE bs_ratings.set_id=?", (set_id,))
+#         "SELECT bs_ratings.id, sets.set_num, bs_ratings.record_date, want, own, _rating FROM bs_ratings "
+    #         "JOIN sets ON (sets.id=bs_ratings.set_id) WHERE bs_ratings.set_id=?", (set_id,))
 #     return ratings
 
 #
 # def get_set_dump(set_num):
 #     """
-#     Get a string + list of all set variables
+#     Get a string + list of all _set variables
 #     @param set_num:
-#     @return:
-#     """
-#     if set_num is None: return None
+    # @return:
+    #     """
+    #     if set_num is None: return None
 #
 #     set_info = db.run_sql("SELECT * FROM sets WHERE set_num=?", (set_num,))
 #     set_info = set_info[0]
@@ -513,20 +513,20 @@ def get_last_updated_for_daily_stats(set_num=None):
 #         syt.log_critical("get_set_info.py testing")
 #         options = (
 #             ("Get Set ID", menu_get_set_id),
-#             ("Get all set Years", menu_get_all_set_years),
-#             ("Get the date a set was last updated", menu_get_last_updated_for_daily_stats),
-#             ("Filter a list of sets by dates", menu_filter_list_on_dates),
+#             ("Get all _set Years", menu_get_all_set_years),
+#             ("Get the date a _set was last updated", menu_get_last_updated_for_daily_stats),
+    #             ("Filter a list of sets by dates", menu_filter_list_on_dates),
 #             ("Get last BL update list", menu_get_bl_update_years),
-#             ("Has a set been updated today?", menu_get_re_update_years),
-#             ("Get a set's price adjusted for inflation", menu_get_set_price),
-#             ("Get a set's piece count", menu_get_piece_count),
-#             ("Get a set's unique piece count", menu_get_unique_piece_count),
-#             ("Get a set's weight", menu_get_set_weight),
-#             ("Get Historic Prices", menu_get_historic_prices),
-#             ("Get Historic BS Data", menu_get_historic_data),
-#             ("Get a quick overview of a set", menu_get_set_dump)
+#             ("Has a _set been updated today?", menu_get_re_update_years),
+    # ("Get a _set's price adjusted for inflation", menu_get_set_price),
+    #             ("Get a _set's piece count", menu_get_piece_count),
+    #             ("Get a _set's unique piece count", menu_get_unique_piece_count),
+    #             ("Get a _set's weight", menu_get_set_weight),
+    #             ("Get Historic Prices", menu_get_historic_prices),
+    #             ("Get Historic BS Data", menu_get_historic_data),
+#             ("Get a quick overview of a _set", menu_get_set_dump)
 #         )
-#         syt.Menu(name="– get_set_info.py testing –", choices=options)
+    #         syt.Menu(name="– get_set_info.py testing –", choices=options)
 #
 #     def menu_get_set_id():
 #         set_num = si.input_set_num()

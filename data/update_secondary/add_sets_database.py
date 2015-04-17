@@ -14,8 +14,8 @@ if __name__ == "__main__": syt.setup_logger()
 
 # def add_set_to_database(set_data):
 # """
-#     Adds a set to the database
-#     @param set_data: either complete set data or a set id
+# Adds a _set to the database
+#     @param set_data: either complete _set data or a _set id
 #     @return:
 #     """
 #     if set_data is None: return None
@@ -62,7 +62,7 @@ def add_set_to_database(set_num):
 
 def add_set_data_to_database(set_data):
     """
-    Single set add to database
+    Single _set add to database
     @param set_data: list of 22 or 27 values to insert (27 with dates from class)
     @return:
     """
@@ -120,7 +120,7 @@ def add_set_data_to_database(set_data):
 
 # def add_or_update_set_from_class(set_data_list):
 # """
-#     Single set add to database from a complete data list (all 26 items)
+#     Single _set add to database from a complete data list (all 26 items)
 #     @param sets_to_insert:
 #     @return:
 #     """
@@ -164,7 +164,7 @@ def add_set_data_to_database(set_data):
 def add_sets_to_database(set_id_list, id_col=0, update=1):
     """
     # Todo:  Make a single add
-    @param set_id_list: list of set ids
+    @param set_id_list: list of _set ids
     @param id_col: the column that set_ids are in
     @param update: 0 no updates, 1 basic updates, 2 all updates
         Basic is everything but get_prices and dates

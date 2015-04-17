@@ -18,6 +18,7 @@ import arrow
 
 
 
+
 # THIS FILE SHOULD HAVE NO INTERNAL DEPENDENCIES
 
 
@@ -411,14 +412,15 @@ def get_days_between(dateA, dateB):
     @param dateB:
     @return:
     """
+
     if dateA is None or dateB is None:
         return False
+    if check_if_the_same_day(dateA, dateB):
+        return 0
     dateAA = arrow.get(dateA)
     dateBA = arrow.get(dateB)
     date_dif = dateAA.date() - dateBA.date()
     return date_dif.days
-
-
 
 
 

@@ -56,7 +56,7 @@ def get_colors():
 def _filter_bl_colors(colors):
     """
     From:
-    # [bl_id, color_name, rgb, type, parts, in sets, wanted, for sale, year from, year to]
+    # [bl_id, color_name, rgb, _type, parts, in sets, wanted, for sale, year from, year to]
     To
     # [bl_id, bl_name]
     @return:
@@ -163,7 +163,7 @@ def get_piece_info(bl_id=None, bo_id=None, re_id=None, lego_id=None, type=1):
     if bl_id is not None:
         bl_piece_info = blds.get_bl_piece_info(bl_id)
 
-    # Try to find the bl_id for this set by searching alternate ids and element ids. This can be very slow
+    # Try to find the bl_id for this _set by searching alternate ids and element ids. This can be very slow
     elif re_id is not None:
         syt.log_debug("Searching for bl_id for re_id {}".format(re_id))
         re_piece_info = reapi.pull_piece_info(re_id)  # [re_id, bl_id, name, alt_ids, element_ids]
@@ -224,7 +224,7 @@ def get_basestats(o_set, type=1):
     """
 
     if o_set is None:
-        syt.log_warning("Trying to update a set but there is none to update")
+        syt.log_warning("Trying to update a _set but there is none to update")
         return None
 
     set_num, set_seq, o_set = SetInfo.expand_set_num(o_set)
@@ -349,7 +349,7 @@ def get_basestats(o_set, type=1):
 
     scrubbed_dic['last_update'] = syt.get_timestamp()
 
-    scrubbed_dic['bo_set_num'] = None  # Todo, have this actually set the bo_set_num
+    scrubbed_dic['bo_set_num'] = None  # Todo, have this actually _set the bo_set_num
     # pprint.pprint(scrubbed_dic)
     if type == 1:  # Return a list instead of a dict
         return [scrubbed_dic['set_num'],

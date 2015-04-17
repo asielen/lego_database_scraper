@@ -41,7 +41,7 @@ def update_sets(check_update=1):
 
 def update_one_set_inventory(set_num):
     """
-    Update a single set inventory
+    Update a single _set inventory
     @param set_num:
     @return:
     """
@@ -50,7 +50,7 @@ def update_one_set_inventory(set_num):
 
 def update_set_inventories(check_update=1):
     """
-    Insert and update all set inventories from a master list of pieces - may not be as up to date as the api call
+    Insert and update all _set inventories from a master list of pieces - may not be as up to date as the api call
     @return:
     """
     syt.log_info("$$$ Adding RE inventories to database")
@@ -137,7 +137,7 @@ def _add_re_inventories_to_database(invs):
     """
 
     set_ids_to_delete = set(
-        [n[0] for n in filter(None, invs)])  # list of just the set ids to remove them from the database
+        [n[0] for n in filter(None, invs)])  # list of just the _set ids to remove them from the database
 
     timestamp = syt.get_timestamp()
     for s in set_ids_to_delete:
@@ -182,7 +182,7 @@ if __name__ == "__main__":
         options = (
             ("Update Parts", menu_update_parts),
             ("Update Sets", menu_update_sets),
-            ("Update One set Inventory", menu_update_one_set_inventory),
+            ("Update One _set Inventory", menu_update_one_set_inventory),
             ("Update Set Inventories", menu_update_set_inventories)
 
         )

@@ -57,7 +57,7 @@ def add_daily_set_data_to_database(daily_data):
         'VALUES (?,?,?,?,?,?,?,?,?,?)', cprices_list_to_insert)
     #Add Raitings
     db.batch_update(
-        'INSERT OR IGNORE INTO bs_ratings(set_id, want, own, rating, record_date) VALUES (?,?,?,?,?)',
+        'INSERT OR IGNORE INTO bs_ratings(set_id, want, own, _rating, record_date) VALUES (?,?,?,?,?)',
         cratings_list_to_insert)
 
     #Update Availible Dates and updated date
@@ -96,7 +96,7 @@ def add_daily_prices_to_database(set_id, prices):
 
 def _convert_price_type_to_id(price_type, id_dict=None):
     """
-    Take a price type (eg current_new) and convert it to the equivalent id
+    Take a price _type (eg current_new) and convert it to the equivalent id
     @param price_type:
     @param id_dict:
     @return:
@@ -119,7 +119,7 @@ def add_daily_ratings_to_database(set_id, ratings):
     con = lite.connect(db.database)
     with con:
         c = con.cursor()
-        c.execute('INSERT OR IGNORE INTO bs_ratings(set_id, want, own, rating, record_date)'
+        c.execute('INSERT OR IGNORE INTO bs_ratings(set_id, want, own, _rating, record_date)'
                   ' VALUES (?, ?, ?, ?, ?)',
                   (set_id,
                    ratings['bs_want'],
@@ -157,7 +157,7 @@ def check_set_availability_dates(set_id, ratings):
 
 
         # def price_capture_menu():
-        # # SET = input("What is the set number?: ")
+        # # SET = input("What is the _set number?: ")
         # # print(get_daily(SET))
         # # price_capture_menu()
         #

@@ -54,7 +54,7 @@ if __name__ == "__main__":
     import pprint
 
     def main():
-        set = input("What is the set num? ")
+        set = input("What is the _set num? ")
         pprint.pprint(get_setpieces(set))
         main()
 

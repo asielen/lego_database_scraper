@@ -84,7 +84,7 @@ def add_daily_ratings_to_database(set_id, ratings):
     con = lite.connect(database)
     with con:
         c = con.cursor()
-        c.execute('INSERT OR IGNORE INTO bs_ratings(set_id, want, own, rating, record_date)'
+        c.execute('INSERT OR IGNORE INTO bs_ratings(set_id, want, own, _rating, record_date)'
                   ' VALUES (?, ?, ?, ?, ?)',
                   (set_id,
                    ratings['bs_want'],
@@ -103,7 +103,7 @@ if __name__ == "__main__":
 
 
 
-# row		column	table	price type
+# row		column	table	price _type
 # 0	number	set_id	both
 # 5	dates	redord_date	both
 # 6	BS_own	own	bs_ratings
