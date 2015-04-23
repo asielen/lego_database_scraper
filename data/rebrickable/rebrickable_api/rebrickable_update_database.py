@@ -4,9 +4,9 @@ from multiprocessing import Pool as _pool
 from time import sleep
 
 # Internal
-from data.update_secondary.add_parts_database import add_parts_to_database
 from data.rebrickable.rebrickable_api import rebrickable_api as reapi
-import data.update_secondary as update
+from data.update_secondary import add_sets_database as secondary_sets
+from data.update_secondary import add_parts_database as secondary_parts
 import database.info as info
 import database as db
 from data.data_classes import SetInfo
@@ -24,7 +24,7 @@ def update_parts():
     syt.log_info("$$$ Get Rebrickable Part info")
     part_list = [x[0] for x in reapi.pull_all_pieces()]  # ['piece_id', 'descr', 'category')
     part_list.pop(0)  # Remove the header
-    add_parts_to_database(part_list, type="re")
+    secondary_parts.add_parts_to_database(part_list, type="re")
     # Todo: need to create a scraper for rebrickable piece num information
     syt.log_info("%%% Rebrickable Part info added to parts table")
 
@@ -36,7 +36,7 @@ def update_sets(check_update=1):
     """
 
     set_list = reapi.pull_set_catalog()
-    update.add_sets_to_database(set_list, update=check_update)
+    secondary_sets.add_sets_to_database(set_list, update=check_update)
 
 
 def update_one_set_inventory(set_num):
@@ -112,7 +112,7 @@ def _process_data_for_inv_db(row=None, sets=None, parts=None, colors=None):
     @return:
     """
     # print("Getting data for row {}".format(row[0]))
-    row[0] = update.get_set_id(row[0], sets=sets, add=True)  # Set Id
+    row[0] = secondary_sets.get_set_id(row[0], sets=sets, add=True)  # Set Id
     # print("Got ID {}".format(row[0]))
     if row[0] is not None:
         row[1] = get_re_piece_id(row[1], parts=parts, add=False)  # Re_piece Id
@@ -166,7 +166,7 @@ def get_re_piece_id(part_num, parts=None, add=False):
         piece_id = info.get_re_piece_id(part_num)
     if piece_id is None and add:
         syt.log_debug('{} part not in db'.format(part_num))
-        update.add_part_to_database(part_num, type='re')
+        secondary_parts.add_part_to_database(part_num, type='re')
         return get_re_piece_id(part_num)
     return piece_id
 

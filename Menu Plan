@@ -62,7 +62,7 @@ as of 3/31/15
  $ Run inventory update
     -   Will prompt for parameters to update the
         _set inventories in the database
- $ Run Base update
+ $ Run Base update Todo: This should be probably not in this menu but in a system menu
     -   Run all base data updates (make sure they are safe)
 
 @ M4

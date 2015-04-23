@@ -13,12 +13,6 @@ import arrow
 
 
 
-
-
-
-
-
-
 # THIS FILE SHOULD HAVE NO INTERNAL DEPENDENCIES
 
 
@@ -42,6 +36,22 @@ def make_project_path(string=""):
         return os.path.abspath(path+'lego_database_scraper'+os.sep+string)
     else:
         return os.path.abspath(path+"lego_database_scraper"+os.sep)
+
+def make_dir(path, add_project_path=True):
+    """
+
+    @param path: The path to check
+    @param add_project_path: If True, add the path to the home path of the project
+    @return: return the path to be used
+    """
+    dir_path, file_name = os.path.split(path) #Just get the directory without the file name
+    if add_project_path:
+        mod_path = make_project_path(dir_path)
+    else:
+        mod_path = dir_path
+    os.makedirs(mod_path, exist_ok=True)
+    return os.path.join(mod_path, file_name)
+
 # #
 # Web
 # #
@@ -118,7 +128,7 @@ def read_csv_from_url(url, params=None, delimiter='\t'):
 
 
 def csv_replace_comma(text):
-    return str(text).replace(',', "/")
+    return str(text).replace(',', " /")
 
 def read_json_from_url(url, params=None):
     return json.loads(requests.get(url, params=params, verify=False).text)
@@ -477,7 +487,4 @@ def print4(list, n=4):
             if idx >= n: break
     except TypeError:
         print(list)
-
-
-
 

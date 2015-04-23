@@ -5,7 +5,6 @@ from time import sleep
 # Internal
 from data.brickset.brickset_api import brickset_set_data as BS
 from data.bricklink import bricklink_data_scrape as BLDS
-from database.info.database_info import get_last_updated_for_daily_stats
 from database.update import add_daily_stats as ADS
 from database import info
 import system as syt
@@ -22,7 +21,7 @@ def get_all_daily_set_data(set_list):
 
     sets = info.read_bl_set_num_id()  # Gets a list of sets and _set ids
 
-    last_updated = get_last_updated_for_daily_stats()  # List of when each _set was last updated
+    last_updated = info.get_last_updated_for_daily_stats() # List of when each _set was last updated
 
     num_sets = len(set_list)  # Total number of sets to update
 
@@ -100,6 +99,24 @@ def _get_daily_set_data(set_tags):
 
 def _add_daily_set_data_to_database(set_data):
     ADS.add_daily_set_data_to_database(set_data)
+
+def price_capture_menu():
+    # Todo, should this be in this file?
+    # Todo: make sure this runs the right update function - update inventories between the time frame
+
+    print("Please enter the start and end years you would like to update. "
+          "If left blank, it will capture everything before/after the date")
+    start_year = input("What year would you like to start with? ")
+    end_year = input("What year would you like to end with? ")
+
+    database_year_range = info.get_set_year_range()
+    if start_year is "": start_year = database_year_range[0]
+    if end_year is "": end_year = database_year_range[1]
+    proceed = input(
+        "Would you like to update get_prices for all sets between {0} and {1}? Y/N?".format(start_year, end_year))
+    if proceed == "y" or proceed == "Y":
+        set_list = info.get_sets_between_years(start_year, end_year)
+        get_all_daily_set_data(set_list)
 
 def main():
     import pprint as pp

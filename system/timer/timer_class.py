@@ -9,11 +9,12 @@ if __name__ == "__main__": logger.setup_logger()
 
 
 class process_timer():
-    def __init__(self, name=""):
+    def __init__(self, name="", verbose=True):
         logger.log_info("Timer {} Started".format(name))
         self.name = name
         self.start_time = arrow.now()
         self.tasks = 0
+        self.verbose = verbose
 
     def _get_run_time(self):
         time_diff = arrow.now() - self.start_time
@@ -32,14 +33,13 @@ class process_timer():
         logger.log_info("Timer {} Ended".format(self.name))
         del self
 
-    def log_time(self, num_of_tasks, remaining_tasks=None,
-                 verbose=True):  # num_of_tasks is number of last completed tasks
+    def log_time(self, num_of_tasks, remaining_tasks=None): # num_of_tasks is number of last completed tasks
         time_diff = self._get_run_time()
         self._update_tasks(num_of_tasks)
-        if verbose is True or remaining_tasks is None and verbose is False:
+        if self.verbose is True or (remaining_tasks is None and self.verbose is False):
             logger.log_info("@ Process Time: {} seconds FOR {} objects processed".format(time_diff, self.tasks))
         tasks_per_second = self.tasks / max(1, time_diff)
-        if verbose:
+        if self.verbose:
             logger.log_info(
                 "@@ Process Time: {} per min IS {} objects per second".format(round(60 * tasks_per_second),
                                                                               round(tasks_per_second)))

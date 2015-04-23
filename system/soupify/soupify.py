@@ -8,12 +8,15 @@ import requests
 
 # Internal
 from system import base
+from system import timer
 from system import logger
 if __name__ == "__main__": logger.setup_logger()
 
 
 invalid_urls = 0
 
+
+@timer.counter
 def soupify(url):
     """
 

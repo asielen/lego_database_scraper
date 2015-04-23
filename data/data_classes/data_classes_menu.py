@@ -125,31 +125,9 @@ def hpa_menu():
     Main launch menu
     @return:
     """
-    # logger.critical("Set Info testing")
+
     HistoricPriceAnalyser.create()
-    #
-    # def menu_text():
-    # text = "- HPA Settings -\n"
-    #     if test_HPA is not None:
-    #         text += "Set Num = {}\n".format(test_HPA.si.set_num)
-    #         text += "Base Date = {}\n".format(syt.get_date(test_HPA._base_date))
-    #         text += "Base Price = {}\n".format(test_HPA._base_price)
-    #         text += "Type = {}\n".format(test_HPA._type)
-    #         # if test_HPA._inf_year is not None:
-    #         text += "Inflation = {}\n".format(test_HPA._inf_year)
-    #     return text
-    #
-    # options = (
-    #     ("Test Historic", hpa_menu_create),
-    #     ("Set Inflation Year", hpa_menu_inflation),
-    #     ("Set Report Type", hpa_menu_report_type),
-    #     ("Set Date Price", hpa_menu_date_price),
-    #     ("Reset", hpa_menu_clear),
-    #     ("Run", hpa_menu_get),
-    #     ("Full Test", hpa_menu_test),
-    # )
-    #
-    # syt.Menu(name=menu_text, choices=options).run()
+
 
 
 def hpa_menu_create():

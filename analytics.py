@@ -189,7 +189,7 @@ def create_db():
     with con:
         # Empty the database if it was run before
         con.execute("PRAGMA writable_schema = 1;")
-        con.execute("DELETE FROM sqlite_master WHERE _type = 'table';")
+        con.execute("DELETE FROM sqlite_master WHERE type = 'table';")
         con.execute("PRAGMA writable_schema = 0;")
         con.execute("VACUUM;")
         con.execute("PRAGMA INTEGRITY_CHECK;")
@@ -197,7 +197,7 @@ def create_db():
         con.execute("CREATE TABLE IF NOT EXISTS objects(id INTEGER PRIMARY KEY,"
                     "name TEXT, "
                     "path TEXT, "
-                    "_type TEXT, "
+                    "type TEXT, "
                     "parent_id INTEGER, "
                     "line_count INTEGER, "
                     "code_count INTEGER, "

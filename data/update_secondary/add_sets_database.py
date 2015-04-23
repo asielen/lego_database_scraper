@@ -1,53 +1,14 @@
-# Todo: Need to test this file
-
 # External
 from multiprocessing import Pool as _pool
 
 # Internal
 import data
 import database as db
-import database.info as info
 import system as syt
+from database import info as db_info
+from data.bricklink.bricklink_api import bricklink_api as blapi
 from data.data_classes.SetInfo_HPA_Class import SetInfo
 if __name__ == "__main__": syt.setup_logger()
-
-
-# def add_set_to_database(set_data):
-# """
-# Adds a _set to the database
-#     @param set_data: either complete _set data or a _set id
-#     @return:
-#     """
-#     if set_data is None: return None
-#     if len(set_data) is 1:
-#         set_data = data.get_basestats(set_data)
-#         if set_data is None: return None
-#
-#     return db.run_sql(
-#         'INSERT OR IGNORE INTO sets('
-#         'set_num, '
-#         'bo_set_num, '
-#         'item_num, '
-#         'item_seq, '
-#         'set_name, '
-#         'theme, '
-#         'subtheme, '
-# 'get_piece_count, '
-#         'get_figures, '
-#         'set_weight, '
-#         'year_released, '
-#         'date_released_us, '
-#         'date_ended_us, '
-#         'date_released_uk, '
-#         'date_ended_uk, '
-#         'original_price_us, '
-#         'original_price_uk, '
-#         'age_low, '
-#         'age_high, '
-#         'box_size, '
-#         'box_volume, '
-#         'last_updated'
-#         ') VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', insert_list=tuple(set_data))
 
 
 def add_set_to_database(set_num):
@@ -118,49 +79,6 @@ def add_set_data_to_database(set_data):
                    'WHERE set_num=?', set_data_processed)
 
 
-# def add_or_update_set_from_class(set_data_list):
-# """
-#     Single _set add to database from a complete data list (all 26 items)
-#     @param sets_to_insert:
-#     @return:
-#     """
-#     if set_data_list is None:
-#         return None
-#     assert len(set_data_list)==26
-#
-#
-#     db.run_sql('INSERT OR IGNORE INTO sets(set_num) VALUES (?)', (set_data_list[0],))
-#
-#     set_data_processed = tuple(set_data_list[1:] + [set_data_list[0]])
-#     db.run_sql('UPDATE sets SET '
-#                'bo_set_num=?,'
-#                'item_num=?, '
-#                'item_seq=?,'
-#                'set_name=?, '
-#                'theme=?, '
-#                'subtheme=?, '
-#                'get_piece_count=?, '
-# 'get_figures=?, '
-#                'set_weight=?, '
-#                'year_released=?, '
-#                'date_released_us=?, '
-#                'date_ended_us=?, '
-#                'date_released_uk=?, '
-#                'date_ended_uk=?, '
-#                'original_price_us=?, '
-#                'original_price_uk=?, '
-#                'age_low=?, '
-#                'age_high=?, '
-#                'box_size=?, '
-#                'box_volume=?, '
-#                'last_updated=?,'
-#                'last_inv_updated_bo=?,'
-#                'last_inv_updated_bl=?,'
-#                'last_inv_updated_re=?,'
-#                'last_price_updated=? '
-#                'WHERE set_num=?', set_data_processed)
-
-
 def add_sets_to_database(set_id_list, id_col=0, update=1):
     """
     # Todo:  Make a single add
@@ -170,7 +88,7 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
         Basic is everything but get_prices and dates
     @return:
     """
-    set_dict = info.read_bl_sets()
+    set_dict = db_info.read_bl_sets()
 
     syt.log_info("$$$ Adding sets to the database")
     sets_to_scrape = []
@@ -327,3 +245,47 @@ def _parse_get_basestats(id):
     @return:
     """
     return data.get_basestats(id)
+
+
+# def main():
+#     options = (
+#         ("Update In Database", update_in_database),
+#         ("Update from API", updates_sets_database_from_api)
+#     )
+#
+#     syt.Menu("– Update Basestats –", choices=options).run()
+
+
+# def update_in_database():
+#     """
+#
+#     @return:
+#     """
+#     print("Please enter the start and end years you would like to update. "
+#           "If left blank, it will capture everything before/after the date")
+#     start_year = input("What year would you like to start with? ")
+#     end_year = input("What year would you like to start with? ")
+#
+#     database_year_range = info.get_set_year_range()
+#     if start_year is "": start_year = database_year_range[0]
+#     if end_year is "": end_year = database_year_range[1]
+#     proceed = input("Would you like to update all sets between {0} and {1}? Y/N?".format(start_year, end_year))
+#     if proceed == "y" or proceed == "Y":
+#         set_list = info.get_sets_between_years(start_year, end_year)
+#
+#         secondary.add_sets_to_database(set_list, update=1)
+
+
+def updates_sets_database_from_api():
+    """
+    Update the database from an public_api call to bricklink and parses it and updates based on it
+    ['Category ID', 'Category Name', 'Number', 'Name', 'Year Released', 'Weight (in Grams)', 'Dimensions']
+    @return:
+    """
+    set_list = blapi.pull_set_catalog()
+    proceed = input("What Level of Update (-1 no check, 0 check 90 days, 1 check base data, 2 update all)? ")
+    if proceed not in ('-1', '0', '1', '2'):
+        proceed = 0
+    else:
+        proceed = int(proceed)
+    add_sets_to_database(set_list, id_col=2, update=proceed)

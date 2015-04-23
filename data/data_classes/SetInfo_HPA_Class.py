@@ -8,6 +8,8 @@ import pickle
 import arrow
 
 
+
+
 # Internal
 # from data import update_secondary
 import database.database_support as db
@@ -50,6 +52,7 @@ class SetInfo(object):
                 self.set_info_list[1] = s_num
         else:
             self.set_info_list = set_info_list
+
 
     @staticmethod
     def get_set_info(set_num, new=False):
@@ -596,35 +599,34 @@ class SetInfo(object):
 
         return self.get_price(year) / weight
 
-
-    def _get_rating_history(self, desc=None, select_filter=None):
-        self.rating_history = HistoricPriceAnalyser(si=self, desc=desc, select_filter=select_filter, rating=True)
-        return self.rating_history
-
     def get_rating_history_all(self):
-        rating_types = ("want", "own", "_rating")
+        rating_types = ("want", "own", "rating")
         rating_dict = {}
         date_list = None
         for r in rating_types:
             rating_dict[r] = self.get_rating_history(rating_type=r)
             if date_list is None:
-                date_list = [n for n in rating_dict[r].working_data]
+                date_list = rating_dict[r].dates
         return rating_dict, date_list
 
     def get_rating_history(self, rating_type=""):
         """
-        @param rating_type: ("want","own","_rating")
+        @param rating_type: ("want","own","rating")
         @return:
         """
         if rating_type == "":
             return None
+        if rating_type not in ('want', 'own', 'rating'):
+            raise ValueError("{} is not a valid rating type".format(rating_type))
         select_filter = "bs_ratings.{}".format(rating_type)
         where_filter = None
         return self._get_rating_history(desc=filter, select_filter=[select_filter, where_filter, True])
+    
+    def _get_rating_history(self, desc=None, select_filter=None):
+        self.rating_history = HistoricPriceAnalyser().create(select_filter=select_filter, si=self, rating=True, run=True)
+        self.rating_history.desc = desc
+        return self.rating_history
 
-    def _get_price_history(self, desc=None, select_filter=None):
-        self.price_history = HistoricPriceAnalyser(si=self, desc=desc, select_filter=select_filter)
-        return self.price_history
 
     def get_price_history_all(self):
         price_types = ("historic_new", "historic_used", "current_new", "current_used")
@@ -635,7 +637,7 @@ class SetInfo(object):
             for f in fields:
                 price_dict["{}.{}".format(p, f)] = self.get_price_history(price_type=p, field=f)
                 if date_list is None:
-                    date_list = [n for n in price_dict["{}.{}".format(p, f)].working_data]
+                    date_list = price_dict["{}.{}".format(p, f)].dates
         return price_dict, date_list
 
     def get_price_history(self, price_type="", field=""):
@@ -646,10 +648,20 @@ class SetInfo(object):
         """
         if price_type == "" or field == "":
             return None
+        if price_type not in ("historic_new", "historic_used", "current_new", "current_used"):
+            raise ValueError("{} is not a valid price type".format(price_type))
+        if field not in ("avg", "lots", "max", "min", "qty", "qty_avg", "piece_avg"):
+            raise ValueError("{} is not a valid field type".format(field))
+        
         select_filter = "historic_prices.{}".format(field)
         where_filter = "price_types.price_type = '{}'".format(price_type)
         return self._get_price_history(desc=filter, select_filter=[select_filter, where_filter, False])
 
+    def _get_price_history(self, desc=None, select_filter=None):
+        self.price_history = HistoricPriceAnalyser().create(select_filter=select_filter, si=self, run=True)
+        self.price_history.desc = desc
+        return self.price_history
+    
     # Todo, this did the dame thing as a syt function so just using that
     # def get_relative_date(self, date, reference_date=None):
     # """
@@ -787,8 +799,9 @@ class SetInfo(object):
     def __missing_data(self):
         return None
 
-    def set_dump(self):
+    def set_dump(self, inf_year=2015):
         """
+        Used to create base reports in this format:
         "id, set_num, set_name, set_theme, get_piece_count, get_figures, set_weight, year_released, date_released_us, date_ended_us,
         date_released_uk, date_ended_uk, original_price_us, original_price_uk, age_low, age_high, box_size, box_volume,
         last_updated, last_inv_updated_bl, last_inv_updated_re, last_daily_update, BASE CALC, get_ppp, ppp_uk, get_ppg, ppg_uk,
@@ -823,20 +836,20 @@ class SetInfo(object):
         test_string += "{},".format(self.ppp_uk)
         test_string += "{},".format(self.ppg)
         test_string += "{},".format(self.ppg_uk)
-        test_string += "{},".format("WP")  #self.get_avg_piece_weight())
+        test_string += "{},".format(self.get_avg_piece_weight())
         test_string += "INFLATION,"
-        test_string += "{},".format(self.get_price(year=2014))
-        test_string += "{},".format(self.get_ppp_adj(year=2014))
-        test_string += "{},".format(self.get_ppg_adj(year=2014))
+        test_string += "{},".format(self.get_price(year=inf_year))
+        test_string += "{},".format(self.get_ppp_adj(year=inf_year))
+        test_string += "{},".format(self.get_ppg_adj(year=inf_year))
         test_string += "CALC PIECE/WEIGHT,"
         test_string += "{},".format(self.get_calc_piece_count())
         test_string += "{},".format(self.get_calc_unique_pieces())
-        test_string += "{},".format("UT")  #self.get_unique_piece_ratio())
+        test_string += "{},".format(self.get_unique_piece_ratio())
         test_string += "{},".format(self.get_calc_weight())
-        test_string += "{},".format("WCP")  #self.get_avg_piece_weight(calc=True))
+        test_string += "{},".format(self.get_avg_piece_weight(calc=True))
         test_string += "CALC INFLATION,"
-        test_string += "{},".format(self.get_ppp_adj(year=2014, calc=True))
-        test_string += "{},".format(self.get_ppg_adj(year=2014, calc=True))
+        test_string += "{},".format(self.get_ppp_adj(year=inf_year, calc=True))
+        test_string += "{},".format(self.get_ppg_adj(year=inf_year, calc=True))
         test_string += "\n"
         return test_string
 
@@ -910,43 +923,44 @@ class SetInfo(object):
                 note = "Ended-US"
             # Notes
             csv_string += "{},{},".format(note, syt.get_date(date))
-            # Ratings (Want own _rating)
-            csv_string += "{},{},{},,".format(hrd["want"].working_data[date], hrd["own"].working_data[date],
-                                              hrd["_rating"].working_data[date])
+            # Ratings (Want own rating)
+            csv_string += "{},{},{},,".format(hrd["want"][date], hrd["own"][date],
+                                              hrd["rating"][date])
             # Historic New
-            csv_string += "{},{},{},{},{},{},{},,".format(hpd["historic_new.lots"].working_data[date],
-                                                          hpd["historic_new.qty"].working_data[date],
-                                                          hpd["historic_new.min"].working_data[date],
-                                                          hpd["historic_new.max"].working_data[date],
-                                                          hpd["historic_new.avg"].working_data[date],
-                                                          hpd["historic_new.qty_avg"].working_data[date],
-                                                          hpd["historic_new.piece_avg"].working_data[date])
+            csv_string += "{},{},{},{},{},{},{},,".format(hpd["historic_new.lots"][date],
+                                                          hpd["historic_new.qty"][date],
+                                                          hpd["historic_new.min"][date],
+                                                          hpd["historic_new.max"][date],
+                                                          hpd["historic_new.avg"][date],
+                                                          hpd["historic_new.qty_avg"][date],
+                                                          hpd["historic_new.piece_avg"][date])
             # Historic Used
-            csv_string += "{},{},{},{},{},{},{},,".format(hpd["historic_used.lots"].working_data[date],
-                                                          hpd["historic_used.qty"].working_data[date],
-                                                          hpd["historic_used.min"].working_data[date],
-                                                          hpd["historic_used.max"].working_data[date],
-                                                          hpd["historic_used.avg"].working_data[date],
-                                                          hpd["historic_used.qty_avg"].working_data[date],
-                                                          hpd["historic_used.qty_avg"].working_data[date])
+            csv_string += "{},{},{},{},{},{},{},,".format(hpd["historic_used.lots"][date],
+                                                          hpd["historic_used.qty"][date],
+                                                          hpd["historic_used.min"][date],
+                                                          hpd["historic_used.max"][date],
+                                                          hpd["historic_used.avg"][date],
+                                                          hpd["historic_used.qty_avg"][date],
+                                                          hpd["historic_used.qty_avg"][date])
             # Current New
-            csv_string += "{},{},{},{},{},{},{},,".format(hpd["current_new.lots"].working_data[date],
-                                                          hpd["current_new.qty"].working_data[date],
-                                                          hpd["current_new.min"].working_data[date],
-                                                          hpd["current_new.max"].working_data[date],
-                                                          hpd["current_new.avg"].working_data[date],
-                                                          hpd["current_new.qty_avg"].working_data[date],
-                                                          hpd["current_new.qty_avg"].working_data[date])
+            csv_string += "{},{},{},{},{},{},{},,".format(hpd["current_new.lots"][date],
+                                                          hpd["current_new.qty"][date],
+                                                          hpd["current_new.min"][date],
+                                                          hpd["current_new.max"][date],
+                                                          hpd["current_new.avg"][date],
+                                                          hpd["current_new.qty_avg"][date],
+                                                          hpd["current_new.qty_avg"][date])
             # Current Used
-            csv_string += "{},{},{},{},{},{},{},\n".format(hpd["current_used.lots"].working_data[date],
-                                                           hpd["current_used.qty"].working_data[date],
-                                                           hpd["current_used.min"].working_data[date],
-                                                           hpd["current_used.max"].working_data[date],
-                                                           hpd["current_used.avg"].working_data[date],
-                                                           hpd["current_used.qty_avg"].working_data[date],
-                                                           hpd["current_used.qty_avg"].working_data[date])
+            csv_string += "{},{},{},{},{},{},{},\n".format(hpd["current_used.lots"][date],
+                                                           hpd["current_used.qty"][date],
+                                                           hpd["current_used.min"][date],
+                                                           hpd["current_used.max"][date],
+                                                           hpd["current_used.avg"][date],
+                                                           hpd["current_used.qty_avg"][date],
+                                                           hpd["current_used.qty_avg"][date])
         syt.log_info('Building: {}-{}-_set-report.csv'.format(syt.get_timestamp(), self.set_num))
-        with open('{}-{}-_set-report.csv'.format(syt.get_timestamp(), self.set_num), "w") as f:
+        file_path = syt.make_dir('resources/SetInfo_Reports/')
+        with open(file_path+'{}-{}-_set-report.csv'.format(syt.get_timestamp(), self.set_num), "w") as f:
             f.write(csv_string)
 
 
@@ -1070,6 +1084,12 @@ class HistoricPriceAnalyser(object):
     def __str__(self):
         return self.name
 
+    def __getitem__(self, item):
+        if self._working_data:
+            return self._working_data[item]
+        else:
+            raise AttributeError('Report has not been run yet')
+    
     def about(self):
         syt.log_info("{}: {}".format(self.name, self.desc))
         syt.log_info("FILTER: ".format(self._select_filter))
@@ -1087,7 +1107,6 @@ class HistoricPriceAnalyser(object):
         else:
             self._si = None
 
-    # Todo, not used?
     @property
     def dates(self):
         if self._working_data:
@@ -1095,7 +1114,7 @@ class HistoricPriceAnalyser(object):
         return None
 
     @staticmethod
-    def create(hpa=None, select_filter=None, rating=False, set_options=None, si=None):
+    def create(hpa=None, select_filter=None, rating=False, set_options=None, si=None, run=False):
         """
         This can be used as the main 'event loop' when dealing with a report. It allows you to create/load/save an HPA
             Also, it returns an HPA, so if it is called from let's say, Set Collection, class. The _set collection class
@@ -1118,7 +1137,7 @@ class HistoricPriceAnalyser(object):
                 C_HPA.set_options(**set_options)
             if si is not None:
                 C_HPA._set(si)
-            return C_HPA._create()
+            return C_HPA._create(run=run)
 
         def _new_hpa():
             return HistoricPriceAnalyser()
@@ -1131,11 +1150,16 @@ class HistoricPriceAnalyser(object):
 
         C_HPA = syt.Menu("- HPA Option -", options, quit_tag="Back", drop_down=True).run()
 
+        if C_HPA in [None, 0]:
+            return None
         return C_HPA._create()
 
-    def _create(self):
+    def _create(self, run=False):
 
         # All of these options should return self
+        if run is True:
+            self.run_report()
+            return self
         options = (
             ("Change HPA Filter", self.build_filter),
             ("Change HPA Report Type", self.build_report_type),
@@ -1176,7 +1200,7 @@ class HistoricPriceAnalyser(object):
             elif choice == "Own":
                 qstring[0] = "bs_ratings.own"
             elif choice == "Rating":
-                qstring[0] = "bs_ratings._rating"
+                qstring[0] = "bs_ratings.rating"
             elif choice == "Want+Own":
                 qstring[0] = "(bs_ratings.want + bs_ratings.own)"
             elif choice == "Want-Own":
@@ -1231,7 +1255,6 @@ class HistoricPriceAnalyser(object):
     def set_filter(self, select_filter=None, rating=False):
         self._select_filter = select_filter
         self._rating = rating
-
 
         # Todo Can I wrap this into one so I don't have to do it twice?
         if isinstance(select_filter, dict):
@@ -1399,6 +1422,7 @@ class HistoricPriceAnalyser(object):
         if si is not None:
             self.si = si
         return self
+  
 
     def _build_report_data_sql(self, select_=None, where_=None, group=True):
         """Takes what we got in the starter filter (either a complete filter string or a dict of filter options
@@ -1610,8 +1634,8 @@ class HistoricPriceAnalyser(object):
         else:
             self.price = syt.int_zero(price)
 
-        if self._base_price is None and self._report_options["Base Price"] != self.R_NOT_RELATIVE:
-            raise ValueError("No Price to evaluate from")
+        if self._base_price is None and not (self._report_options["Base Price"] == self.R_NOT_RELATIVE or self._report_options["Base Price"] == None):
+            raise ValueError("No Price to evaluate from [Base Price = {} | Report Type = {}]".format(price, self._report_options["Base Price"]))
 
     def _set_base_date(self, date=None, region="us"):
         """
@@ -1669,7 +1693,7 @@ class HistoricPriceAnalyser(object):
     def _get_price_from_date(self, date=None):
         """
 
-        @param date: in format YYYY-MM-DD
+        @param date: in timestamp format (or number if the dates are relative)
         @return:
         """
         if date is None: return None
@@ -1851,19 +1875,21 @@ class HistoricPriceAnalyser(object):
         if self.desc is None:
             self.desc = input("What is this report for? ")
         self.si = None
-        pickle.dump(self, open("{}_{}.hpa".format(self.name, syt.get_timestamp()), "wb"))
+        file_path = syt.make_dir('resources/HistoricPriceAnalysers/{}_{}.hpa'.format(self.name, syt.get_timestamp()))
+        pickle.dump(self, open(file_path, "wb"))
         print("HPA Saved")
 
     @staticmethod
-    def load(hpa=None):
+    def load():
         """
         Static method because it can be used before the class is created
         @return: The loaded class
         """
-        set_col = None
+
+        saves_dir = syt.make_dir('resources/HistoricPriceAnalysers/')
 
         def find_savefiles():
-            filenames = os.listdir(os.getcwd())
+            filenames = os.listdir(saves_dir)
             setcollections = []
             for file in filenames:
                 if file.endswith(".hpa"):
@@ -1871,9 +1897,9 @@ class HistoricPriceAnalyser(object):
             return setcollections
 
         def _load(file_name):
-            return pickle.load(open(file_name, "rb"))
+            return pickle.load(open(saves_dir+file_name, "rb"))
 
-        hpa = syt.Load_Menu(name="- Load HPA- ", choices=find_savefiles(), function=_load).run()
+        hpa = syt.Load_Menu(name="- Load HPA -", choices=find_savefiles(), function=_load).run()
         return hpa
 
     def _make_filter(self, filter_dict=None):
@@ -1996,1104 +2022,11 @@ class HistoricPriceAnalyser(object):
             set_csv += syt.list2string(st)
             set_csv += "\n"
 
+        file_path = syt.make_dir('resources/Reports/')
         syt.log_info("### Building CSV files from strings")
-        with open('{}_{}-price-data.csv'.format(name, syt.get_timestamp()), "w") as f:
+        with open(file_path+'{}_{}-price-data.csv'.format(name, syt.get_timestamp()), "w") as f:
             f.write(price_csv)
 
-        with open('{}_{}-price-_set-data.csv'.format(name, syt.get_timestamp()), "w") as f:
+        with open(file_path+'{}_{}-price-_set-data.csv'.format(name, syt.get_timestamp()), "w") as f:
             f.write(set_csv)
         syt.log_info("### Building CSV files built successfully")
-
-
-
-
-
-
-
-
-
-
-
-
-        # def test_eval_reports(self):
-        # """
-        #     Returns two lists that can be turned into csv files
-        #
-        #     Set List
-        #     Set_num, theme, year_released, original_price, start_date, end_date
-        #
-        #     Price List
-        #     set_num, date(price), date(price), date(price), date(price)
-        #     @return:
-        #     set_descs = [["SET_NUM", "THEME", "YEAR_RELEASED", "ORIGINAL_PRICE", "DATE_START", "DATE_END"]]
-        #     """
-        #     set_descs = self.get_set_info(type="list")
-        #     self._clear()
-        #     set_prices = self.run_all_test(report_types=[1])  # By date will start with the date ended
-        #
-        #     return set_prices, set_descs
-        # # Todo, is this used?
-        # def _set_base_price_date(self, price=None, date=None, region="us"):
-        #     self._set_base_price(price=price, region=region)
-        #     self._set_base_date(date=date, region=region)
-
-        # def __init__(self, si=None, desc=None, _select_filter=None, _rating=False, name=None):
-        #
-        #     """
-        #         @param desc: A short description of the filter
-        #         @param _select_filter: List:
-        #             [select statement, where statement, group?] See the end of this doc for examples
-        #             - This can also be in a dictionary format or None and it will prompt to make it
-        #             NOTE, filters have to return a list in the format [(date,price),(date,price)] (Only one price _type at a time)
-        #     """
-        #     # Loading
-        #     if isinstance(_select_filter, HistoricPriceAnalyser):
-        #         _select_filter = _select_filter._select_filter
-        #         _rating = _select_filter._rating
-        #     self.si = si  # the parent _set. If none is provided, it doesn't create one until it is needed
-        #     self._rating = _rating  # If this is true, we are working with ratings not prices, so options like relative pricing is ignored
-        #     self.name = name
-        #
-        #     # The following two if statements create a list that can be used by _build_report_data_sql to make the _sql text
-        #     if _select_filter is None:
-        #         # If no select filter is provided, ask to make one
-        #         _select_filter = HistoricPriceAnalyser.build_filter(True)
-        #         print(_select_filter)
-        #     if isinstance(_select_filter, dict):
-        #         _select_filter = HistoricPriceAnalyser._make_filter(_select_filter)
-        #     # Make the _sql filter
-        #     _sql_query = None
-        #     if isinstance(_select_filter, list) and len(_select_filter) >= 2:
-        #         _sql_query = self._build_report_data_sql(*_select_filter)
-        #     else:
-        #         _sql_query = self._build_report_data_sql()
-        #     self._sql_query = _sql_query
-        #     self._select_filter = _select_filter
-        #     sql_result = self._sql(_sql_query)
-        #     if sql_result is not None and len(sql_result):
-        #         clean_dict = False
-        #         while clean_dict is False:
-        #             base_dict = syt.list_to_dict(self._process_date_price_list(sql_result))
-        #             sql_result = self._sql(_sql_query)
-        #             if "rerun" not in base_dict: clean_dict = True
-        #
-        #         # Store the results of the original query so we can restore it later
-        #         self._original_data = syt.OrderedDictV2(sorted(base_dict.items(), key=lambda t: t[0]))
-        #         #   Store the _sql so we can work it later, or rebuild it if needed
-        #         self._sql_query = _sql_query
-        #         # Same as _clear - but needs to be defined in __init__ (_set the working data = to the original data)
-        #         self._clear()
-        #         # self._working_data = copy.deepcopy(self._original_data)
-        #         #
-        #         # # Working_data_format:
-        #         # self._base_date = None #min(self._original_data.keys())  # The earliest date
-        #         # self._base_price = None #self._original_data[self._base_date]  # The price at the earliest date
-        #         # self._type = self.STANDARD
-        #         # self._inf_year = None
-        #     else:
-        #         raise SyntaxError("Invalid HPA Formation")
-        #
-        #     if desc is not None:
-        #         self.desc = desc
-        #     else:
-        #         self.desc = self._sql_query
-
-# if __name__ = "__main__":
-#
-# class HistoricPriceAnalyser(object):
-#
-# """
-#         This class basically acts as a pre-made _sql query. In essence it just stores a _sql string that is modified for
-#             whatever report you need.
-#
-#         @NOTE: it only works on one price _type at a time.@ - But it can do aggregate prices/ratings
-#     """
-#     # Price types
-#     STANDARD = 0
-#     RELATIVE = 1
-#     RELATIVE_DAY = 2
-#     DELTA = 3
-#     DELTA_DAY = 4
-#
-#     # Relative to
-#     R_NOT_RELATIVE = 0
-#     R_RETAIL_PRICE = 1
-#     R_START_PRICE = R_START_DATE = 2
-#     R_END_PRICE = R_END_DATE = 3
-#
-#     def __init__(self):
-#         """
-#             Just to create the shell of the HPA, nothing is defined here except variable defs
-#         """
-#         self.name = None
-#         self.desc = None
-#
-#
-#         self._sql_query = None # SQL Query Text, Todo: Not sure this is needed
-#         self._select_filter = None # Used to build the SQL query
-#         self._rating = False # True if the HPA is for ratings, false otherwise
-#         self._working_data = {} # Current working data
-#         self._original_data = {} # Original data, as a backup
-#
-#         #Report Settings
-#         #This is used to hold the options until they are ready to be processed (need the set number)
-#         self._report_options = {"Base Date": None,
-#                                 "Base Price": None,
-#                                 "Type": self.STANDARD,
-#                                 "Inflation Year": None}
-#         self._base_date = None # The base date used as "date 0"
-#         self._base_price = None # The base price that other prices are evaluated against
-#         self._type = self.STANDARD # Evaluation _type
-#         self._inf_year = None # Year dates are adjusted for
-#
-#         self._si = None
-#
-#
-#     def __bool__(self):
-#         return bool(self._select_filter)
-#
-#     def __str__(self):
-#         return self.name
-#
-#     def about(self):
-#         print(self.name)
-#         return self
-#
-#     @property
-#     def si(self):
-#         return self._si
-#
-#     @si.setter
-#     def si(self, st):
-#         if isinstance(st, SetInfo):
-#             self._si = st
-#         else:
-#             self._si = None
-#
-#     #Todo, not used?
-#     @property
-#     def dates(self):
-#         if self._working_data:
-#             return self._working_data.keys()
-#         return None
-#
-#     @staticmethod
-#     def create(hpa=None, select_filter=None, rating=False, set_options=None, si=None):
-#         """
-#         This can be used as the main 'event loop' when dealing with a report. It allows you to create/load/save an HPA
-#             Also, it returns an HPA, so if it is called from let's say, Set Collection, class. The _set collection class
-#             Can then manipulate it.
-#         @param select_filter:
-#         @param rating: True or False, is the HPA a _rating HPA
-#         @param hpa: Can pass through an HPA, to edit
-#         @return: The HPA
-#         """
-#         # Todo Is this needed?
-#         C_HPA = hpa
-#
-#         if not isinstance(C_HPA, HistoricPriceAnalyser) and (select_filter is not None):
-#             # If a set_filter was included, then just build it without any input
-#             C_HPA = HistoricPriceAnalyser()
-#
-#             if select_filter is not None:
-#                 C_HPA.set_filter(select_filter, rating)
-#             if set_options is not None:
-#                 C_HPA.set_options(**set_options)
-#             if si is not None:
-#                 C_HPA._set(si)
-#             return C_HPA._create()
-#
-#         def _new_hpa():
-#             return HistoricPriceAnalyser()
-#         # All of these options should return self
-#         options = (
-#             ("New HPA", _new_hpa),
-#             ("Load HPA", HistoricPriceAnalyser.load)
-#         )
-#
-#         C_HPA = syt.Menu("- HPA Option -", options, quit_tag="Back", drop_down=True).run()
-#
-#         return C_HPA._create()
-#
-#     def _create(self):
-#
-#         # All of these options should return self
-#         options = (
-#             ("Change HPA Filter", self.build_filter),
-#             ("Change HPA Report Type", self.build_report_type),
-#             ("Test HPA", self.run_all_test),
-#             ("About HPA", self.about), # Need this to give a better overview
-#             ("Save HPA", self.save)
-#         )
-#
-#         def menu_title():
-#             title = "- HPA Option -"
-#             title += "\n : {}".format(self.name)
-#             title += "\n : {}".format(self.desc)
-#             title += "\n : {}".format(self.si)
-#             return title
-#
-#         syt.Menu(menu_title, options, quit_tag="Return").run()
-#
-#         return self
-#
-#     ##
-#     # Setup HPA
-#     ##
-#     def build_filter(self):
-#         """
-#         Through a _set of menus, this creates the select string for a HPA class
-#         @return:
-#         """
-#         hpa_list = ""
-#
-#         def hpa_build_rating():
-#             qstring = ["", None, True]
-#             options = ["Want", "Own", "Rating", "Want+Own", "Want-Own"]
-#             choice = syt.Menu("- Create HPA Query Rating -", choices=options, type="return", drop_down=True,
-#                               quit_tag="Back").run()
-#
-#             if choice == "Want":
-#                 qstring[0] = "bs_ratings.want"
-#             elif choice == "Own":
-#                 qstring[0] = "bs_ratings.own"
-#             elif choice == "Rating":
-#                 qstring[0] = "bs_ratings._rating"
-#             elif choice == "Want+Own":
-#                 qstring[0] = "(bs_ratings.want + bs_ratings.own)"
-#             elif choice == "Want-Own":
-#                 qstring[0] = "(bs_ratings.want - bs_ratings.own)"
-#             else:
-#                 qstring = None
-#
-#             return qstring, True
-#
-#
-#         def hpa_build_price():
-#
-#             price_types = ["historic_new", "historic_used", "current_new", "current_used"]
-#             fields = ["avg", "lots", "max", "min", "qty", "qty_avg", "piece_avg"]
-#             group_functions = ["AVG", "MIN", "MAX", "SUM"]  # For price types
-#             aggregate_functions = ["AVG", "SUM", "DIFFERENCE"]  # For fields
-#             c_price_types = []
-#             c_fields = []
-#             c_group_function = None
-#             c_aggregate_function = None
-#
-#             c_price_types = syt.MultiChoiceMenu("- Choose Price Type(s) -", price_types)
-#             if len(c_price_types) == 0:
-#                 return None
-#             if len(c_price_types) > 1:
-#                 c_group_function = syt.Menu("- Choose group function -", choices=group_functions, drop_down=True,
-#                                             type=syt.Menu.RETURN).run()
-#             c_fields = syt.MultiChoiceMenu("- Choose Price field(s) -", fields)
-#             if len(c_fields) == 0:
-#                 return None
-#             if len(c_fields) > 1:
-#                 c_aggregate_function = syt.Menu("- Choose aggregate function -", choices=aggregate_functions,
-#                                                 drop_down=True, type=syt.Menu.RETURN).run()
-#             return {"price_type": c_price_types, "field": c_fields,
-#                     "group_function": c_group_function, "aggregate_function": c_aggregate_function}, False
-#
-#
-#         options = [("Rating", hpa_build_rating),
-#                    ("Price", hpa_build_price)]
-#         hpa_list, rating  = syt.Menu("- Create HPA Query -", choices=options, drop_down=True).run()
-#         if hpa_list == 0:
-#             hpa_list = None
-#             rating = False
-#         try:
-#             self.set_filter(hpa_list, rating)
-#         except ValueError:
-#             syt.log_error("Filter not set")
-#             pass
-#
-#         return self
-#
-#     def set_filter(self, select_filter = None, rating = False):
-#         self._select_filter = select_filter
-#         self._rating = rating
-#
-#
-#         # Todo Can I wrap this into one so I don't have to do it twice?
-#         if isinstance(select_filter, dict):
-#             select_filter = self._make_filter(select_filter)
-#         self._select_filter = select_filter
-#         if not isinstance(select_filter, list) and len(select_filter) < 2:
-#             raise ValueError("Invalid Filter Formation")
-#         return self
-#
-#     def build_report_type(self):
-#         """
-#         -Report Type
-#             STANDARD = 0
-#             RELATIVE = 1
-#             RELATIVE_DAY = 2
-#             DELTA = 3
-#             DELTA_DAY = 4
-#         -Inflation Date
-#         -Relative Date: (_set_base_price_date) - start, end
-#         -Relative Price: start, end, retail
-#
-#         @return:
-#         """
-#
-#         def _get_report_type(type_text):
-#             """
-#             STANDARD = 0
-#             RELATIVE = 1
-#             RELATIVE_DAY = 2
-#             DELTA = 3
-#             DELTA_DAY = 4
-#             """
-#             report_types = {
-#                 "Standard": HistoricPriceAnalyser.STANDARD,
-#                 "Relative": HistoricPriceAnalyser.RELATIVE,
-#                 "Relative Day": HistoricPriceAnalyser.RELATIVE_DAY,
-#                 "Delta": HistoricPriceAnalyser.DELTA,
-#                 "Delta Day": HistoricPriceAnalyser.DELTA_DAY
-#             }
-#             return report_types[type_text]
-#
-#         options = (
-#             "Standard",
-#             "Relative",
-#             "Relative Day",
-#             "Delta",
-#             "Delta Day"
-#         )
-#         report_type = syt.Menu('- Choose Report Type -', choices=options, function=_get_report_type, type=syt.Menu.LOAD, drop_down=True).run()
-#
-#         def _get_base_price(type_text):
-#             """
-#             # Relative to
-#             R_NOT_RELATIVE = 0
-#             R_RETAIL_PRICE = 1
-#             R_START_PRICE = R_START_DATE = 2
-#             R_END_PRICE = R_END_DATE = 3
-#             """
-#             report_types = {
-#                 "None": HistoricPriceAnalyser.R_NOT_RELATIVE,
-#                 "Retail": HistoricPriceAnalyser.R_RETAIL_PRICE,
-#                 "Start Price": HistoricPriceAnalyser.R_START_PRICE,
-#                 "End Price": HistoricPriceAnalyser.R_END_PRICE
-#             }
-#             if type_text == "Custom":
-#                 price = input("What custom price would you like to compare to? ")
-#                 return price
-#             else:
-#                 return report_types[type_text]
-#
-#         options = (
-#             "None",
-#             "Retail",
-#             "Start Price",
-#             "End Price",
-#             "Custom"
-#         )
-#         base_price = syt.Menu('- Choose Base Price -', choices=options, function=_get_base_price, type=syt.Menu.LOAD, drop_down=True).run()
-#
-#         def _get_base_date(type_text):
-#             """
-#             # Relative to
-#             R_NOT_RELATIVE = 0
-#             R_RETAIL_PRICE = 1
-#             R_START_PRICE = R_START_DATE = 2
-#             R_END_PRICE = R_END_DATE = 3
-#             """
-#             report_types = {
-#                 "None": HistoricPriceAnalyser.R_NOT_RELATIVE,
-#                 "Start Date": HistoricPriceAnalyser.R_START_DATE,
-#                 "End Date": HistoricPriceAnalyser.R_END_DATE
-#             }
-#             if type_text == "Custom":
-#                 date = input("What custom date would you like to compare to? (yyyy-mm-dd) ")
-#                 return date
-#             else:
-#                 return report_types[type_text]
-#
-#         options = (
-#             "None",
-#             "Start Date",
-#             "End Date",
-#             "Custom"
-#         )
-#         base_date = syt.Menu('- Choose Base Date -', choices=options, function=_get_base_date, type=syt.Menu.LOAD, drop_down=True).run()
-#
-#         inf_year = input("What year do you want to use for inflation (blank for none)? ")
-#         if inf_year == "":
-#             inf_year = None
-#
-#         try:
-#             self.set_options(report_type, base_price, base_date, inf_year)
-#         except ValueError:
-#             syt.log_error("Options not set")
-#             pass
-#
-#         return self
-#
-#     def set_options(self, report_type=STANDARD, base_price=None, base_date=None, inf_year=None):
-#         """
-#         Set the report options all in one place
-#         @param report_type: in:
-#             STANDARD = 0
-#             RELATIVE = 1
-#             RELATIVE_DAY = 2
-#             DELTA = 3
-#             DELTA_DAY = 4
-#         @param base_price: in
-#             R_NOT_RELATIVE = 0
-#             R_RETAIL_PRICE = 1
-#             R_START_PRICE = 2
-#             R_END_PRICE = 3
-#             price value
-#         @param base_date:
-#             R_NOT_RELATIVE = 0
-#             R_START_DATE = 2
-#             R_END_DATE = 3
-#             date value  <- in any date format
-#         @param inf_year: Year string
-#         @return: None
-#         """
-#         self._report_options["Base Date"] = base_date
-#         self._report_options["Type"] = report_type
-#         self._report_options["Base Price"] = base_price
-#         self._report_options["Inflation Year"] = inf_year
-#
-#         return self
-#
-#     def get_set(self):
-#         """
-#         Used to prompt for a _set
-#         @return:
-#         """
-#         self._set(SetInfo(SetInfo.input_set_num()))
-#         return self
-#
-#     def _set(self, si):
-#         """
-#         @param si:
-#         @return:
-#         """
-#         if si is not None:
-#             self.si = si
-#         return self
-#
-#     def _build_report_data_sql(self, select_=None, where_=None, group=True):
-#         """Takes what we got in the starter filter (either a complete filter string or a dict of filter options
-#             and returns a built out _sql statement
-#         """
-#         h_select = "SELECT historic_prices.record_date"
-#         if select_ is not None:
-#             h_select += ", " + select_
-#         else:
-#             syt.log_error("Missing filter text")
-#             return None
-#             # h_select = "SELECT historic_prices.record_date, price_types.price_type, historic_prices.lots, historic_prices.qty, historic_prices.min, historic_prices.max, historic_prices.avg, historic_prices.qty_avg, historic_prices.piece_avg"
-#         h_joins = " FROM historic_prices JOIN sets ON (sets.id=historic_prices.set_id) JOIN price_types ON (price_types.id=historic_prices.price_type) JOIN bs_ratings ON (bs_ratings.set_id=historic_prices.set_id AND bs_ratings.record_date=historic_prices.record_date)"
-#         h_filter = " WHERE sets.set_num='{}'".format(self._si.set_num)
-#         if where_ is not None:
-#             h_filter += " AND " + where_
-#         if group:
-#             h_filter += " GROUP BY historic_prices.record_date"
-#         h_end = ";"
-#         h_sql = h_select + h_joins + h_filter + h_end
-#         return h_sql
-#
-#     def _process_date_price_list(self, dp_list):
-#         """
-#         Takes a list of dates and get_prices and fills in the missing dates and extrapolates the get_prices
-#         @param dp_list: In this format [(date,price),(date,price))]
-#         @return:
-#         """
-#         dp_list.sort(key=lambda x: x[0])  # Sort the list by date
-#         dp_list_to_add = []  # date, price combos that need to be added
-#         DAY = 86400  # (60 * 60 * 24)  # Number of seconds in a day: 86400
-#
-#         # If the list is longer than this, it returned a query with too many get_prices, only one at a time.
-#         #       May consider expanding this to multiple types at a time
-#         assert len(dp_list[0]) == 2
-#         for idx, dp in enumerate(dp_list):
-#             if idx == 0:
-#                 continue
-#             days_between = abs(syt.get_days_between(dp_list[idx][0], dp_list[idx - 1][0]))
-#             if days_between == 1:
-#                 continue
-#             elif days_between == 0:
-#                 syt.log_error("Days between two dates is zero.")
-#                 syt.log.error("  {}  –   {}".format(arrow.get(dp_list[idx][0]).date(), arrow.get(dp_list[idx - 1][0]).date()))
-#                 delete_sql = self._convert_select_to_delete(dp_list[idx][0])
-#                 syt.log_info("_sql string: " + delete_sql)
-#                 delete_dup = input("Delete the duplicate date? (y/n) ")
-#                 if delete_dup is "y":
-#                     db.run_sql(delete_sql)
-#                     return [["rerun", None]]
-#                 else:
-#                     raise ZeroDivisionError
-#             else:
-#                 current_price = dp_list[idx][1]
-#                 previous_price = dp_list[idx - 1][1]
-#                 increment = 0
-#                 # If the start and end prices are None, make the inbetween prices None
-#                 # print(days_between)
-#                 price_is_none = False
-#                 if current_price is None and previous_price is None:
-#                     price_is_none = True
-#
-#                     #   If a previous price exists but a current price doesn't, then guess prices
-#                     #   If a current price exists but a previous price doesn't, don't guess if more than 35 days
-#                 elif current_price is None:
-#                     pass  # current price isn't used so no need to do anything since increment will still be zero
-#                 elif previous_price is None:
-#                     if days_between > 35:
-#                         price_is_none = True
-#                         # print("None")
-#                     else:
-#                         previous_price = current_price
-#
-#                 else:
-#                     #Get the number of days between (price delta)
-#                     increment = round((syt.float_zero(current_price) - syt.float_zero(previous_price)) / days_between,
-#                                       ndigits=2)
-#
-#                 for n in range(1, days_between):
-#                     if price_is_none is False:
-#                         dp_list_to_add.append([arrow.get(dp_list[idx - 1][0]).replace(days=+n).timestamp,
-#                                                round((syt.float_zero(previous_price) + (increment * n)), ndigits=2)])
-#                     else:
-#                         dp_list_to_add.append([arrow.get(dp_list[idx - 1][0]).replace(days=+n).timestamp, None])
-#
-#         dp_list.extend(dp_list_to_add)
-#         return dp_list
-#
-#     def _convert_select_to_delete(self, record_date):
-#         """
-#
-#         Create a _sql string to use to delete based on the select string
-#         @param record_date:
-#         @return:
-#         """
-#         #Todo, remove this function. It is only needed because of the stupid dupe date in the database
-#
-#         del_sql = " WHERE record_date={} AND set_id in (SELECT id from sets WHERE set_num='{}')".format(record_date,
-#                                                                                                         self._si.set_num)
-#         if 'bs_ratings' in self._select_filter[0]:
-#             del_sql = "DELETE FROM bs_ratings" + del_sql + ";"
-#         else:
-#             del_sql = "DELETE FROM historic_prices" + del_sql
-#             if self._select_filter[1] is not None:
-#                 del_sql += " AND price_type in (SELECT id from price_types WHERE {});".format(self._select_filter[1])
-#         return del_sql
-#
-#     def _clear(self):
-#         """
-#         Reverts the working data back to the original state
-#         @return:
-#         """
-#         self._working_data = copy.deepcopy(self._original_data)
-#         self._base_date = None
-#         self._base_price = None
-#         self._type = self.STANDARD
-#         self._inf_year = None
-#
-#     def _sql(self, sql_statement):
-#         """Not safe to have publicly exposed, but very handy for my own personal project"""
-#         return db.run_sql(sql_statement)
-#
-#     ##
-#     # Prepare Reports
-#     ##
-#     def run_report(self, si=None):
-#         """
-#         Run the report based on current settings and return two lists that can be turned into csv filed
-#         @return:
-#         """
-#         # Make sure the right variables are filled out
-#         if si is not None: self.si = si
-#
-#         # Prepare the report
-#         self.prepare_report()
-#
-#         # Run the report
-#         set_descs = self.get_set_info()
-#         set_prices = self._working_data
-#         return set_prices, set_descs
-#
-# ##
-# # Prepare HPA for reporting
-# ##
-#     def prepare_report(self):
-#         """
-#         Setup the working list based on the current settings (_type, inf etc)
-#         @return:
-#         """
-#         self._validate()
-#         self._process_filter()
-#         self._process_report_type()
-#         self._process_prices()
-#         self._process_dates()
-#         return self
-#
-# # Report Type
-#     def _process_report_type(self):
-#         self._set_inflation_year(self._report_options["Inflation Year"])
-#         self._set_report_type(self._report_options["Type"])
-#         self._set_base_price(self._report_options["Base Price"])
-#         self._set_base_date(self._report_options["Base Date"])
-#
-#     def _set_report_type(self, rtype=None):
-#         """
-#         @param rtype: Options:
-#             standard - actual numbers (overrides all others)
-#             relative - percent change from start date
-#             relative_day - percent change from previous day (does not take into account start price)
-#             delta - price change from start date
-#             delta_day - price change *day over day*  (does not take into account start price)
-#         """
-#         self._type = self.STANDARD
-#         if rtype in (self.STANDARD, self.RELATIVE, self.RELATIVE_DAY, self.DELTA, self.DELTA_DAY):
-#             if rtype != self._type:
-#                 self._type = rtype
-#
-#     def _set_base_price(self, price=None, region="us"):
-#         """
-#         Sets the price to do all the calculations from. if none then calculations are done against the retail price
-#         - This has no effect in a standard report, only has effect in relative and delta reports (not day over day reports though)
-#
-#         @param price: Options:
-#                 R_NOT_RELATIVE = 0 compare price against historic get_prices (influenced by base date)
-#             These can only be used with relative and delta [_type]
-#                 R_RETAIL_PRICE = 1 compare price against us/uk original
-#                 R_START_PRICE = 2
-#                 R_END_PRICE = 3
-#                 price value
-#         @param region: Options:
-#                 us or uk
-#         @return:
-#         """
-#
-#         if price is None or price == "" or price == self.R_NOT_RELATIVE:
-#             self._base_price = None
-#
-#         elif price == self.R_RETAIL_PRICE:
-#             if region == "uk":
-#                 self._base_price = self._si.original_price_uk
-#             else:
-#                 self._base_price = self._si.original_price_us
-#         elif price == self.R_START_PRICE:
-#             self._base_price = self._get_price_from_date(self._base_date)
-#         elif price == self.R_END_PRICE:
-#             self._base_price = self._get_price_from_date(self._base_date)
-#         else:
-#             self.price = syt.int_zero(price)
-#
-#     def _set_base_date(self, date=None, region="us"):
-#         """
-#         price affects how the prices are calculated
-#         date affects how the prices line up (where t0 is)
-#
-#         @param date: Options:
-#                 a date to start on (in format YYYY-MM-DD)
-#                 R_START_DATE = 2 list get_prices with start date as the focus
-#                 R_END_DATE = 3 list get_prices with end date as the focus
-#                 R_NOT_RELATIVE = 0 = None
-#         @param region: Options:
-#                 us or uk
-#         """
-#         # If no date, then we are not shifting the dates at all
-#         if date is None or date == "" or date == self.R_NOT_RELATIVE:
-#             self._base_date = None  # Date is not relative
-#
-#         #   Set the compare date as the start date (or the earlist date)
-#         elif date == self.R_START_DATE:
-#             if region == "uk":
-#                 self._base_date = self._si.ts_date_released_uk
-#             else:
-#                 self._base_date = self._si.ts_date_released_us
-#
-#             if self._base_date is None or self._base_date == "":
-#                 self._base_date = max(self._original_data.keys())
-#
-#         #   Set the compare date as the end date
-#         elif date == self.R_END_DATE:
-#             if region == "uk":
-#                 self._base_date = self._si.ts_date_ended_uk
-#             else:
-#                 self._base_date = self._si.ts_date_ended_us
-#             if self._base_date is None or self._base_date == "":
-#                 self._base_date = None
-#         else:
-#             self._base_date = syt.get_timestamp(date)
-#             self._base_price = self._get_price_from_date(self._base_date)
-#
-#     def _set_inflation_year(self, year=None):
-#         """
-#         @param year: If none provided, it is _set to None
-#         @return:
-#         """
-#         self._inf_year = None
-#         if isinstance(year, int):
-#             if 1950 <= year <= arrow.get().year:
-#                 self._inf_year = year
-#
-#     def _get_price_from_date(self, date=None):
-#         """
-#
-#         @param date: in format YYYY-MM-DD
-#         @return:
-#         """
-#         if date is None: return None
-#         compare_ts = date  # syt.get_timestamp(date)
-#         closest_price_date = syt.get_closest_list(compare_ts, self._working_data.keys())
-#         self._base_date = date
-#         return self._working_data[closest_price_date]
-#
-# # Filter
-#     def _process_filter(self):
-#         sql_query = None
-#         if isinstance(self._select_filter, list) and len(self._select_filter) >= 2:
-#             sql_query = self._build_report_data_sql(*self._select_filter)
-#         else:
-#             raise ValueError("Invalid Filter Formation")
-#
-#         # self._sql_query = sql_query
-#         sql_result = self._sql(sql_query)
-#         # This section is broken into a while loop to take care of the stupid date duplicates in the database
-#         #      Can probably remove this and just delete all prices from that date
-#         if sql_result is not None and len(sql_result):
-#             clean_dict = False
-#             base_dict = {}
-#             while clean_dict is False:
-#                 base_dict = syt.list_to_dict(self._process_date_price_list(sql_result))
-#                 sql_result = self._sql(sql_query)
-#                 if "rerun" not in base_dict: clean_dict = True
-#
-#             # Store the results of the original query so we can restore it later
-#             self._original_data = syt.OrderedDictV2(sorted(base_dict.items(), key=lambda t: t[0]))
-#             # #   Store the _sql so we can work it later, or rebuild it if needed
-#             # self._sql_query = sql_query
-#             self._clear()
-#         else:
-#             raise ValueError("Invalid SQL Statement Formation: SQL Len: {}".format(len(sql_result)))
-#
-# # Prices
-#
-#     def _process_prices(self):
-#         """
-#
-#         This updates (calculates the prices) the _working_data dict with the new parameters
-#         This does not modify the dates, that is done in
-#
-#         STANDARD = 0
-#         RELATIVE = 1  - %percent change from start date
-#         RELATIVE_DAY = 2 - %percent change from previous day (does not take into account start price)
-#         DELTA = 3 - price change from start date
-#         DELTA_DAY = 4 - price change *day over day*  (does not take into account start price)
-#
-#         Uses these variables:
-#         self._type - see above
-#         self._base_date
-#         self._base_price
-#         self._inf_year
-#         @return:
-#         """
-#         new_dict = collections.defaultdict()
-#         if self._type == self.STANDARD:
-#             return self._working_data  # standard _type no change, Todo, should this _clear?
-#
-#         # Delta simply means the difference from the base price
-#         elif self._type == self.DELTA:
-#             for db in self._working_data:
-#                 new_dict[db] = syt.float_zero(self._working_data[db]) - syt.float_zero(self._base_price)
-#
-#         # Delta simply means the %difference from the base price
-#         elif self._type == self.RELATIVE:
-#             for db in self._working_data:
-#                 try:
-#                     new_dict[db] = (syt.float_zero(self._working_data[db]) / syt.float_zero(self._base_price)) - 1
-#                 except ZeroDivisionError:
-#                     new_dict[db] = 0
-#
-#         #   Delta day simply means the difference from the day before, base price doesn't matter
-#         elif self._type == self.DELTA_DAY:
-#             for idx, db in enumerate(self._working_data.keys()):
-#                 if idx == 0:
-#                     new_dict[db] = 0
-#                     continue
-#                 else:
-#                     previous_value = self._working_data.previous_key(db)
-#                     new_dict[db] = syt.float_zero(self._working_data[db]) - syt.float_zero(
-#                         self._working_data[previous_value])
-#
-#         #   Delta day simply means the %difference from the day before, base price doesn't matter
-#         elif self._type == self.RELATIVE_DAY:
-#             for idx, db in enumerate(self._working_data.keys()):
-#                 if idx == 0:
-#                     new_dict[db] = 0
-#                     continue
-#                 else:
-#                     previous_value = self._working_data.previous_key(db)
-#                     try:
-#                         new_dict[db] = round(
-#                             (syt.float_zero(self._working_data[db]) / self._working_data[previous_value]) - 1, 6)
-#                     except ZeroDivisionError:
-#                         new_dict[db] = None
-#         self._working_data = syt.OrderedDictV2(sorted(new_dict.items(), key=lambda t: t[0]))
-#
-#         if self._inf_year is not None:
-#             self._working_data = syt.adj_dict_for_inf(self._working_data, self._inf_year)
-#
-#         return self._working_data
-#
-#     def _process_dates(self):
-#         """
-#             Take self._base_date and return the _working_data with the adjusted dates
-#         @return:
-#         """
-#         if self._base_date is not None:
-#             self._working_data = syt.OrderedDictV2({self._si.get_relative_date(d, self._base_date): self._working_data[d]
-#                                                    for d in self._working_data})
-#         return self
-#
-#     def get_set_info(self, type="list"):
-#         """
-#         Gets basic information for the _set in the HPA, basically a nice to have
-#         @param type:
-#         @return:
-#         """
-#         if type == "list":
-#             return [self._si.set_num, self._si.theme, self._si.year_released, self._si.original_price_us,
-#                     self._si.date_released_us, self._si.date_ended_us]
-#         else:
-#             return {"set_num": self._si.set_num, "theme": self._si.theme, "date_release": self._si.date_released_us,
-#                     "original_price": self._si.original_price_us, "_base_date": syt.get_date(self._base_date),
-#                     "base_date_ts": self._base_date, "inflation_year": self._inf_year, "_base_price": self._base_price,
-#                     "report_type": self._type, "records": len(self._working_data)}
-#
-#     def _validate(self, si=True, filter=True):
-#         """
-#             All in one package to make sure that everything that is needed for running reports is included
-#         @param si:
-#         @param filter:
-#         @return:
-#         """
-#         if si:
-#             if self.si is None:
-#                 raise ValueError("No Set to evaluate")
-#         if filter:
-#             if self._select_filter is None:
-#                 raise ValueError("No Select Filter")
-#
-# ##
-#
-#             ##
-#
-#     def run_all_test(self, si=None, report_types=None):
-#         self._set(si) # Set the _set id
-#         if self.si is None: self.get_set()
-#
-#         self._working_data = copy.deepcopy(self._original_data)
-#         results_dict = collections.defaultdict()
-#         in_progress = []
-#
-#         range_types = report_types
-#         if range_types is None:
-#             range_types = (self.STANDARD, self.RELATIVE, self.RELATIVE_DAY, self.DELTA, self.DELTA_DAY)
-#
-#         try:
-#             for n in range_types:
-#                 self.set_options(report_type=n, base_price=self.R_RETAIL_PRICE, base_date=self.R_END_DATE, inf_year=2015)
-#                 self.prepare_report()
-#                 in_progress.append(self.run_report())
-#
-#
-#             # Todo n is not getting the right values in each loop
-#             # cycle through the 5 reports that have been built and stored in 'in_progress'
-#             for n in in_progress:
-#
-#                 next_row = []
-#                 for m in range(len(in_progress)):
-#                     next_row.append(in_progress[m][n])
-#                     results_dict[syt.get_ts_day(n)] = next_row
-#         except ValueError:
-#             syt.log_error("HPA is missing information")
-#
-#         print(results_dict)
-#         return self
-#
-#     def save(self):
-#         if self.name is None:
-#             self.name = input("What would you like to call this report? ")
-#         if self.desc is None:
-#             self.desc = input("What is this report for? ")
-#         self.si = None
-#         pickle.dump(self, open("{}_{}.hpa".format(self.name, syt.get_timestamp()), "wb"))
-#         print("HPA Saved")
-#
-#     @staticmethod
-#     def load(hpa=None):
-#         """
-#         Static method because it can be used before the class is created
-#         @return: The loaded class
-#         """
-#         set_col = None
-#         def find_savefiles():
-#             filenames = os.listdir(os.getcwd())
-#             setcollections = []
-#             for file in filenames:
-#                 if file.endswith(".hpa"):
-#                     setcollections.append(file)
-#             return setcollections
-#
-#         def _load(file_name):
-#             return pickle.load(open(file_name, "rb"))
-#         hpa = syt.Load_Menu(name="- Load HPA- ", choices=find_savefiles(), function=_load).run()
-#         return hpa
-#
-#     def _make_filter(self, filter_dict = None):
-#         """
-#             #For making _sql from a dictionary in this format:
-#             # {'price_types':[], 'fields':[], 'group_function':"", 'aggregate_function':""}
-#         @param dic:
-#         @return: a list in the standard format to build a filter _sql string
-#         """
-#
-#         if isinstance(filter_dict, list) and len(filter_dict) == 3:
-#             return filter_dict
-#
-#         if filter_dict is None:
-#             filter_dict = self._select_filter
-#
-#         if len(filter_dict['field']) == 0 and len(filter_dict['price_type']) == 0:
-#             raise SyntaxError("Filter is not in the right format")
-#
-#         sql_string = []
-#
-#         # _validate dict
-#         if len(filter_dict['field']) > 1 and filter_dict['aggregate_function'] == None:
-#             raise SyntaxError("Missing aggregate function")
-#         elif len(filter_dict['price_type']) > 1 and filter_dict['group_function'] == None:
-#             raise SyntaxError("Missing group function")
-#
-#         # Build select string
-#         aggregate_lookup = {"AVG": "+", "SUM": "+", "DIFFERENCE": "-"}
-#         select_string = "("
-#         for idx, field in enumerate(filter_dict['field']):
-#             if idx > 0:
-#                 select_string += aggregate_lookup[filter_dict['aggregate_function']]
-#             select_string += "historic_prices.{}".format(field)
-#         select_string += ")"
-#         if filter_dict['aggregate_function'] == "AVG":
-#             select_string += "/{}".format(len(filter_dict['field']) * len(filter_dict['price_type']))
-#
-#         if filter_dict['group_function'] != None:
-#             select_string = "{}({})".format(filter_dict['group_function'], select_string)
-#
-#
-#         #Build Where string
-#         where_string = "("
-#         for idx, price_type in enumerate(filter_dict['price_type']):
-#             if idx > 0:
-#                 where_string += " OR "
-#             where_string += 'price_types.price_type="{}"'.format(price_type)
-#         where_string += " )"
-#
-#         #Add group by true/false
-#         group_by = False
-#         if len(filter_dict['price_type']) > 1:
-#             group_by = True
-#
-#         return [select_string, where_string, group_by]
-#
-#     @staticmethod
-#     def csv_write(report_list, name=""):
-#         """
-#         @param report_list: A list in this format:
-#         @return: None, but it creates the reports
-#         """
-#
-#
-#     # def test_eval_reports(self):
-#     #     """
-#     #     Returns two lists that can be turned into csv files
-#     #
-#     #     Set List
-#     #     Set_num, theme, year_released, original_price, start_date, end_date
-#     #
-#     #     Price List
-#     #     set_num, date(price), date(price), date(price), date(price)
-#     #     @return:
-#     #     set_descs = [["SET_NUM", "THEME", "YEAR_RELEASED", "ORIGINAL_PRICE", "DATE_START", "DATE_END"]]
-#     #     """
-#     #     set_descs = self.get_set_info(type="list")
-#     #     self._clear()
-#     #     set_prices = self.run_all_test(report_types=[1])  # By date will start with the date ended
-#     #
-#     #     return set_prices, set_descs
-#     # # Todo, is this used?
-#     # def _set_base_price_date(self, price=None, date=None, region="us"):
-#     #     self._set_base_price(price=price, region=region)
-#     #     self._set_base_date(date=date, region=region)
-#
-#     # def __init__(self, si=None, desc=None, _select_filter=None, _rating=False, name=None):
-#     #
-#     #     """
-#     #         @param desc: A short description of the filter
-#     #         @param _select_filter: List:
-#     #             [select statement, where statement, group?] See the end of this doc for examples
-#     #             - This can also be in a dictionary format or None and it will prompt to make it
-#     #             NOTE, filters have to return a list in the format [(date,price),(date,price)] (Only one price _type at a time)
-#     #     """
-#     #     # Loading
-#     #     if isinstance(_select_filter, HistoricPriceAnalyser):
-#     #         _select_filter = _select_filter._select_filter
-#     #         _rating = _select_filter._rating
-#     #     self.si = si  # the parent _set. If none is provided, it doesn't create one until it is needed
-#     #     self._rating = _rating  # If this is true, we are working with ratings not prices, so options like relative pricing is ignored
-#     #     self.name = name
-#     #
-#     #     # The following two if statements create a list that can be used by _build_report_data_sql to make the _sql text
-#     #     if _select_filter is None:
-#     #         # If no select filter is provided, ask to make one
-#     #         _select_filter = HistoricPriceAnalyser.build_filter(True)
-#     #         print(_select_filter)
-#     #     if isinstance(_select_filter, dict):
-#     #         _select_filter = HistoricPriceAnalyser._make_filter(_select_filter)
-#     #     # Make the _sql filter
-#     #     _sql_query = None
-#     #     if isinstance(_select_filter, list) and len(_select_filter) >= 2:
-#     #         _sql_query = self._build_report_data_sql(*_select_filter)
-#     #     else:
-#     #         _sql_query = self._build_report_data_sql()
-#     #     self._sql_query = _sql_query
-#     #     self._select_filter = _select_filter
-#     #     sql_result = self._sql(_sql_query)
-#     #     if sql_result is not None and len(sql_result):
-#     #         clean_dict = False
-#     #         while clean_dict is False:
-#     #             base_dict = syt.list_to_dict(self._process_date_price_list(sql_result))
-#     #             sql_result = self._sql(_sql_query)
-#     #             if "rerun" not in base_dict: clean_dict = True
-#     #
-#     #         # Store the results of the original query so we can restore it later
-#     #         self._original_data = syt.OrderedDictV2(sorted(base_dict.items(), key=lambda t: t[0]))
-#     #         #   Store the _sql so we can work it later, or rebuild it if needed
-#     #         self._sql_query = _sql_query
-#     #         # Same as _clear - but needs to be defined in __init__ (_set the working data = to the original data)
-#     #         self._clear()
-#     #         # self._working_data = copy.deepcopy(self._original_data)
-#     #         #
-#     #         # # Working_data_format:
-#     #         # self._base_date = None #min(self._original_data.keys())  # The earliest date
-#     #         # self._base_price = None #self._original_data[self._base_date]  # The price at the earliest date
-#     #         # self._type = self.STANDARD
-#     #         # self._inf_year = None
-#     #     else:
-#     #         raise SyntaxError("Invalid HPA Formation")
-#     #
-#     #     if desc is not None:
-#     #         self.desc = desc
-#     #     else:
-#     #         self.desc = self._sql_query
-#
-# # if __name__ = "__main__":
