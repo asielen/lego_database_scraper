@@ -6,6 +6,7 @@ if __name__ == "__main__": syt.setup_logger()
 # Price capture
 from data.update_ternary import daily_data
 from data import update_secondary as secondary
+from data.update_secondary import add_inventories_database as secondary_inv
 
 
 def database_update_menu():
@@ -16,7 +17,7 @@ def database_update_menu():
         secondary.updates_sets_database_from_api()
 
     def inventory_update():
-        secondary.updates_inv_database_from_api()
+        secondary_inv.updates_inv_database_from_api()
 
     def base_update():
         pass

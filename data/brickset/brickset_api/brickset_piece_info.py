@@ -1,7 +1,6 @@
 #Not needed anymore? Todo
 import pprint
 
-#from system.base import *  # Change this to not using *
 import system as syt
 
 # http://brickset.com/parts/473326 <-Piece lookup

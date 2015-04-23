@@ -82,6 +82,8 @@ def update_set_inventories(check_update=1):
                 continue
         print("2222 {} | {} SET {}".format(idx, len(parts_to_insert), row[0]))
         rows_to_scrape.append(row)
+
+        # Get pieces
         if idx > 0 and idx % (syt.RUNNINGPOOL * 10) == 0:
             syt.log_info("@@@ Scraping {} rows".format(len(rows_to_scrape)))
             _process_data = partial(_process_data_for_inv_db, sets=sets, parts=parts, colors=colors)
@@ -90,6 +92,7 @@ def update_set_inventories(check_update=1):
             rows_to_scrape = []
             sleep(0.01)
 
+        #Insert data
         if idx > 0 and len(parts_to_insert) >= (syt.RUNNINGPOOL * 30):
             parts_to_insert = list(filter(None, parts_to_insert))
             syt.log_info("@@@ Inserting rows >[{}]".format(len(parts_to_insert)))

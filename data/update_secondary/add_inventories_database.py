@@ -1,8 +1,8 @@
 # Internal
-from data.bricklink.bricklink_api import bricklink_api as blapi
+from data.bricklink.bricklink_api import bricklink_update_database as blapi
 from data.rebrickable import rebrickable_api as reapi
-from data.update_secondary import add_sets_database as secondary_sets
 
+#Todo: This shouldn't be in secondary, mostly because it screws up imports
 
 def add_re_inventories_to_database(update=0):
     reapi.update_set_inventories(update)
@@ -19,7 +19,7 @@ def updates_inv_database_from_api():
     And then update all inventories
     @return:
     """
-    set_list = blapi.pull_set_catalog()
-    secondary_sets.add_sets_to_database(set_list, id_col=2, update=0)
+    #set_list = blapi.pull_set_catalog()
+    #secondary_sets.add_sets_to_database(set_list, id_col=2, update=0)
     add_bl_inventories_to_database(update=0)
     add_re_inventories_to_database(update=0)

@@ -8,7 +8,8 @@ from time import sleep
 import data
 from data.bricklink.bricklink_api import bricklink_api as blapi
 from data.data_classes.SetInfo_HPA_Class import SetInfo
-import data.update_secondary as update
+from data.update_secondary import add_sets_database as secondary_sets
+from data.update_secondary import add_parts_database as secondary_parts
 import database as db
 import database.info as info
 import system as syt
@@ -27,7 +28,7 @@ def update_sets(check_update=1):
     """
 
     set_list = blapi.pull_set_catalog()
-    update.add_sets_to_database(set_list, id_col=2, update=check_update)
+    secondary_sets.add_sets_to_database(set_list, id_col=2, update=check_update)
 
 
 # Categories
@@ -96,7 +97,7 @@ def init_parts():
 
     parts_to_insert = _prep_list(parts_to_insert)
 
-    update.add_part_data_to_database(parts_to_insert,
+    secondary_parts.add_part_data_to_database(parts_to_insert,
                                      basics=1)  # needs to be in this format, basics one means it won't overwrite other ids
     syt.log_info("%%% Parts Table Built")
 
@@ -124,7 +125,7 @@ def init_minifigs():
 
     parts_to_insert = _prep_list(parts_to_insert)
 
-    update.add_part_data_to_database(parts_to_insert, basics=1)
+    secondary_parts.add_part_data_to_database(parts_to_insert, basics=1)
     syt.log_info("%%% Minifigs added to Parts table")
 
 
@@ -319,7 +320,7 @@ def add_part_to_database(part_num):
     @param part_num:
     @return:
     """
-    update.add_part_to_database(part_num)
+    secondary_parts.add_part_to_database(part_num)
     # Todo: see if any of this is needed
     # # These calls shouldn't need to be called every time we add one
     # part_database = info.read_bl_parts()  # Used so we don't do double duty and update parts in the system
@@ -347,7 +348,7 @@ def _get_set_id(set_num, add=False):
     """
     set_id = SetInfo.get_set_id(set_num)
     if set_id is None and add:
-        update.add_set_to_database(data.get_basestats(set_num))
+        secondary_sets.add_set_to_database(data.get_basestats(set_num))
         return SetInfo.get_set_id(set_num)
     return set_id
 
