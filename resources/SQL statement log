@@ -1,0 +1,40 @@
+SELECT * FROM sets;
+
+SELECT sets.set_num, historic_prices.record_date, price_types.price_type, historic_prices.lots, historic_prices.qty, historic_prices.min, historic_prices.max, historic_prices.avg, historic_prices.qty_avg, historic_prices.piece_avg FROM historic_prices JOIN sets ON (sets.id=historic_prices.set_id) JOIN price_types ON (price_types.id=historic_prices.price_type) JOIN bs_ratings ON (bs_ratings.set_id=historic_prices.set_id) WHERE sets.set_num='10501-1';
+
+SELECT historic_prices.id, sets.set_num, historic_prices.set_id, historic_prices.record_date, bs_ratings.want, bs_ratings.own, bs_ratings.rating FROM historic_prices JOIN sets ON (sets.id=historic_prices.set_id) JOIN price_types ON (price_types.id=historic_prices.price_type) JOIN bs_ratings ON (bs_ratings.set_id=historic_prices.set_id AND bs_ratings.record_date=historic_prices.record_date) WHERE sets.set_num='10501-1';
+
+SELECT historic_prices.set_id, price_types.price_type, historic_prices.record_date, historic_prices.avg FROM historic_prices JOIN sets ON (sets.id=historic_prices.set_id) JOIN price_types ON (price_types.id=historic_prices.price_type) JOIN bs_ratings ON (bs_ratings.set_id=historic_prices.set_id) WHERE sets.set_num='21108-1' and price_types.price_type = 'historic_new';
+
+SELECT historic_prices.record_date, bs_ratings.set_id, bs_ratings.want FROM historic_prices JOIN sets ON (sets.id=historic_prices.set_id) JOIN price_types ON (price_types.id=historic_prices.price_type) JOIN bs_ratings ON (bs_ratings.set_id=historic_prices.set_id AND bs_ratings.record_date=historic_prices.record_date) WHERE sets.set_num='21108-1' GROUP BY historic_prices.record_date;
+
+SELECT sets.set_num, historic_prices.record_date, price_types.price_type, (historic_prices.min+historic_prices.max)/2 FROM historic_prices JOIN sets ON (sets.id=historic_prices.set_id) JOIN price_types ON (price_types.id=historic_prices.price_type) WHERE sets.set_num='10501-1';
+
+SELECT historic_prices.id, sets.set_num, price_types.price_type, historic_prices.record_date, (historic_prices.min+historic_prices.max)/2 FROM historic_prices JOIN sets ON (sets.id=historic_prices.set_id) JOIN price_types ON (price_types.id=historic_prices.price_type) WHERE sets.set_num='10501-1';
+
+/*Want/own/rating*/
+SELECT historic_prices.id, sets.set_num, price_types.price_type, historic_prices.record_date, bs_ratings.set_id, bs_ratings.want FROM historic_prices JOIN sets ON (sets.id=historic_prices.set_id) JOIN price_types ON (price_types.id=historic_prices.price_type) JOIN bs_ratings ON (bs_ratings.set_id=historic_prices.set_id AND bs_ratings.record_date=historic_prices.record_date) WHERE sets.set_num='21108-1' GROUP BY historic_prices.record_date;
+/*Want+Own or minus if you change the sign*/
+SELECT historic_prices.id, sets.set_num, price_types.price_type, historic_prices.record_date, bs_ratings.set_id, bs_ratings.want+bs_ratings.own FROM historic_prices JOIN sets ON (sets.id=historic_prices.set_id) JOIN price_types ON (price_types.id=historic_prices.price_type) JOIN bs_ratings ON (bs_ratings.set_id=historic_prices.set_id AND bs_ratings.record_date=historic_prices.record_date) WHERE sets.set_num='21108-1' GROUP BY historic_prices.record_date;
+
+/*Sum of two prices fields for price type = historic new - no need for group by because only one price type*/
+SELECT historic_prices.id, sets.set_num, price_types.price_type, historic_prices.record_date, bs_ratings.set_id, historic_prices.qty_avg+historic_prices.piece_avg FROM historic_prices JOIN sets ON (sets.id=historic_prices.set_id) JOIN price_types ON (price_types.id=historic_prices.price_type) JOIN bs_ratings ON (bs_ratings.set_id=historic_prices.set_id AND bs_ratings.record_date=historic_prices.record_date) WHERE sets.set_num='21108-1' AND price_types.price_type="historic_new";/* GROUP BY historic_prices.record_date;*/
+
+/*Avg of three price fields for price type = historic new and historic used - divide by 4 because the number of fields is multiplied by the number of price types*/
+SELECT historic_prices.id, sets.set_num, price_types.price_type, historic_prices.record_date, bs_ratings.set_id, AVG((historic_prices.qty_avg+historic_prices.piece_avg)/4) FROM historic_prices JOIN sets ON (sets.id=historic_prices.set_id) JOIN price_types ON (price_types.id=historic_prices.price_type) JOIN bs_ratings ON (bs_ratings.set_id=historic_prices.set_id AND bs_ratings.record_date=historic_prices.record_date) WHERE sets.set_num='21108-1' AND (price_types.price_type="historic_new" OR price_types.price_type="historic_used") GROUP BY historic_prices.record_date;
+
+/*Single field two types - need an agregate function*/
+SELECT historic_prices.id, sets.set_num, price_types.price_type, historic_prices.record_date, bs_ratings.set_id, AVG(historic_prices.qty_avg) FROM historic_prices JOIN sets ON (sets.id=historic_prices.set_id) JOIN price_types ON (price_types.id=historic_prices.price_type) JOIN bs_ratings ON (bs_ratings.set_id=historic_prices.set_id AND bs_ratings.record_date=historic_prices.record_date) WHERE sets.set_num='21108-1' AND (price_types.price_type="historic_new" OR price_types.price_type="historic_used") GROUP BY historic_prices.record_date;
+
+/*multiple fields, single price type - no group by or agregate function, need combination function*/
+SELECT historic_prices.id, sets.set_num, price_types.price_type, historic_prices.record_date, bs_ratings.set_id, historic_prices.qty_avg+historic_prices.piece_avg FROM historic_prices JOIN sets ON (sets.id=historic_prices.set_id) JOIN price_types ON (price_types.id=historic_prices.price_type) JOIN bs_ratings ON (bs_ratings.set_id=historic_prices.set_id AND bs_ratings.record_date=historic_prices.record_date) WHERE sets.set_num='21108-1' AND price_types.price_type="historic_new";/* GROUP BY historic_prices.record_date;*/
+
+
+DELETE FROM historic_prices JOIN sets ON (sets.id=historic_prices.set_id) JOIN price_types ON (price_types.id=historic_prices.price_type) WHERE sets.set_num='41075-1' AND price_types.price_type = 'historic_new' AND historic_prices.record_date=1425284698;
+
+SELECT * FROM historic_prices WHERE record_date=1425284698 AND set_id in (SELECT id from sets WHERE set_num='41075-1') AND price_type in (SELECT id from price_types WHERE price_type='historic_new' OR price_type='historic_used');
+
+SELECT historic_prices.record_date, AVG((historic_prices.qty_avg)) FROM historic_prices WHERE record_date=1425284185 AND set_id in (SELECT id from sets WHERE set_num='71005-1') AND price_type in (SELECT id from price_types WHERE (price_types.price_type="current_new" OR price_types.price_type="current_used" OR price_types.price_type="historic_new" OR price_types.price_type="historic_used"));
+
+
+SELECT * FROM historic_prices WHERE record_date=1425284185 AND set_id in (SELECT id from sets WHERE set_num='71005-1') AND price_type in (SELECT id from price_types WHERE ((price_types.price_type="historic_used" OR price_types.price_type="current_used" OR price_types.price_type="historic_new" OR price_types.price_type="current_new" )));

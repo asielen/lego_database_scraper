@@ -6,10 +6,12 @@ import html
 from io import StringIO
 import json
 import os
+import shutil
 
 import requests
 from bs4 import BeautifulSoup
 import arrow
+
 
 
 
@@ -39,18 +41,53 @@ def make_project_path(string=""):
 
 def make_dir(path, add_project_path=True):
     """
-
+    NOTE PATH MUST END IN A SLASH IF IT IS NOT A FILE
     @param path: The path to check
     @param add_project_path: If True, add the path to the home path of the project
     @return: return the path to be used
     """
-    dir_path, file_name = os.path.split(path) #Just get the directory without the file name
+    dir_path, filename = os.path.split(path) #Just get the directory without the file name
     if add_project_path:
         mod_path = make_project_path(dir_path)
     else:
         mod_path = dir_path
     os.makedirs(mod_path, exist_ok=True)
-    return os.path.join(mod_path, file_name)
+    return os.path.join(mod_path, filename)
+
+def copy_file(file="", destination="", add_project_path=False):
+    """
+
+    @param file: as a text string, full path
+    @param destination: as a text string, path relative to main folder
+    @param add_project_path: is the destination folder abs or relative?
+    @return:
+    """
+    make_dir(destination, add_project_path)
+    shutil.copy(file, destination)
+    return None
+
+def add_timestamp_to_filename(file_path=""):
+    """
+
+    @param file_path: takes a file name and adds a timestamp before the extension: test.txt -> text_20150512.txt
+    @return:
+    """
+
+    filename = os.path.basename(file_path) #Just get the directory without the file name
+    filename_base, ext = filename.split(".")
+    return filename_base + "_" + arrow.now().format("YYYYMMDD")+"."+ext
+
+def remove_timestamp_from_filename(file_path=""):
+    """
+
+    @param file_path: opposite of add timestamp: text_20150512.txt -> test.txt
+    @return:
+    """
+
+    filename = os.path.basename(file_path) #Just get the directory without the file name
+    filename_tag, ext = filename.split(".")
+    filename_base = filename_tag.split("_")[-1]
+    return filename_base + "." + ext
 
 # #
 # Web
