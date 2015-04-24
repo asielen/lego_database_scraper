@@ -9,6 +9,8 @@
       <column name="bl_category_id" sqlType="INTEGER" precision="2000000000" scale="10" nullable="true" jdbcType="4"/>
       <column name="bl_category_name" sqlType="TEXT" precision="2000000000" scale="10" nullable="true" jdbcType="12"/>
       <primary-key columns="id"/>
+      <exported-key name="#FAKE_parts_1" table="parts" schema="" catalog="" columns="bl_category"/>
+      <index name="bl_category_id" unique="true" columns="bl_category_id"/>
     </table>
     <table name="bl_inventories" schema="" catalog="" type="TABLE">
       <column name="id" sqlType="INTEGER" precision="2000000000" scale="10" nullable="true" jdbcType="4"/>
@@ -105,6 +107,7 @@
       <column name="bl_category" sqlType="INTEGER" precision="2000000000" scale="10" nullable="true" jdbcType="4"/>
       <column name="bl_type" sqlType="TEXT" precision="2000000000" scale="10" nullable="true" jdbcType="12"/>
       <primary-key columns="id"/>
+      <foreign-key name="#FAKE_parts_1" columns="bl_category" ref-table="bl_categories" ref-schema="" ref-catalog="" ref-columns="id" update-rule="3" delete-rule="3" deferrability="1"/>
       <exported-key name="#FAKE_bl_inventories_2" table="bl_inventories" schema="" catalog="" columns="piece_id"/>
       <exported-key name="#FAKE_bo_inventories_2" table="bo_inventories" schema="" catalog="" columns="piece_id"/>
       <exported-key name="#FAKE_part_alternates_1" table="part_alternates" schema="" catalog="" columns="part_id"/>

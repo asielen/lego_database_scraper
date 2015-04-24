@@ -25,7 +25,7 @@ def _initiate_database():
         con.execute("CREATE TABLE IF NOT EXISTS bl_categories(id INTEGER PRIMARY KEY,"
                     "bl_category_id INTEGER, "
                     "bl_category_name TEXT);")
-        con.execute("CREATE UNIQUE INDEX IF NOT EXISTS bl_category_id ON parts(bl_categories)")
+        con.execute("CREATE UNIQUE INDEX IF NOT EXISTS bl_category_id ON bl_categories(bl_category_id)")
 
         con.execute("CREATE TABLE IF NOT EXISTS price_types(id INTEGER PRIMARY KEY,"
                     "price_type TEXT);")

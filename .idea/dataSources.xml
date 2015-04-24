@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="DataSourceManagerImpl" format="xml" hash="1043457149">
+  <component name="DataSourceManagerImpl" format="xml" hash="2950848699">
     <data-source source="LOCAL" name="lego_eval" uuid="29a30c00-7e0e-4aa7-b81b-f991494e30f6">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>

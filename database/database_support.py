@@ -49,6 +49,16 @@ def run_batch_sql(sql_text, values):
             for r in values:
                 syt.log_note("Can't insert row: {}".format(syt.list2string(r)))
 
+def run_many_sql(sql_list):
+    con = lite.connect(database)
+
+    with con:
+        c = con.cursor()
+        try:
+            for sql_text in sql_list:
+                c.execute(sql_text)
+        except Exception as e:
+            syt.log_error("Database Exception {}".format(e))
 
 def run_sql(sql_text, insert_list=None, one=False):
     con = lite.connect(database)
