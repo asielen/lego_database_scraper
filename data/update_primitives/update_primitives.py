@@ -11,6 +11,7 @@ def update_colors(update=False):
     Pull colors from bricklink and rebrickable and add them to the database
     @param update: If true, start from scratch - usually a bad idea, would screw up joins and lookups
     @return:
+    if update=False this is safe
     """
     syt.log_info("$$$ Updating Colors from BL and RE")
     color_list = data.get_colors()  # [bl_id, re_id, bo_id, ldraw_id, lego_id, bl_name, lego_name, hex]
@@ -35,8 +36,7 @@ def update_colors(update=False):
         bl_current_colors = info.read_bl_colors()
         re_current_colors = info.read_re_colors()
         for c in color_list:
-            if c[0] in bl_current_colors or c[
-                1] in re_current_colors:  # Only update colors that are not already in the database
+            if c[0] in bl_current_colors or c[1] in re_current_colors:  # Only update colors that are not already in the database
                 syt.log_debug("Color {} Already in db".format(c[5]))  # This keeps us from overwriting the id connections
                 continue
             else:

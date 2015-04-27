@@ -35,6 +35,7 @@ def update_sets(check_update=1):
 def init_categories():
     """
     Pull categories from bricklink and insert them, no need for an update tag because it doesn't delete anything
+    Now safe because of the index on the bl_category column
     @return:
     """
     syt.log_info("$$$ Updating categories")
@@ -77,6 +78,7 @@ def init_parts():
     """
     from a blank database - update all piece designs by pulling them from a master piece file on bricklink.com
     @return:
+    Update safe because of the unique index
     """
     syt.log_info("$$$ Building Parts Table")
     pieces = blapi.pull_part_catalog()
@@ -132,6 +134,8 @@ def init_minifigs():
 def init_part_color_codes():
     """
     Pull the color part codes from bricklink and insert them into the database
+    Have to update colors first
+    Safe to update if colors are updated first
     @return:
     """
     syt.log_info("$$$ Adding part color codes from BL")
@@ -321,20 +325,6 @@ def add_part_to_database(part_num):
     @return:
     """
     secondary_parts.add_part_to_database(part_num)
-    # Todo: see if any of this is needed
-    # # These calls shouldn't need to be called every time we add one
-    # part_database = info.read_bl_parts()  # Used so we don't do double duty and update parts in the system
-    #
-    # if part_num in part_database: return
-    #
-    # bl_categories = info.read_bl_categories()  # To convert the category ids to table ids
-    #
-    # part_row = data.get_piece_info(bl_id=part_num)
-    # part_row[7] = bl_categories[syt.int_zero(part_row[7])]  # Adjust the category
-    #
-    # update.add_part_to_database(part_row)
-    #
-    # syt.debug("Adding {} to part db (Values: {})".format(part_num, syt.list2string(part_row)))
 
     return get_bl_piece_id(part_num)
 

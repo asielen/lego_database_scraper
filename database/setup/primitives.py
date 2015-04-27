@@ -11,18 +11,18 @@ if __name__ == "__main__": syt.setup_logger()
 
 #
 # Primitive: {these initiate the database from nothing}
-# * init_colors()
+# * init_colors()  SAFE
 # @ Download colors
-# * init_parts()
+# * init_parts()  SAFE
 # @ Download parts from Bricklink
 # @ Download parts from Rebrickable
-# * init_price_types()
+# * init_price_types() SAFE
 # @ Internal, no need to download
-# * init_bl_categories()
-#         @ Download categories from Bricklink
+# * init_bl_categories() SAFE
+# @ Download categories from Bricklink
 
 
-def init_colors(update=0):
+def init_colors(update=False):
     """
     Download and add colors to the database
     @return:

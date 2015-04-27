@@ -21,7 +21,7 @@ def _initiate_database():
     con = lite.connect(db.database)
     with con:
         # ### Brick Link Info Tables
-        con.execute("PRAGMA FOREIGN_KEYS=1;") # Enforce foreign keys
+
         con.execute("CREATE TABLE IF NOT EXISTS bl_categories(id INTEGER PRIMARY KEY,"
                     "bl_category_id INTEGER, "
                     "bl_category_name TEXT);")
@@ -164,4 +164,5 @@ def _initiate_database():
                     "record_date INTEGER,"
                     "FOREIGN KEY (set_id) REFERENCES sets(id));")
         con.execute("CREATE UNIQUE INDEX IF NOT EXISTS rating_type_date_idx ON bs_ratings(set_id, record_date)")
+        con.execute("PRAGMA FOREIGN_KEYS=1;") # Enforce foreign keys
         syt.log_info("%%% Database Created")

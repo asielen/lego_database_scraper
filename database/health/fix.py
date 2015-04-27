@@ -78,4 +78,11 @@ def fix_no_unique_key_in_bl_categories():
 
 
 if __name__ == "__main__":
-    fix_no_unique_key_in_bl_categories()
+    syt.log_info("Fixing Database")
+    # fix_no_unique_key_in_bl_categories()
+
+
+
+
+
+
