@@ -11,6 +11,7 @@ import arrow
 
 
 
+
 # Internal - Should have none outside system
 from system import base
 from system.system_database import database
@@ -75,7 +76,7 @@ def get_inflation_rate(year_start, year_end=2015):
 
         c.execute("SELECT cpi FROM inflation WHERE year=?", (year_start,))
         year_start_raw = c.fetchone()
-        if year_start_raw is None: return None
+        if year_start_raw is None: return 0
         start_cpi = year_start_raw[0]
 
         c.execute("SELECT cpi FROM inflation WHERE year=?", (year_end,))

@@ -10,6 +10,7 @@ import arrow
 
 
 
+
 # Internal
 # from data import update_secondary
 import database.database_support as db
@@ -1791,6 +1792,8 @@ class HistoricPriceAnalyser(object):
                         new_dict[db] = round(
                             (syt.float_zero(self._working_data[db]) / self._working_data[previous_value]) - 1, 6)
                     except ZeroDivisionError:
+                        new_dict[db] = None
+                    except TypeError:
                         new_dict[db] = None
         self._working_data = syt.OrderedDictV2(sorted(new_dict.items(), key=lambda t: t[0]))
 
