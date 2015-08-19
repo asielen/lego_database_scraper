@@ -5,6 +5,8 @@ __author__ = 'andrew.sielen'
 
 # http://www.bricklink.com/catalogItem.asp?P=4733
 # http://www.bricklink.com/cataloglist.asp?&searchNo=Y&q=30063&catLike=W&catType=P <- Piece lookup
+# New Site
+# http://alpha.bricklink.com/pages/clone/catalogitem.page?P=30103
 
 # external
 import re
@@ -191,7 +193,7 @@ def _check_minifig(soup, design_num):
 
 def _search_piece(design_num, verbose=0):
     soup = None
-    url = "http://www.bricklink.com/catalogItem.asp?P={0}".format(design_num)
+    url = "http://alpha.bricklink.com/catalogItem.asp?P={0}".format(design_num)
     soup = _verify_valid_url(url, verbose)
     if soup is not None:
         return soup
@@ -202,17 +204,17 @@ def _search_piece(design_num, verbose=0):
         return soup
 
     # minifigs
-    url = "http://www.bricklink.com/catalogItem.asp?M={0}".format(design_num)
+    url = "http://alpha.bricklink.com/catalogItem.asp?M={0}".format(design_num)
     soup = _verify_valid_url(url, verbose)
     if soup is not None:
         return soup
     # gear
-    url = "http://www.bricklink.com/catalogItem.asp?G={0}".format(design_num)
+    url = "http://alpha.bricklink.com/catalogItem.asp?G={0}".format(design_num)
     soup = _verify_valid_url(url, verbose)
     if soup is not None:
         return soup
     # books
-    url = "http://www.bricklink.com/catalogItem.asp?B={0}".format(design_num)
+    url = "http://alpha.bricklink.com/catalogItem.asp?B={0}".format(design_num)
     soup = _verify_valid_url(url, verbose)
 
     return soup

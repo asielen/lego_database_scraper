@@ -11,6 +11,7 @@ import arrow
 
 
 
+
 # Internal
 # from data import update_secondary
 import database.database_support as db
@@ -44,7 +45,7 @@ class SetInfo(object):
                     s_num = SetInfo.expand_set_num(set_info)[2]
 
         if s_num is not None:
-            # Todo: Cant add _set with this function here because it causes a circular import
+            # Todo: Cant add set with this function here because it causes a circular import
             set_info_list = SetInfo.get_set_info(set_info)  # , new=True)
 
         if set_info_list is None:
