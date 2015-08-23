@@ -381,3 +381,4 @@ def get_basestats(o_set, type=1):
 if __name__ == "__main__":
     part = input("part num? ")
     print(get_piece_info(bl_id=part))
+    print(get_piece_info(re_id=part))

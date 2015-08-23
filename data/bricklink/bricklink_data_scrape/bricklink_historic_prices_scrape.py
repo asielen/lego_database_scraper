@@ -42,7 +42,7 @@ def add_pieceInfo2PriceInfo(piece_dict, price_dict):
 
 def get_pieceout_new(set_num_primary, set_num_secondary=1):
     """
-        Return a dictionary of the price of a pieced out new _set at the time this is run
+        Return a dictionary of the price of a pieced out new set at the time this is run
     """
     url = "http://www.bricklink.com/catalogPOV.asp?itemType=S&itemNo={0}&itemSeq={1}&itemQty=1&breakType=M&itemCondition=N&incInstr=Y&incBox=Y&incParts=Y&breakSets=Y".format(
         set_num_primary, set_num_secondary)
@@ -54,7 +54,7 @@ def get_pieceout_new(set_num_primary, set_num_secondary=1):
 
 def get_pieceout_used(set_num_primary, set_num_secondary=1):
     """
-        Return a dictionary of the price of a pieced out new _set at the time this is run
+        Return a dictionary of the price of a pieced out new set at the time this is run
     """
     url = "http://www.bricklink.com/catalogPOV.asp?itemType=S&itemNo={0}&itemSeq={1}&itemQty=1&breakType=M&itemCondition=U&incInstr=Y&incBox=Y&incParts=Y&breakSets=Y".format(
         set_num_primary, set_num_secondary)
@@ -66,7 +66,7 @@ def get_pieceout_used(set_num_primary, set_num_secondary=1):
 # Get current market get_prices
 def get_set_prices(set_num_primary, set_num_secondary=1):
     """
-        From _set number, open the bricklink page and split it into current and _parse_historic_prices
+        From set number, open the bricklink page and split it into current and _parse_historic_prices
         Return: Dictionary {Historic:{},Current:{}}
     """
     url = "http://www.bricklink.com/catalogPG.asp?S={0}-{1}&colorID=0&viewExclude=Y&v=D&cID=Y".format(set_num_primary,
@@ -313,8 +313,10 @@ if __name__ == "__main__":
     import pprint as pp
 
     def main():
-        SET = input("What is the _set number?: ")
-        pp.pprint(get_all_prices(SET))
+        from data.data_classes import SetInfo
+        SET = SetInfo.input_set_num(type=1)
+        #SET = input("What is the set number?: ")
+        pp.pprint(get_all_prices(SET[0], SET[1]))
         main()
 
 

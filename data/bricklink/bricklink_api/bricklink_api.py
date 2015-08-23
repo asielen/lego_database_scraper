@@ -2,13 +2,14 @@
 
 import system as syt
 from data.data_classes import SetInfo
+
 if __name__ == "__main__": syt.setup_logger()
 
 # TODO: Add return specs for all api calls
 
 # parameter info
 # itemType =
-# S : _set
+# S : set
 # P : parts
 # M : minifig
 # B : books

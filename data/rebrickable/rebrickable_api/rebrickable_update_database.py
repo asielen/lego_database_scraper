@@ -65,8 +65,8 @@ def update_set_inventories(check_update=1):
 
     timer = syt.process_timer(name="Add Re Inventories")
 
-    print("")
-    print("")
+    #print("")
+    #print("")
     syt.log_info("Running Rebrickable Update")
 
     sets_to_skip = []
@@ -80,7 +80,7 @@ def update_set_inventories(check_update=1):
             if check_update == 0 or not syt.old_data(last_updated[row[0]]):
                 sets_to_skip.append(row[0])
                 continue
-        print("2222 {} | {} SET {}".format(idx, len(parts_to_insert), row[0]))
+        # print("2222 {} | {} SET {}".format(idx, len(parts_to_insert), row[0]))
         rows_to_scrape.append(row)
 
         # Get pieces

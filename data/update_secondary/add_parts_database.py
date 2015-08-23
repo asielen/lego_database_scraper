@@ -109,7 +109,7 @@ def add_parts_to_database(part_id_list, type="bl"):
             else:
                 parts_to_scrape.append(part)
                 # parts_to_insert.extend(_parse_get_re_pieceinfo(part)) #Todo this is a test just to see where an error is
-            if idx > 0 and idx % 150 == 0:
+            if idx > 0 and idx % 75 == 0:
                 syt.log_info("@@@ Running Pool {}".format(idx))
                 parts_to_insert.extend(pool.map(_parse_get_re_pieceinfo, parts_to_scrape))
                 timer.log_time(len(parts_to_scrape), total_ids - idx)

@@ -19,9 +19,9 @@ def get_all_daily_set_data(set_list):
     @return: success!
     """
 
-    sets = info.read_bl_set_num_id()  # Gets a list of sets and _set ids
+    sets = info.read_bl_set_num_id()  # Gets a list of sets and set ids
 
-    last_updated = info.get_last_updated_for_daily_stats() # List of when each _set was last updated
+    last_updated = info.get_last_updated_for_daily_stats() # List of when each set was last updated
 
     num_sets = len(set_list)  # Total number of sets to update
 
@@ -33,11 +33,11 @@ def get_all_daily_set_data(set_list):
 
     for idx, set_num in enumerate(set_list):
         if set_num in sets:
-            if last_updated[set_num]:  # IF TRUE = if the _set was updated today
+            if last_updated[set_num]:  # IF TRUE = if the set was updated today
                 continue
             set_daily_to_scrape.append((sets[set_num], set_num))
         else:
-            # Todo Add _set to database
+            # Todo Add set to database
             pass
         # Scrape Pieces
 
@@ -94,7 +94,7 @@ def _get_daily_set_data(set_tags):
     price_dict = BLDS.get_all_prices(set_num, set_seq)
     daily_data = BS.get_daily_data(set_num, set_seq)
 
-    return {set_tags[0]: (price_dict, daily_data)}  # Pass set_id with _set data
+    return {set_tags[0]: (price_dict, daily_data)}  # Pass set_id with set data
 
 
 def _add_daily_set_data_to_database(set_data):

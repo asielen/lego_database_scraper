@@ -57,7 +57,7 @@ def add_daily_set_data_to_database(daily_data):
         'VALUES (?,?,?,?,?,?,?,?,?,?)', cprices_list_to_insert)
     #Add Raitings
     db.batch_update(
-        'INSERT OR IGNORE INTO bs_ratings(set_id, want, own, _rating, record_date) VALUES (?,?,?,?,?)',
+        'INSERT OR IGNORE INTO bs_ratings(set_id, want, own, rating, record_date) VALUES (?,?,?,?,?)',
         cratings_list_to_insert)
 
     #Update Availible Dates and updated date

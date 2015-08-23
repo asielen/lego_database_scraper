@@ -33,7 +33,7 @@ def get_bl_piece_info(design_num, design_name=None, default='dict'):
     bl_piece_info = get_blPieceInfo(design_num)
     if bl_piece_info is None and default is None: return None  # Todo what does default do?
     design_alts = None
-    if bl_piece_info is not None:
+    if bl_piece_info is not None and bl_piece_info != {}:
         piece_info["design_num"] = bl_piece_info['design_num'][0]
         piece_info["weight"] = bl_piece_info['weight']
         if design_name is None or design_name is '':
@@ -51,7 +51,7 @@ def get_bl_piece_info(design_num, design_name=None, default='dict'):
         add_part_design_alt(design_num, design_alts)
     return piece_info
 
-
+# Todo: This should probably not here here, should be where the rest of the database stuff is
 def add_part_design_alt(primary, alts):
     """
     Add the design alt to the database
@@ -75,10 +75,30 @@ def get_blPieceInfo(design_num):
     if soup is None:
         return None
 
+
+    # Get Name
+    name =  ""
+    parent_tags0 = soup.find(id="item-name-title")
+    if parent_tags0 == None: return {}
+    name = parent_tags0.string.strip()
+
+    # Get weight
+    weight = 0
+    parent_tags1 = soup.find("td", {"width": "38%", "valign": "TOP"})
+    if not parent_tags1: return {}
+    children_tags_text = parent_tags1.get_text()
+    if "Weight" in children_tags_text:
+        start = children_tags_text.index("Weight") + len("Weight: ")
+        end = children_tags_text.index("\n", start) - 1 # less 1 because of the g for grams
+        weight = syt.float_null(children_tags_text[start:end])
+        children_tags_text = children_tags_text[end+len("g\n"):]
+
+
+
     # Find Type and Categories
     piece_type = "P"
     category = None
-    types_tag = soup.find("font", {"face": "Arial"})
+    types_tag = soup.find("td", {"style": "background-color: #eeeeee; padding: 5px 5px 8px 5px; font-weight: bold;"})
     if types_tag is not None:
         types_links = types_tag.findAll("a")
         if len(types_links) >= 3:
@@ -89,52 +109,48 @@ def get_blPieceInfo(design_num):
     if types_tag is None:
         return None
 
-    if piece_type == "M":
-        return _check_minifig(soup, design_num)
-    if piece_type == "G" or piece_type == "B":
-        parent_tags0 = soup.find("td", {"colspan": "3", "align": "CENTER"})
-    else:
-        parent_tags0 = soup.find("td", {"colspan": "4", "align": "CENTER"})
-    if parent_tags0 is None:
-        return None
 
-    parent_tags1 = parent_tags0.find("tr", {"align": "CENTER", "valign": "TOP"})
-    if parent_tags1 is None:
-        return None
-    child_tags0 = parent_tags1.findAll("td")
+    # if piece_type == "M":
+    #     return _check_minifig(soup, design_num)
 
-    weight_tag = child_tags0[3].get_text().split(":")[1]
-    # Pull the weight from the tag that contains the weight.
-    # EX: <td width="20%"><font color="#666666">Weight (in grams):</font><br>0.45</td>
-    weight = syt.float_zero(weight_tag)
 
-    # Find Name
-    name_tag = soup.find("font", {"face": "Geneva,Arial,Helvetica"})
-    name = name_tag.get_text()
+    # if piece_type == "G" or piece_type == "B":
+    #     parent_tags0 = soup.find("td", {"colspan": "3", "align": "CENTER"})
+    # else:
+    #     parent_tags0 = soup.find("td", {"colspan": "4", "align": "CENTER"})
+    # if parent_tags0 is None:
+    #     return None
+    #
+    # parent_tags1 = parent_tags0.find("tr", {"align": "CENTER", "valign": "TOP"})
+    # if parent_tags1 is None:
+    #     return None
+    # child_tags0 = parent_tags1.findAll("td")
+    #
+    # weight_tag = child_tags0[3].get_text().split(":")[1]
+    # # Pull the weight from the tag that contains the weight.
+    # # EX: <td width="20%"><font color="#666666">Weight (in grams):</font><br>0.45</td>
+    # weight = syt.float_zero(weight_tag)
+    #
+    # # Find Name
+    # name_tag = soup.find("font", {"face": "Geneva,Arial,Helvetica"})
+    # name = name_tag.get_text()
 
 
 
     # Find Alternate Design IDs
-
-    parent_tags2 = soup.find("td", {"align": "RIGHT"})
+    design_ids = []
+    parent_tags2 = soup.find("span", {"style": "display: inline-block; margin-top: 8px; font-family: Tahoma,Arial; font-size:13px;"})
     if parent_tags2 is None:
         return {'weight': weight, 'design_num': [design_num], 'name': name, 'piece_type': piece_type,
                 'category': category}
     else:
         design_ids = []
 
-        main_id_tags = soup.find("font", {"face": "Arial"})  # Find the _main design id
-        main_design_id = main_id_tags.get_text().split(":")[-1].strip()
-        if main_design_id is None:
+        design_id_string = parent_tags2.get_text().replace("Item No:"," ").replace("Alternate"," ").replace(","," ")
+        design_id_list = design_id_string.split(" ")
+        design_ids = [x.strip() for x in design_id_list if x.strip() != '']
+        if design_id_list is None:
             return None  # No proper design ID
-
-        design_ids.append(main_design_id)  # Add the _main id
-
-        alt_id_tags = parent_tags2.find("td", {"align": "CENTER"})  # Find the alternative design id
-        if alt_id_tags is not None:
-            design_id_text = alt_id_tags.get_text()
-            design_id_tags0 = design_id_text.split(":")[1]
-            design_ids.append(design_id_tags0)  # Add the alternative Ids
 
         return {'weight': weight, 'design_num': design_ids, 'name': name, 'piece_type': piece_type,
                 'category': category}
@@ -157,43 +173,43 @@ def _parse_type_category(text):
     except:
         return 0  # unknown category
 
-
-def _check_minifig(soup, design_num):
-    parent_tags0 = soup.find("td", {"colspan": "3", "align": "CENTER"})
-    if parent_tags0 is None:
-        return None
-
-    parent_tags1 = parent_tags0.find("tr", {"align": "CENTER", "valign": "TOP"})
-    if parent_tags1 is None:
-        return None
-
-    child_tags0 = parent_tags1.findAll("td")
-    weight_tag = child_tags0[2].get_text().split(":")[1]
-    # Pull the weight from the tag that contains the weight.
-    # EX: <td width="20%"><font color="#666666">Weight (in grams):</font><br>0.45</td>
-    weight = syt.float_zero(weight_tag)
-
-    # Find Type and Categories
-    type = "M"
-    category = None
-    types_tag = soup.find("font", {"face": "Arial"})
-    if types_tag is not None:
-        types_links = types_tag.findAll("a")
-        if len(types_links) >= 3:
-            type = _parse_type_category(str(types_links[1]))
-            category = _parse_type_category(str(types_links[2]))
-
-    # Find Name
-    name = None
-    name_tag = soup.find("font", {"face": "Geneva,Arial,Helvetica"})
-    if name_tag is not None:
-        name = name_tag.get_text()
-    return {'weight': weight, 'design_num': [design_num], 'name': name, 'piece_type': type, 'category': category}
+# # I don't think this is needed anymore
+# def _check_minifig(soup, design_num):
+#     parent_tags0 = soup.find("td", {"colspan": "3", "align": "CENTER"})
+#     if parent_tags0 is None:
+#         return None
+#
+#     parent_tags1 = parent_tags0.find("tr", {"align": "CENTER", "valign": "TOP"})
+#     if parent_tags1 is None:
+#         return None
+#
+#     child_tags0 = parent_tags1.findAll("td")
+#     weight_tag = child_tags0[2].get_text().split(":")[1]
+#     # Pull the weight from the tag that contains the weight.
+#     # EX: <td width="20%"><font color="#666666">Weight (in grams):</font><br>0.45</td>
+#     weight = syt.float_zero(weight_tag)
+#
+#     # Find Type and Categories
+#     type = "M"
+#     category = None
+#     types_tag = soup.find("font", {"face": "Arial"})
+#     if types_tag is not None:
+#         types_links = types_tag.findAll("a")
+#         if len(types_links) >= 3:
+#             type = _parse_type_category(str(types_links[1]))
+#             category = _parse_type_category(str(types_links[2]))
+#
+#     # Find Name
+#     name = None
+#     name_tag = soup.find("font", {"face": "Geneva,Arial,Helvetica"})
+#     if name_tag is not None:
+#         name = name_tag.get_text()
+#     return {'weight': weight, 'design_num': [design_num], 'name': name, 'piece_type': type, 'category': category}
 
 
 def _search_piece(design_num, verbose=0):
     soup = None
-    url = "http://alpha.bricklink.com/catalogItem.asp?P={0}".format(design_num)
+    url = "http://alpha.bricklink.com/pages/clone/catalogitem.page?P={0}".format(design_num)
     soup = _verify_valid_url(url, verbose)
     if soup is not None:
         return soup
@@ -204,17 +220,17 @@ def _search_piece(design_num, verbose=0):
         return soup
 
     # minifigs
-    url = "http://alpha.bricklink.com/catalogItem.asp?M={0}".format(design_num)
+    url = "hhttp://alpha.bricklink.com/pages/clone/catalogitem.page?M={0}".format(design_num)
     soup = _verify_valid_url(url, verbose)
     if soup is not None:
         return soup
     # gear
-    url = "http://alpha.bricklink.com/catalogItem.asp?G={0}".format(design_num)
+    url = "http://alpha.bricklink.com/pages/clone/catalogitem.page?G={0}".format(design_num)
     soup = _verify_valid_url(url, verbose)
     if soup is not None:
         return soup
     # books
-    url = "http://alpha.bricklink.com/catalogItem.asp?B={0}".format(design_num)
+    url = "http://alpha.bricklink.com/pages/clone/catalogitem.page?B={0}".format(design_num)
     soup = _verify_valid_url(url, verbose)
 
     return soup
@@ -224,8 +240,8 @@ def _verify_valid_url(url, verbose=0):
     if verbose == 1: syt.log_debug(url)
     soup = syt.soupify(url)
     if soup is not None:
-        parent_tags0 = soup.find("font", {"size": "+2"})
-        parent_tags1 = soup.find(text="Search Results")
+        parent_tags0 = soup.find("div", {"class",  "error-section"})
+        parent_tags1 = soup.find("div", {"id",  "idNoResults"})
         if parent_tags0 is None and parent_tags1 is None:
             return soup
         else:

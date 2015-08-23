@@ -1,5 +1,7 @@
 # Internal
 import system as syt
+import system.soupify.soupify
+
 if __name__ == "__main__": syt.setup_logger()
 
 KEY = '12da35f38a061ef52efc56eba9267ed7c9a8f3d4b5c54c396729378788819a0b'
@@ -12,7 +14,7 @@ def pull_catalog_list(type=None):
     @return:
     """
     parameters = {'key': KEY, '_type': type}
-    return syt.read_json_from_url(url + '/list', params=parameters)
+    return system.soupify.soupify.read_json_from_url(url + '/list', params=parameters)
 
 
 def pull_catalog_item_info(boid):
@@ -21,7 +23,7 @@ def pull_catalog_item_info(boid):
     @return:
     """
     parameters = {'key': KEY, 'boid': boid}
-    return syt.read_json_from_url(url + '/lookup', params=parameters)
+    return system.soupify.soupify.read_json_from_url(url + '/lookup', params=parameters)
 
 
 def pull_search_ID(lookup_id, type='Part', id_type=None):
@@ -30,7 +32,7 @@ def pull_search_ID(lookup_id, type='Part', id_type=None):
     @return:
     """
     parameters = {'key': KEY, 'id': lookup_id, '_type': type, 'id_type': id_type}
-    return syt.read_json_from_url(url + '/id_lookup', params=parameters)
+    return system.soupify.soupify.read_json_from_url(url + '/id_lookup', params=parameters)
 
 
 def pull_bulk(csvlist):
@@ -39,7 +41,7 @@ def pull_bulk(csvlist):
     @return:
     """
     parameters = {'key': KEY, 'boids': csvlist}
-    return syt.read_json_from_url(url + '/bulk_lookup', params=parameters)
+    return system.soupify.soupify.read_json_from_url(url + '/bulk_lookup', params=parameters)
 
 
 def pull_set_inventory(boid):
@@ -48,7 +50,7 @@ def pull_set_inventory(boid):
     @return:
     """
     parameters = {'key': KEY, 'boid': boid}
-    return syt.read_json_from_url(url + '/inventory', params=parameters)
+    return system.soupify.soupify.read_json_from_url(url + '/inventory', params=parameters)
 
 
 def pull_colors():
@@ -56,7 +58,7 @@ def pull_colors():
     @return:
     """
     parameters = {'key': KEY}
-    return syt.read_json_from_url(url + '/color_list', params=parameters)
+    return system.soupify.soupify.read_json_from_url(url + '/color_list', params=parameters)
 
 
 def pull_data_types():
@@ -64,7 +66,7 @@ def pull_data_types():
     @return:
     """
     parameters = {'key': KEY}
-    return syt.read_json_from_url(url + '/data_type_list', params=parameters)
+    return system.soupify.soupify.read_json_from_url(url + '/data_type_list', params=parameters)
 
 
 def pull_conditions():
@@ -72,7 +74,7 @@ def pull_conditions():
     @return:
     """
     parameters = {'key': KEY}
-    return syt.read_json_from_url(url + '/condition_list', params=parameters)
+    return system.soupify.soupify.read_json_from_url(url + '/condition_list', params=parameters)
 
 
 def main_menu():

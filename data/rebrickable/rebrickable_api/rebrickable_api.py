@@ -1,6 +1,9 @@
 # internal
+import time
+
 from data.data_classes import SetInfo
 import system as syt
+
 if __name__ == "__main__": syt.setup_logger()
 
 KEY = 'LmtbQqIRtP'
@@ -101,6 +104,10 @@ def pull_piece_info(part_id):
     @return: [re_id, bl_id, name, alt_ids, element_ids] # The last two are just to help when looking it up
     """
     piece_info = _pull_piece_info(part_id)  # in xml format
+    if piece_info is None:
+        print("No piece info, trying again")
+        time.sleep(.1)
+        piece_info = _pull_piece_info(part_id)  # in xml format
     bl_id = piece_info.find('bricklink')
     alt_ids = None
     element_ids = None
