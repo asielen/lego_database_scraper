@@ -165,7 +165,7 @@ class SetCollection(object):
             return self.set_data_lookups["calc_unique_piece_count"]
         query = ("SELECT set_num, unique_pieces FROM sets AS S JOIN (SELECT bl_inventories.set_id, "
                  "COUNT(bl_inventories.quantity) AS unique_pieces FROM bl_inventories "
-                 "JOIN parts ON bl_inventories.piece_id = parts.id",
+                 "JOIN parts ON bl_inventories.piece_id = parts.id ",
                  "GROUP BY bl_inventories.set_id) AS U ON S.id = U.set_id")
         self.set_data_lookups["calc_unique_piece_count"] = self._run_query(query[0], query[1])
         return self.set_data_lookups["calc_unique_piece_count"]

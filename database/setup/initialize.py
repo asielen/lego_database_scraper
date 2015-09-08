@@ -164,5 +164,17 @@ def _initiate_database():
                     "record_date INTEGER,"
                     "FOREIGN KEY (set_id) REFERENCES sets(id));")
         con.execute("CREATE UNIQUE INDEX IF NOT EXISTS rating_type_date_idx ON bs_ratings(set_id, record_date)")
+
+        con.execute("CREATE TABLE IF NOT EXISTS theme_categories(id INTEGER PRIMARY KEY,"
+                    "theme_category TEXT )")
+        con.execute("CREATE UNIQUE INDEX IF NOT EXISTS theme_cat_idx ON theme_categories(theme_category)")
+
+        con.execute("CREATE TABLE IF NOT EXISTS themes(id INTEGER PRIMARY KEY,"
+                    "theme TEXT, "
+                    "theme_category_id INTEGER,  "
+                    "FOREIGN KEY (theme_category_id) REFERENCES themes(id));")
+        con.execute("CREATE UNIQUE INDEX IF NOT EXISTS theme_idx ON themes(theme)")
+
         con.execute("PRAGMA FOREIGN_KEYS=1;") # Enforce foreign keys
+
         syt.log_info("%%% Database Created")

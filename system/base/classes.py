@@ -1,6 +1,8 @@
 __author__ = 'andrew.sielen'
 
 import collections
+
+
 ###
 # Simple classes that don't deserve their own file
 ###

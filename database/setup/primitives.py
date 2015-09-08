@@ -1,5 +1,3 @@
-# External
-import sqlite3 as lite
 
 # Internal
 import data.bricklink.bricklink_api as blapi
@@ -47,13 +45,35 @@ def init_price_types():
     """
     syt.log_info("$$$ Updating Price Types")
     price_types = (('current_new',), ('current_used',), ('historic_new',), ('historic_used',))
-    con = lite.connect(db.database)
 
-    with con:
-        con.execute(
-            "DELETE FROM price_types")  #This is okay because there are only 4 and they are always in the same order
-        con.executemany("INSERT OR IGNORE INTO price_types(price_type) VALUES (?)", price_types)
+    db.run_batch_sql("INSERT OR IGNORE INTO price_types(price_type) VALUES (?)", price_types)
     syt.log_info("%%% Price Types Updated")
+
+def init_theme_categories():
+    """
+    Update  theme_categories
+        –  NEEDS to have a 'theme_categories.csv' file in  the  system_files  folder
+    @return:
+    """
+    syt.log_info("$$$ Initializing Theme Categories")
+    theme_categories = (('Action Figures',), ('Educational',), ('Large Bricks',), ('Licensed',), ('Miscellaneous',), ('Standard',), ('Technic',))
+    db.run_batch_sql("INSERT OR IGNORE INTO theme_categories(theme_category) VALUES (?)", theme_categories)
+    syt.log_info("$$$ Theme Categories Initialized")
+
+    syt.log_info("$$$ Mapping Theme Categories")
+    theme_category_map = syt.list_to_dict(db.run_sql('SELECT theme_category, id FROM theme_categories'))
+    theme_category_map_file = syt.make_project_path("/system_files/theme_categories.csv")
+    print(theme_category_map_file)
+    theme_to_category_list = []
+    with open(theme_category_map_file) as csvfile:
+        for row in csvfile:
+            row_list = row.strip().split(",")
+            if row_list[0] == 'Theme':
+                continue
+            else:
+                theme_to_category_list.append((row_list[0], theme_category_map[row_list[1]]))
+    db.run_batch_sql("INSERT OR IGNORE INTO themes('theme', 'theme_category_id') VALUES (?,?)", theme_to_category_list)
+    syt.log_info("$$$ Done Mapping Theme Categories")
 
 
 def init_bl_categories():
@@ -68,6 +88,7 @@ def run_primitives():
     init_colors()
     init_price_types()
     init_bl_categories()
+    init_theme_categories()
     init_parts()
 
 
@@ -83,7 +104,8 @@ if __name__ == "__main__":
             ("Initiate Colors", menu_init_colors),
             ("Initiate Parts", menu_init_parts),
             ("Initiate Pricetypes", menu_init_price_types),
-            ("Initiate BL Categories", menu_init_bl_categories)
+            ("Initiate BL Categories", menu_init_bl_categories),
+            ("Initiate Theme Categories", menu_init_theme_categories)
         )
 
         syt.Menu(name="– Primitives testing –", choices=options, quit_tag="Exit").run()
@@ -92,16 +114,17 @@ if __name__ == "__main__":
     def menu_init_colors():
         init_colors()
 
-
     def menu_init_parts():
         init_parts()
-
 
     def menu_init_price_types():
         init_price_types()
 
     def menu_init_bl_categories():
         init_bl_categories()
+
+    def menu_init_theme_categories():
+        init_theme_categories()
 
     if __name__ == "__main__":
         main_menu()
