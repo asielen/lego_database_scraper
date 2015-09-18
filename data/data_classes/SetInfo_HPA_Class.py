@@ -12,6 +12,7 @@ import arrow
 
 
 
+
 # Internal
 # from data import update_secondary
 import database.database_support as db
@@ -62,8 +63,12 @@ class SetInfo(object):
         @param set_num:
         @return: the id column num of the _set in the database
         """
-
-        set_info_raw = db.run_sql('SELECT * FROM sets WHERE set_num=?', (set_num.lower(),), one=True)
+        set_info_raw = db.run_sql('SELECT sets.*, t.theme_category FROM sets '
+                                  'JOIN (SELECT theme, theme_category FROM themes '
+                                  'JOIN theme_categories ON theme_categories.id = themes.theme_category_id) '
+                                  'as t ON t.theme=sets.theme '
+                                  'WHERE set_num=?', (set_num.lower(),), one=True)
+        # set_info_raw = db.run_sql('SELECT * FROM sets WHERE set_num=?', (set_num.lower(),), one=True)
 
         # Circular import
         # if set_id_raw is None and new is True: #If there is no data, try to add it
@@ -197,6 +202,18 @@ class SetInfo(object):
         @return: return the _set subtheme
         """
         return self.set_info_list[7]
+
+    @property
+    def theme_category(self):
+        """
+
+        @return: the theme category
+        """
+        if len(self.set_info_list) > 27:
+            return self.set_info_list[27]
+        else:
+            syt.log_error("No Category for Theme: {}".format(self.theme))
+            return ""
 
     @subtheme.setter
     def subtheme(self, value):
@@ -804,7 +821,7 @@ class SetInfo(object):
     def set_dump(self, inf_year=2015):
         """
         Used to create base reports in this format:
-        "id, set_num, set_name, set_theme, get_piece_count, get_figures, set_weight, year_released, date_released_us, date_ended_us,
+        "id, set_num, set_name, set_theme, set_theme_category, get_piece_count, get_figures, set_weight, year_released, date_released_us, date_ended_us,
         date_released_uk, date_ended_uk, original_price_us, original_price_uk, age_low, age_high, box_size, box_volume,
         last_updated, last_inv_updated_bl, last_inv_updated_re, last_daily_update, BASE CALC, get_ppp, ppp_uk, get_ppg, ppg_uk,
         avg_piece_weight,INFLATION, price_inf, ppp_inf, ppg_inf, CALC PIECE/WEIGHT, calc_piece_count, calc_unique_piece_count,
@@ -815,6 +832,7 @@ class SetInfo(object):
         test_string += "{},".format(syt.csv_replace_comma(self.set_num))
         test_string += "{},".format(syt.csv_replace_comma(self.name))
         test_string += "{},".format(syt.csv_replace_comma(self.theme))
+        test_string += "{},".format(self.theme_category)
         test_string += "{},".format(self.piece_count)
         test_string += "{},".format(self.figures)
         test_string += "{},".format(self.weight)
@@ -857,7 +875,7 @@ class SetInfo(object):
 
     def make_set_report(self):
         """
-        Creates a csv file of a single _set's info
+        Creates a csv file of a single set's info
 
         """
         # Fields used:
@@ -876,7 +894,7 @@ class SetInfo(object):
         csv_string += "Basic Info,\n"
         csv_string += "Set Num, {},\n".format(syt.csv_replace_comma(self.set_num))
         csv_string += "Set Name, {},\n".format(syt.csv_replace_comma(self.name))
-        csv_string += "Theme, {},\n".format(syt.csv_replace_comma(self.theme))
+        csv_string += "Theme, {}, {}, \n".format(syt.csv_replace_comma(self.theme), self.theme_category)
         csv_string += "Piece Count, {},\n".format(self.piece_count)
         csv_string += "Figures, {},\n".format(self.figures)
         csv_string += "Set Weight, {},\n".format(self.weight)
@@ -962,7 +980,7 @@ class SetInfo(object):
                                                            hpd["current_used.qty_avg"][date])
         syt.log_info('Building: {}-{}-_set-report.csv'.format(syt.get_timestamp(), self.set_num))
         file_path = syt.make_dir('resources/SetInfo_Reports/')
-        with open(file_path+'{}-{}-_set-report.csv'.format(syt.get_timestamp(), self.set_num), "w") as f:
+        with open(file_path+'{}-{}-_set-report.csv'.format(syt.get_timestamp(), self.set_num), "w", encoding='UTF-8') as f:
             f.write(csv_string)
 
 
@@ -978,7 +996,7 @@ class SetInfo(object):
         base_text_string = "\n#### Set Info Class - Test Base Info\n"
         base_text_string += "Database ID: {0}\n".format(self.db_id)
         base_text_string += "Set: {} | {}\n".format(self.set_num, self.name)
-        base_text_string += "Theme: {} - {}\n".format(self.theme, self.subtheme)
+        base_text_string += "Theme: {} - {} : {}\n".format(self.theme, self.subtheme,self.theme_category)
         base_text_string += "Ages: {} to {}\n".format(self.age_low, self.age_high)
         base_text_string += "Released US: {} - From {} to {}\n".format(self.year_released, self.date_released_us,
                                                                        self.date_ended_us)
@@ -1471,12 +1489,14 @@ class HistoricPriceAnalyser(object):
                 syt.log.error("  {}  –   {}".format(arrow.get(dp_list[idx][0]).date(), arrow.get(dp_list[idx - 1][0]).date()))
                 delete_sql = self._convert_select_to_delete(dp_list[idx][0])
                 syt.log_info("SQL string: " + delete_sql)
-                delete_dup = input("Delete the duplicate date? (y/n) ")
-                if delete_dup is "y":
-                    db.run_sql(delete_sql)
-                    return [["rerun", None]]
-                else:
-                    raise ZeroDivisionError
+                # delete_dup = input("Delete the duplicate date? (y/n) ")
+                db.run_sql(delete_sql)
+                return [["rerun", None]]
+                # if delete_dup is "y":
+                #     db.run_sql(delete_sql)
+                #     return [["rerun", None]]
+                # else:
+                #     raise ZeroDivisionError
             else:
                 current_price = dp_list[idx][1]
                 previous_price = dp_list[idx - 1][1]

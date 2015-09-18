@@ -283,6 +283,7 @@ def updates_sets_database_from_api():
     @return:
     """
     set_list = blapi.pull_set_catalog()
+    if set_list is None: return None
     proceed = input("What Level of Update (-1 no check, 0 check 90 days, 1 check base data, 2 update all)? ")
     if proceed not in ('-1', '0', '1', '2'):
         proceed = 0

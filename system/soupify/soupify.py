@@ -1,4 +1,3 @@
-
 # External
 import gzip
 import html
@@ -16,42 +15,56 @@ if __name__ == "__main__": syt.setup_logger()
 
 
 invalid_urls = 0
-
+requests_made = 0
 
 @syt.timer.counter
-def soupify(url, params=None, verify=True):
+def get_webpage(url, params=None, verify=False, timeout=10):
+    global invalid_urls
+    global requests_made
+    page = None
+    try:
+        requests_made+=1
+        page = requests.get(url, params=params, verify=verify, timeout=timeout)
+    except:
+        try:
+            requests_made+=1
+            page = requests.get(url, params=params, verify=verify, timeout=timeout*2)
+        except:
+            invalid_urls += 1
+            syt.log_error("INVALID URL {}: Can't reach the url! {} + {}".format(invalid_urls, url, params))
+            return None
+    if page.status_code != 200:
+        syt.log_error("Server Error:{} - {}".format(page.status_code, url))
+        return None
+    return page
+
+@syt.timer.counter
+def soupify(url, params=None, verify=True, bl_check=False):
     """
 
     @param url: any url
     @return: returns the soup for that url
     """
-    global invalid_urls
-    try:
-        page = requests.get(url, params=params, verify=verify, timeout=10).content
-    except:
-        try:
-            page = requests.get(url, params=params, verify=verify, timeout=20).content
-        except:
-            invalid_urls += 1
-            syt.log_error("INVALID URL {}: Can't reach the url! {} + {}".format(invalid_urls, url, params))
-            return None
-    soup = BeautifulSoup(page)
+    html =  get_webpage(url, params, verify)
+    if html is None: return None
+    soup = BeautifulSoup(html.content, "html.parser")
     if soup is None:
         syt.log_error("Can't make the soup! {}".format(url))
-        soup = BeautifulSoup(page)
-
-    # Check that bricklink isn't down
-    available = soup.find(text="System Unavailable")
-    if available is not None:
-        bold = soup.find('font',{'face','Tahoma,Arial'}).text[-10:-9]
-        print(bold)
-        syt.log_info("Bricklink down for maintenance, it will be back in {} minutes.".format(bold))
-        syt.log_info("Waiting to continue")
-        for n in range(1, syt.int_zero(bold)):
-            sleep(60)
-            # logger.info("{} minutes remaining".format(int_zero(bold) - n))
-        return soupify(url)
+        soup = BeautifulSoup(html, "html.parser")
+    if bl_check:
+        #Check that bricklink isn't down
+        available = soup.find(text="System Unavailable")
+        if available is not None:
+            bold = soup.find('font',{'face','Tahoma,Arial'}).text[-10:-9]
+            print(bold)
+            syt.log_info("Bricklink down for maintenance, it will be back in {} minutes.".format(bold))
+            syt.log_info("Waiting to continue")
+            for n in range(1, syt.int_zero(bold)):
+                sleep(60)
+                # logger.info("{} minutes remaining".format(int_zero(bold) - n))
+            return soupify(url)
     return soup
+
 
 
 def read_gzip_csv_from_url(url):
@@ -65,7 +78,7 @@ def read_gzip_csv_from_url(url):
     return syt.read_csv_in_memory(gzip_bytes.decode("utf-8"), ",")
 
 
-def read_csv_from_url(url, params=None, delimiter='\t'):
+def read_csv_from_url(url, params=None, delimiter='\t', bl_check=False):
     """
     Wrapper to make syntax simpler
     also handles errors
@@ -74,11 +87,13 @@ def read_csv_from_url(url, params=None, delimiter='\t'):
     @param delimiter:
     @return:
     """
-    return syt.read_csv_in_memory(html.unescape(requests.get(url, params=params, verify=False).text), delimiter)
+    page = get_webpage(url, params=params, verify=False)
+    if page is None: return None
+    return syt.read_csv_in_memory(html.unescape(page.text), delimiter)
 
 
 def read_json_from_url(url, params=None):
-    return json.loads(requests.get(url, params=params, verify=False).text)
+    return json.loads(get_webpage(url, params=params, verify=False).text)
 
 
 def read_xml_from_url(url, params=None):

@@ -47,7 +47,7 @@ def get_pieceout_new(set_num_primary, set_num_secondary=1):
     url = "http://www.bricklink.com/catalogPOV.asp?itemType=S&itemNo={0}&itemSeq={1}&itemQty=1&breakType=M&itemCondition=N&incInstr=Y&incBox=Y&incParts=Y&breakSets=Y".format(
         set_num_primary, set_num_secondary)
 
-    soup = syt.soupify(url)
+    soup = syt.soupify(url, bl_check=True)
     dic = _parse_priceout(soup)
     return {'pieced_new': dic}
 
@@ -58,7 +58,7 @@ def get_pieceout_used(set_num_primary, set_num_secondary=1):
     """
     url = "http://www.bricklink.com/catalogPOV.asp?itemType=S&itemNo={0}&itemSeq={1}&itemQty=1&breakType=M&itemCondition=U&incInstr=Y&incBox=Y&incParts=Y&breakSets=Y".format(
         set_num_primary, set_num_secondary)
-    soup = syt.soupify(url)
+    soup = syt.soupify(url, bl_check=True)
     dic = _parse_priceout(soup)
     return {'pieced_used': dic}
 
@@ -71,7 +71,7 @@ def get_set_prices(set_num_primary, set_num_secondary=1):
     """
     url = "http://www.bricklink.com/catalogPG.asp?S={0}-{1}&colorID=0&viewExclude=Y&v=D&cID=Y".format(set_num_primary,
                                                                                                       set_num_secondary)
-    soup = syt.soupify(url)
+    soup = syt.soupify(url, bl_check=True)
 
     parent_tags = soup.find("tr", {"bgcolor": "#C0C0C0"})  # Relies on only that secion having that color
 

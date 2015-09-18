@@ -1,5 +1,3 @@
-__author__ = 'andrew.sielen'
-
 # External
 import logging
 

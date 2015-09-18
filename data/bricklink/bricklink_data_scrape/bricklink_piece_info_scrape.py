@@ -238,7 +238,7 @@ def _search_piece(design_num, verbose=0):
 
 def _verify_valid_url(url, verbose=0):
     if verbose == 1: syt.log_debug(url)
-    soup = syt.soupify(url)
+    soup = syt.soupify(url, bl_check=True)
     if soup is not None:
         parent_tags0 = soup.find("div", {"class",  "error-section"})
         parent_tags1 = soup.find("div", {"id",  "idNoResults"})

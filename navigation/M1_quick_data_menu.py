@@ -24,7 +24,7 @@ def quick_data_menu():
         print(eval_set.debug_dump_all())
 
     def set_report():
-        """ Prompts for a _set number and creates a csv dump of that _set """
+        """ Prompts for a _set number and creates a csv dump of that _et """
         nonlocal eval_set
         if eval_set is None: load_set()
         eval_set.make_set_report()

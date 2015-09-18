@@ -253,7 +253,7 @@ class SetCollection(object):
     # @profile
     def csv_dump(self):
         csv_dump_string = ""
-        csv_dump_string += "id, set_num, set_name, set_theme, get_piece_count, get_figures, set_weight, year_released, date_released_us, date_ended_us, " \
+        csv_dump_string += "id, set_num, set_name, set_theme, theme_category, get_piece_count, get_figures, set_weight, year_released, date_released_us, date_ended_us, " \
                            "date_released_uk, date_ended_uk, original_price_us, original_price_uk, age_low, age_high, box_size, box_volume, " \
                            "last_updated, last_inv_updated_bl, last_inv_updated_re, last_daily_update, BASE CALC, get_ppp, ppp_uk, get_ppg, ppg_uk, " \
                            "avg_piece_weight,INFLATION, price_inf, ppp_inf, ppg_inf, CALC PIECE/WEIGHT, calc_piece_count, calc_unique_piece_count, " \
@@ -272,7 +272,7 @@ class SetCollection(object):
                 current_set_count = 0
         timer.end()
         file_path = syt.make_dir('resources/Reports/')
-        with open(file_path+'{}_{}-basic-report.csv'.format(self.name, syt.get_timestamp()), "w") as f:
+        with open(file_path+'{}_{}-basic-report.csv'.format(self.name, syt.get_timestamp()), "w", encoding='UTF-8') as f:
             print(f)
             f.write(csv_dump_string)
         return self

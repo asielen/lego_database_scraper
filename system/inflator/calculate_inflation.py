@@ -8,10 +8,6 @@ import sqlite3 as lite
 import arrow
 
 
-
-
-
-
 # Internal - Should have none outside system
 from system import base
 from system.system_database import database

@@ -27,7 +27,7 @@ def main_menu():
         database_update_menu()  # Mostly done
 
     def system():
-        system_menu()  # Todo
+        system_menu()
 
     options = (
         ("Run Daily Update", daily_update),

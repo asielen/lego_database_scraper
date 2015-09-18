@@ -43,7 +43,7 @@ class process_timer():
             logger.log_info(
                 "@@ Process Time: {} per min IS {} objects per second".format(round(60 * tasks_per_second),
                                                                               round(tasks_per_second)))
-        if remaining_tasks is not None:
+        if remaining_tasks is not None and tasks_per_second > 0:
             logger.log_info(
                 "@@ Process Time: ETR: {} mins FOR {} objects".format(round(remaining_tasks / (60 * tasks_per_second)),
                                                                       remaining_tasks))

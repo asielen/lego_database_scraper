@@ -26,7 +26,7 @@ def get_basestats(set_num_primary, set_num_secondary=1):
     #url-old = 'http://alpha.bricklink.com/pages/clone/catalogitem.page?S={0}-{1}'.format(set_num_primary, set_num_secondary)
     url = 'http://alpha.bricklink.com/pages/clone/catalogitem.page?S={0}-{1}'.format(set_num_primary, set_num_secondary)
 
-    soup = syt.soupify(url)
+    soup = syt.soupify(url, bl_check=True)
     if soup is None: return {}
 
     # Get the _set name
