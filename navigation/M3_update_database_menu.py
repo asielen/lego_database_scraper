@@ -1,6 +1,5 @@
 # Internal
 import system as syt
-
 if __name__ == "__main__": syt.setup_logger()
 
 # Price capture

@@ -7,6 +7,7 @@ from database import database
 import system as syt
 if __name__ == "__main__": syt.setup_logger()
 
+
 def batch_update(sql_text, csvfile, header_len=0):
     """
 
@@ -40,7 +41,6 @@ def run_batch_sql(sql_text, values):
         c = con.cursor()
         try:
             c.executemany(sql_text, values)
-            syt.add_to_event("SYSTEM: Execute_SQL")
         except:
             syt.log_note("ERROR: {}".format(sys.exc_info()[0]))
             syt.log_note("Can't insert row: {} / {}".format(len(values), syt.list2string(values)))
@@ -48,7 +48,6 @@ def run_batch_sql(sql_text, values):
                                                                         syt.list2string(values)))
             for r in values:
                 syt.log_note("Can't insert row: {}".format(syt.list2string(r)))
-
 
 def run_many_sql(sql_list):
     con = lite.connect(database)
@@ -58,10 +57,8 @@ def run_many_sql(sql_list):
         try:
             for sql_text in sql_list:
                 c.execute(sql_text)
-                syt.add_to_event("SYSTEM: Execute_SQL")
         except Exception as e:
             syt.log_error("Database Exception {}".format(e))
-
 
 def run_sql(sql_text, insert_list=None, one=False):
     con = lite.connect(database)
@@ -73,7 +70,6 @@ def run_sql(sql_text, insert_list=None, one=False):
             c.execute(sql_text, tuple(insert_list))
         else:
             c.execute(sql_text)
-        syt.add_to_event("SYSTEM: Execute_SQL")
         if one:
             result = c.fetchone()
             if result is not None and isinstance(result, tuple) and len(result) == 1:  # To keep from returning (xxx,)

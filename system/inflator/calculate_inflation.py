@@ -6,8 +6,6 @@ import csv
 import sqlite3 as lite
 
 import arrow
-
-
 # Internal - Should have none outside system
 from system import base
 from system.system_database import database
@@ -106,7 +104,7 @@ def update_inflation_database():
 
 def main():
     update_inflation_database()
-    print(get_inflation_rate(1915, 2015))
+    print(get_inflation_rate(1915, 2016))
 
 if __name__ == "__main__":
     main()

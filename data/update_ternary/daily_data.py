@@ -29,13 +29,15 @@ def get_all_daily_set_data(set_list):
     set_daily_to_insert = []
     sets_missed = []
     pool = _pool(syt.RUNNINGPOOL)
-    timer = syt.process_timer("Update Historic Prices")
+    timer = syt.process_timer("Update {} Historic Prices".format(len(set_list)))
+    syt.add_to_event("Update Ternary: Get Daily Data",len(set_list))
 
     for idx, set_num in enumerate(set_list):
         if set_num in sets:
             if last_updated[set_num]:  # IF TRUE = if the set was updated today
                 continue
             set_daily_to_scrape.append((sets[set_num], set_num))
+            # syt.add_to_event("Update Ternary: Get Daily Data: {}".format(set_num))
         else:
             # Todo Add set to database
             pass
@@ -43,13 +45,15 @@ def get_all_daily_set_data(set_list):
 
         if idx > 0 and idx % (syt.RUNNINGPOOL) == 0:
             try:
-                temp_list = pool.map(_get_daily_set_data, set_daily_to_scrape)
-            except AttributeError:
+                temp_list = syt.pool_skimmer(pool.map(_get_daily_set_data, set_daily_to_scrape))
+
+            except (AttributeError, TypeError):
                 syt.log_error("Missed {} sets".format(len(set_daily_to_scrape)))
                 sets_missed.extend(set_daily_to_scrape)
                 temp_list = []
 
             set_daily_to_insert.extend(temp_list)
+
             syt.log_info(
                 "@@@ Running Pool {} of {} sets ({}% complete)".format(idx, num_sets, round((idx / num_sets) * 100)))
             timer.log_time(len(set_daily_to_scrape), num_sets - idx)
@@ -59,19 +63,21 @@ def get_all_daily_set_data(set_list):
         # Insert Pieces
 
         if idx > 0 and len(set_daily_to_insert) >= 200:
-            syt.log_info("@@@ Inserting {} pieces".format(len(set_daily_to_insert)))
+            syt.log_info("@@@ Inserting {} sets".format(len(set_daily_to_insert)))
             _add_daily_set_data_to_database(set_daily_to_insert)
+            syt.add_to_event("Update Ternary: Got Daily Data",len(set_daily_to_insert))
             set_daily_to_insert = []
 
     # Final Scrape and insert
     try:
-        temp_list = pool.map(_get_daily_set_data, set_daily_to_scrape)
+        temp_list = syt.pool_skimmer(pool.map(_get_daily_set_data, set_daily_to_scrape))
     except AttributeError:
         syt.log_error("Missed {} sets".format(len(set_daily_to_scrape)))
         sets_missed.extend(set_daily_to_scrape)
         temp_list = []
-    set_daily_to_insert.extend(temp_list)
+    if temp_list: set_daily_to_insert.extend(temp_list)
     _add_daily_set_data_to_database(set_daily_to_insert)
+    syt.add_to_event("Update Ternary: Got Daily Data", len(set_daily_to_insert))
 
     pool.close()
     pool.join()
@@ -87,14 +93,15 @@ def get_all_daily_set_data(set_list):
             get_all_daily_set_data(sets_missed)
 
 
+@syt.counter(name="Update Ternary: Get Daily Set Data")
 def _get_daily_set_data(set_tags):
     if set_tags[1] is None or set_tags[0] is None:
         return {None: ((), ())}
     set_num, set_seq, set_n = SetInfo.expand_set_num(set_tags[1])
     price_dict = BLDS.get_all_prices(set_num, set_seq)
     daily_data = BS.get_daily_data(set_num, set_seq)
-
-    return {set_tags[0]: (price_dict, daily_data)}  # Pass set_id with set data
+    syt.add_to_event("Update Ternary: Get Daily Set Data: {}".format(set_n))
+    return {set_tags[0]: (price_dict, daily_data)}, syt.get_counts(1)  # Pass set_id with set data
 
 
 def _add_daily_set_data_to_database(set_data):
@@ -113,7 +120,7 @@ def price_capture_menu():
     if start_year is "": start_year = database_year_range[0]
     if end_year is "": end_year = database_year_range[1]
     proceed = input(
-        "Would you like to update get_prices for all sets between {0} and {1}? Y/N?".format(start_year, end_year))
+        "Would you like to update get_prices for all sets between {0} and {1}? Y/N? ".format(start_year, end_year))
     if proceed == "y" or proceed == "Y":
         set_list = info.get_sets_between_years(start_year, end_year)
         get_all_daily_set_data(set_list)

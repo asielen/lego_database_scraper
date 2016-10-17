@@ -190,7 +190,7 @@ def update_bl_set_inventories(check_update=0):
 
         # Scrape Pieces
         if idx > 0 and idx % syt.RUNNINGPOOL == 0:
-            temp_list = [y for x in pool.map(_get_set_inventory, set_invs_to_scrape) for y in x]  # flattens the list
+            temp_list = [y for x in syt.pool_skimmer(pool.map(_get_set_inventory_pool, set_invs_to_scrape)) for y in x]  # flattens the lis
             set_invs_to_insert.extend(temp_list)
             syt.log_info(
                 "@@@ Running Pool {} of {} sets ({}% complete)".format(idx, num_sets, round((idx / num_sets) * 100)))
@@ -206,7 +206,7 @@ def update_bl_set_inventories(check_update=0):
             set_invs_to_insert = []
 
     # Final Scrape and insert
-    temp_list = [y for x in pool.map(_get_set_inventory, set_invs_to_scrape) for y in x]
+    temp_list = [y for x in syt.pool_skimmer(pool.map(_get_set_inventory_pool, set_invs_to_scrape)) for y in x]  # flattens the lis
     set_invs_to_insert.extend(temp_list)
     _process_colors(set_invs_to_insert, colors_dict)
     _add_bl_inventories_to_database(set_invs_to_insert)
@@ -271,6 +271,8 @@ def _process_colors(invs, colors=None):
                 "Missing {} from color table".format(inv[2]))
             inv[2] = None
 
+def _get_set_inventory_pool(set_dat=None):
+    return _get_set_inventory(set_dat), syt.get_counts(1)
 
 def _get_set_inventory(set_dat=None):
     """

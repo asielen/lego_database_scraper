@@ -15,6 +15,9 @@ price_types_lookup = {}
 inflation_lookup = {}
 update_history = {}
 
+
+
+
 # def init_lookups():
 #     pass
 #

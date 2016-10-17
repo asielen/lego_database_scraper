@@ -18,7 +18,11 @@ def initiate_database():
         c.execute("CREATE TABLE IF NOT EXISTS inflation(id INTEGER PRIMARY KEY,"
                   "year INTEGER, cpi REAL);")
 
-        c.execute("CREATE UNIQUE INDEX inflation_idx ON inflation(year)")
+        c.execute("CREATE UNIQUE INDEX IF NOT EXISTS inflation_idx ON inflation(year)")
+
+        c.execute("CREATE TABLE IF NOT EXISTS events(id INTEGER PRIMARY KEY,"
+                  "date INTEGER, event TEXT, count INTEGER);")
+        c.execute("CREATE UNIQUE INDEX IF NOT EXISTS event_idx ON events(event, date)")
 
 
 def main():

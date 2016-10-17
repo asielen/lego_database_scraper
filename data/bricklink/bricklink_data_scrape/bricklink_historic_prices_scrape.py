@@ -3,6 +3,7 @@
 
 import system as syt
 
+@syt.counter(name="BrickLink: Get Historic Prices")
 def get_all_prices(set_num_primary, set_num_secondary=1):
     price_dict = {}
     piece_dict = {}
@@ -18,6 +19,7 @@ def get_all_prices(set_num_primary, set_num_secondary=1):
 
 
 def add_pieceInfo2PriceInfo(piece_dict, price_dict):
+    if piece_dict is None or price_dict is None: return None
     if 'pieced_new' in piece_dict:
         if 'avg_historic_sales' in piece_dict['pieced_new']:
             price_dict['historic_new']['piece_avg'] = piece_dict['pieced_new']['avg_historic_sales']
@@ -72,6 +74,7 @@ def get_set_prices(set_num_primary, set_num_secondary=1):
     url = "http://www.bricklink.com/catalogPG.asp?S={0}-{1}&colorID=0&viewExclude=Y&v=D&cID=Y".format(set_num_primary,
                                                                                                       set_num_secondary)
     soup = syt.soupify(url, bl_check=True)
+    if soup is None: return {"historic_new": {}, "historic_used": {}, "current_new": {}, "current_used": {}}
 
     parent_tags = soup.find("tr", {"bgcolor": "#C0C0C0"})  # Relies on only that secion having that color
 
@@ -93,6 +96,7 @@ def _parse_priceout(soup):
     """
         Shared parsing of New and Used Piece out parsing since the pages use the same format
     """
+    if soup is None: return None
     parent_tags = soup.find("tr", {"bgcolor": "#EEEEEE", "valign": "TOP", "align": "CENTER"})
     # items.contents = items.contents[1:-1] #Remove the first and last elements because they are strings
     if parent_tags == None: return {}
@@ -240,6 +244,7 @@ def _scrub_price_data(dic):
 
 def _scrub_pieced_price(dic):
     scrubbed_dic = {}
+    if dic is None: return None
     if 'Average of last 6 months Sales:' in dic:
         scrubbed_dic['avg_historic_sales'] = dic['Average of last 6 months Sales:']
     if 'Current Items For Sale Average:' in dic:
@@ -249,6 +254,7 @@ def _scrub_pieced_price(dic):
 
 def _scrub_pieced_info(dic):
     scrubbed_dic = {}
+    if dic is None: return None
     if 'pieced_new' in dic:
         scrubbed_dic['pieced_new'] = _scrub_pieced_price(dic['pieced_new'])
     else:

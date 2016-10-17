@@ -20,17 +20,22 @@ def add_set_to_database(set_num):
     set_to_insert = _parse_get_basestats(set_num)
     add_set_data_to_database(set_to_insert)
 
-
+@syt.counter("Update Secondary: Add Set to Database")
 def add_set_data_to_database(set_data):
     """
     Single _set add to database
     @param set_data: list of 22 or 27 values to insert (27 with dates from class)
     @return:
     """
+
+    # Strip out the counter part if there is one (counter is included in some  strings for pooling
+    if len(set_data) == 2 and isinstance(set_data[1], syt.Counter):
+        set_data = set_data[0]
+
     if set_data is None:
         return None
 
-    # sys.info("Inserting Set: {}".format(set_data[1]))
+    syt.log_info("Inserting Set: {}".format(set_data[1]))
 
     # This is all for total update from a class
     dates = []
@@ -41,6 +46,7 @@ def add_set_data_to_database(set_data):
 
     if len(set_data) != 22:
         syt.log_error("Set Data list is not valid")
+        syt.log_error(set_data)
 
     db.run_sql('INSERT OR IGNORE INTO sets(set_num) VALUES (?)', (set_data[0],))
 
@@ -78,7 +84,7 @@ def add_set_data_to_database(set_data):
                    'last_price_updated=?'
                    'WHERE set_num=?', set_data_processed)
 
-
+@syt.counter("Update Secondary: Add Sets to Database")
 def add_sets_to_database(set_id_list, id_col=0, update=1):
     """
     # Todo:  Make a single add
@@ -111,8 +117,9 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
         if idx > 0 and idx % (syt.RUNNINGPOOL * 2) == 0:
             syt.log_info("@@@ Running Pool {}".format(idx))
             temp_list = []
+            pool_counts = None
             try:
-                temp_list = pool.map(_parse_get_basestats, sets_to_scrape)
+                temp_list = syt.pool_skimmer(pool.map(_parse_get_basestats, sets_to_scrape))
                 sets_to_insert.extend(temp_list)
             except:
                 #Skip the add and make a note
@@ -126,8 +133,9 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
             sets_to_insert = []
 
     temp_list = []
+    pool_counts = None
     try:
-        temp_list = pool.map(_parse_get_basestats, sets_to_scrape)
+        temp_list = syt.pool_skimmer(pool.map(_parse_get_basestats, sets_to_scrape))
         sets_to_insert.extend(temp_list)
     except:
         #Skip the add and make a note
@@ -149,7 +157,7 @@ def add_sets_to_database(set_id_list, id_col=0, update=1):
         if run_again == "y":
             add_sets_to_database(sets_missed, id_col, update)
 
-
+@syt.counter("Update Secondary: Add Sets Data to Database")
 def add_sets_data_to_database(sets_to_insert):
     """
     Add and update a list of sets to the database (need bl_id to be filled out)
@@ -191,6 +199,7 @@ def add_sets_data_to_database(sets_to_insert):
                     'box_volume=?, '
                     'last_updated=?'
                     'WHERE set_num=?', sets_to_insert_processed)
+    syt.add_to_event("Update Secondary: Add Sets Data to Database – Sets",len(sets_to_insert_processed))
 
 
 def get_set_id(set_num, sets=None, add=False):
@@ -244,7 +253,7 @@ def _parse_get_basestats(id):
     @param id:
     @return:
     """
-    return data.get_basestats(id)
+    return data.get_basestats(id), syt.get_counts(1)
 
 
 # def main():

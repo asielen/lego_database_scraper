@@ -12,6 +12,9 @@ def system_menu():
     def restore_database():
         health.restore_database()
 
+    def get_func_counts():
+        print(syt.get_counts())
+
     def database_stats():
         pass
 
@@ -21,6 +24,7 @@ def system_menu():
     options = (
         ("Backup Database", backup_database),
         #("Restore Database", restore_database),
+        ("Get Function Counts", get_func_counts),
         ("Check Database Stats #", database_stats),
         ("Check Database Health #", database_health)
     )

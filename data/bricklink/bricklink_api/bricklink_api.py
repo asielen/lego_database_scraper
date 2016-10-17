@@ -18,8 +18,27 @@ if __name__ == "__main__": syt.setup_logger()
 # T : tabs
 # X : XML (seems to default to this)
 
-url = "http://www.bricklink.com/catalogDownload.asp"
+url = "http://www.bricklink.com/catalogDownload.asp?a=a"
+cookies = {
+    'viewCurrencyID': '1',
+    'catalogView': 'cView=1',
+    'cartBuyerID': '%2D47995094',
+    '_ga': 'GA1.2.2019139666.1427006462',
+    'ASPSESSIONIDSCBADSDB': 'BOFEHLHBADGEFBAEFHMIFLPC',
+}
 
+headers = {
+    'Origin': 'http://www.bricklink.com',
+    'Accept-Encoding': 'gzip, deflate',
+    'Accept-Language': 'en-US,en;q=0.8',
+    'Upgrade-Insecure-Requests': '1',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.112 Safari/537.36',
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    'Cache-Control': 'max-age=0',
+    'Referer': 'http://www.bricklink.com/catalogDownload.asp',
+    'Connection': 'keep-alive',
+}
 
 def pull_set_catalog():
     """
@@ -28,7 +47,7 @@ def pull_set_catalog():
     @return: ['Category ID', 'Category Name', 'Number', 'Name', 'Year Released', 'Weight (in Grams)', 'Dimensions']
     3 rows of heading
     """
-    parameters = {'a': 'a',
+    parameters = {
                   'itemType': 'S',
                   'viewType': '0',
                   'selYear': 'Y',
@@ -36,7 +55,7 @@ def pull_set_catalog():
                   'selDim': 'Y',
                   'itemTypeInv': 'S',
                   'downloadType': 'T'}
-    return syt.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url_post(url, headers=headers, cookies=cookies, data=parameters)
 
 
 def pull_part_catalog():
@@ -46,7 +65,7 @@ def pull_part_catalog():
     @return: ['Category ID', 'Category Name', 'Number', 'Name', 'Weight (in Grams)']
     3 header rows
     """
-    parameters = {'a': 'a',
+    parameters = {
                   'itemType': 'P',
                   'viewType': '0',
                   'itemTypeInv': 'S',
@@ -54,7 +73,7 @@ def pull_part_catalog():
                   'selWeight': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return syt.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url_post(url, headers=headers, cookies=cookies, data=parameters)
 
 
 def pull_minifig_catalog():
@@ -64,7 +83,7 @@ def pull_minifig_catalog():
     @return: ['Category ID', 'Category Name', 'Number', 'Name', 'Weight (in Grams)']
     3 header rows
     """
-    parameters = {'a': 'a',
+    parameters = {
                   'itemType': 'M',
                   'viewType': '0',
                   'itemTypeInv': 'S',
@@ -72,7 +91,7 @@ def pull_minifig_catalog():
                   'selWeight': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return syt.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url_post(url, headers=headers, cookies=cookies, data=parameters)
 
 
 def pull_book_catalog():
@@ -81,7 +100,7 @@ def pull_book_catalog():
     # http://www.bricklink.com/catalogDownload.asp?viewType=0&itemType=B&itemTypeInv=S&itemNo=&downloadType=T
     @return:
     """
-    parameters = {'a': 'a',
+    parameters = {
                   'itemType': 'B',
                   'viewType': '0',
                   'itemTypeInv': 'S',
@@ -89,7 +108,7 @@ def pull_book_catalog():
                   'selWeight': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return syt.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url_post(url, headers=headers, cookies=cookies, data=parameters)
 
 
 def pull_gear_catalog():
@@ -105,7 +124,7 @@ def pull_gear_catalog():
                   'selDim': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return syt.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url_post(url, headers=headers, cookies=cookies, data=parameters)
 
 
 def pull_catalogs_catalog():
@@ -121,7 +140,7 @@ def pull_catalogs_catalog():
                   'selDim': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return syt.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url_post(url, headers=headers, cookies=cookies, data=parameters)
 
 
 def pull_instructions_catalog():
@@ -137,7 +156,7 @@ def pull_instructions_catalog():
                   'selDim': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return syt.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url_post(url, headers=headers, cookies=cookies, data=parameters)
 
 
 def pull_boxes_catalog():
@@ -154,7 +173,7 @@ def pull_boxes_catalog():
                   'selDim': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return syt.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url_post(url, headers=headers, cookies=cookies, data=parameters)
 
 
 def pull_item_types():
@@ -170,7 +189,7 @@ def pull_item_types():
                   'selDim': 'Y',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return syt.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url_post(url, headers=headers, cookies=cookies, data=parameters)
 
 
 def pull_categories():
@@ -179,13 +198,12 @@ def pull_categories():
     # http://www.bricklink.com/catalogDownload.asp?itemType=S&viewType=2&itemTypeInv=S&itemNo=&downloadType=T
     @return: [Category ID, Category Name]
     """
-    url = "http://www.bricklink.com/catalogDownload.asp"
     parameters = {'itemType': 'S',
                   'viewType': '2',
                   'itemTypeInv': 'S',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return syt.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url_post(url, headers=headers, cookies=cookies, data=parameters)
 
 
 def pull_colors():
@@ -193,13 +211,12 @@ def pull_colors():
     itemType=O&selYear=Y&selWeight=Y&selDim=Y&viewType=3&itemTypeInv=S&itemNo=&downloadType=T
     @return: [Color ID, Color Name, RGB, Type, Parts, In Sets, Wanted, For Sale, Year From, Year To]
     """
-    url = "http://www.bricklink.com/catalogDownload.asp"
     parameters = {'itemType': 'O',
                   'viewType': '3',
                   'itemTypeInv': 'S',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return syt.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url_post(url, headers=headers, cookies=cookies, data=parameters)
 
 
 def pull_part_color_codes():
@@ -207,13 +224,12 @@ def pull_part_color_codes():
     itemType=O&selYear=Y&selWeight=Y&selDim=Y&viewType=5&itemTypeInv=S&itemNo=&downloadType=T
     @return: [Item no (from part list), Color, Code]
     """
-    url = "http://www.bricklink.com/catalogDownload.asp"
     parameters = {'itemType': 'O',
                   'viewType': '5',
                   'itemTypeInv': 'S',
                   'itemNo': None,
                   'downloadType': 'T'}
-    return syt.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url_post(url, headers=headers, cookies=cookies, data=parameters)
 
 
 def pull_set_inventory(set_num):
@@ -222,14 +238,13 @@ def pull_set_inventory(set_num):
     http://www.bricklink.com/catalogDownload.asp?a=a&itemType=S&viewType=4&itemTypeInv=S&itemNo=10197-1&downloadType=T
     @return:
     """
-    url = "http://www.bricklink.com/catalogDownload.asp"
-    parameters = {'a': 'a',
+    parameters = {
                   'itemType': 'S',
                   'viewType': '4',
                   'itemTypeInv': 'S',
                   'itemNo': set_num,
                   'downloadType': 'T'}
-    return syt.read_csv_from_url(url, params=parameters)
+    return syt.read_csv_from_url_post(url, headers=headers, cookies=cookies, data=parameters)
 
 
 if __name__ == "__main__":

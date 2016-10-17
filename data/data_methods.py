@@ -9,6 +9,7 @@ from data.rebrickable import rebrickable_api as reapi
 from data.peeron.peeron_api import peeron_api as perapi
 from data.data_classes import SetInfo
 
+
 def get_colors():
     """
     combine data from peeron and rebrickable to create the colors table
@@ -144,7 +145,7 @@ def _process_clist(clist):
     clist = [syt.int_null(c) for c in clist]
     return clist
 
-
+@syt.counter("Data Mathods: Get Piece Info")
 def get_piece_info(bl_id=None, bo_id=None, re_id=None, lego_id=None, type=1):
     """
     Returns a list or a dict ready to be added to the database
@@ -214,7 +215,7 @@ def get_piece_info(bl_id=None, bo_id=None, re_id=None, lego_id=None, type=1):
                 piece_info["bl_category"]]
     return piece_info
 
-
+@syt.counter("Data Methods: Get Basestats")
 def get_basestats(o_set, type=1):
     """
     Gets base o_set info from a combination of bricklink and brickset data

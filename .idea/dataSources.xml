@@ -1,16 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="DataSourceManagerImpl" format="xml" hash="953966863">
-    <data-source source="LOCAL" name="lego_eval" uuid="29a30c00-7e0e-4aa7-b81b-f991494e30f6">
+  <component name="DataSourceManagerImpl" format="xml" hash="1263631404">
+    <data-source source="LOCAL" name="Sqlite (Xerial) - lego_eval.sqlite" uuid="6c387090-a8c4-421d-b8e3-95336baa6257">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
       <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/database/lego_eval.sqlite</jdbc-url>
-      <libraries />
     </data-source>
-    <data-source source="LOCAL" name="system" uuid="d3bd0788-cc8f-4c0c-a7d8-0ead54fa0fa1">
-      <driver-ref>sqlite.xerial</driver-ref>
+    <data-source source="LOCAL" name="MySQL - lego@asielen.mysql.pythonanywhere-services.com" uuid="e0444c74-3af1-4eaa-b69a-9cac043eab9c">
+      <driver-ref>mysql</driver-ref>
       <synchronize>true</synchronize>
+      <jdbc-driver>com.mysql.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://asielen.mysql.pythonanywhere-services.com:3306/lego</jdbc-url>
+      <driver-properties>
+        <property name="zeroDateTimeBehavior" value="convertToNull" />
+        <property name="tinyInt1isBit" value="false" />
+        <property name="characterEncoding" value="utf8" />
+        <property name="characterSetResults" value="utf8" />
+        <property name="yearIsDateType" value="false" />
+      </driver-properties>
+    </data-source>
+    <data-source source="LOCAL" name="system [2]" uuid="8cd552d1-19de-4530-9411-c4172be36c3a">
+      <driver-ref>6884f2c3-ae72-4f75-bb6b-31b647c916b9</driver-ref>
+      <synchronize>true</synchronize>
+      <imported>true</imported>
+      <remarks>SQLite</remarks>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
       <jdbc-url>jdbc:sqlite:E:\Andrew\Documents\Programming\PycharmProjects\lego_database_scraper\system\system.sqlite</jdbc-url>
       <libraries>
@@ -18,7 +32,7 @@
           <url>file://$APPLICATION_CONFIG_DIR$/jdbc-drivers/xerial-sqlite-license.txt</url>
         </library>
         <library>
-          <url>file://$APPLICATION_CONFIG_DIR$/jdbc-drivers/sqlite-jdbc-3.7.6.3-20110609.081603-3.jar</url>
+          <url>file://$APPLICATION_CONFIG_DIR$/jdbc-drivers/sqlite-jdbc-3.8.9.jar</url>
         </library>
       </libraries>
     </data-source>

@@ -41,7 +41,7 @@ def update_sets(check_update=1):
 
 def update_one_set_inventory(set_num):
     """
-    Update a single _set inventory
+    Update a single set inventory
     @param set_num:
     @return:
     """
@@ -50,7 +50,7 @@ def update_one_set_inventory(set_num):
 
 def update_set_inventories(check_update=1):
     """
-    Insert and update all _set inventories from a master list of pieces - may not be as up to date as the api call
+    Insert and update all set inventories from a master list of pieces - may not be as up to date as the api call
     @return:
     """
     syt.log_info("$$$ Adding RE inventories to database")
@@ -65,8 +65,6 @@ def update_set_inventories(check_update=1):
 
     timer = syt.process_timer(name="Add Re Inventories")
 
-    #print("")
-    #print("")
     syt.log_info("Running Rebrickable Update")
 
     sets_to_skip = []

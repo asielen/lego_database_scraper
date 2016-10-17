@@ -8,6 +8,7 @@ import system as syt
 # http://www.bricklink.com/cataloglist.asp?&searchNo=Y&q=30063&catLike=W&catType=P <- Piece lookup
 
 # Get pieces stats
+@syt.counter("Brickset: Get Piece Info")
 def get_pieceinfo(element_number):
     """
         Return a dictionary of pieces from Brickset.com

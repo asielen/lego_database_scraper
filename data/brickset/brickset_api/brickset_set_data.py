@@ -8,7 +8,7 @@ from data.data_classes import SetInfo
 # http://brickset.com/inventories/[_set-num]-[_set-seq] <- THe set inventory
 # http://brickset.com/parts/[piece number] <-Gives you element number, element name, design number, color,
 
-
+@syt.counter("Brickset: Get Base Set Data")
 def get_basestats(set_num_primary, set_num_secondary=1):
     """
         Return a dictionary of base stats pulled from brickset.com
@@ -41,6 +41,7 @@ def get_basestats(set_num_primary, set_num_secondary=1):
 
 
 # ### Get Daily Data #####
+@syt.counter("Brickset: Get Daily Set Data")
 def get_daily_data(set_num_primary, set_num_secondary=1):
     """
         Returns a dictionary with the following data

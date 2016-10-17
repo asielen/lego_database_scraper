@@ -7,6 +7,7 @@ from database import info
 import system as syt
 if __name__ == "__main__": syt.setup_logger()
 
+
 def add_daily_set_data_to_database(daily_data):
     """
 
@@ -26,7 +27,7 @@ def add_daily_set_data_to_database(daily_data):
     assert len(price_types) == 4
 
     for s in daily_data:
-        cset_id = ""
+        cset_id = None
 
         # Each dict should only be a length of one, so it should grab the first one
         for r in s:

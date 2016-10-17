@@ -4,10 +4,9 @@ import html
 import json
 from time import sleep
 
-from bs4 import BeautifulSoup
 import requests
-
-
+import tldextract
+from bs4 import BeautifulSoup
 
 # Internal
 import system as syt
@@ -17,28 +16,52 @@ if __name__ == "__main__": syt.setup_logger()
 invalid_urls = 0
 requests_made = 0
 
-@syt.timer.counter
+
 def get_webpage(url, params=None, verify=False, timeout=10):
     global invalid_urls
     global requests_made
     page = None
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.112 Safari/537.36'}
+    post = False
+    if url.find('.asp'):
+        post = True
     try:
         requests_made+=1
-        page = requests.get(url, params=params, verify=verify, timeout=timeout)
+        if post:
+            page = requests.post(url, data=params, headers=headers)
+        else:
+            page = requests.get(url, params=params, headers=headers, verify=verify, timeout=timeout)
+        syt.add_to_event("SYSTEM: Request Page")
+        syt.add_to_event("SYSTEM: Request Site <{}>".format(tldextract.extract(url).domain))
+        # syt.add_to_event("SYSTEM ONE PAGE: <{}>".format(url))
+        syt.log_note(url)
     except:
         try:
             requests_made+=1
-            page = requests.get(url, params=params, verify=verify, timeout=timeout*2)
+            if post:
+                page = requests.post(url, data=params, headers=headers)
+            else:
+                page = requests.get(url, params=params, headers=headers, verify=verify, timeout=timeout*2)
+            syt.add_to_event("SYSTEM: Request Page")
+            syt.add_to_event("SYSTEM: Request Site <{}>".format(tldextract.extract(url).domain))
+            # syt.add_to_event("SYSTEM ONE PAGE: <{}>".format(url))
+            syt.log_note(url)
         except:
             invalid_urls += 1
             syt.log_error("INVALID URL {}: Can't reach the url! {} + {}".format(invalid_urls, url, params))
+            syt.add_to_event("SYSTEM: Request Page FAILED")
+            syt.add_to_event("SYSTEM: Request Site FAILED <{}>".format(tldextract.extract(url).domain))
+
             return None
     if page.status_code != 200:
         syt.log_error("Server Error:{} - {}".format(page.status_code, url))
+        syt.add_to_event("SYSTEM: Request Page FAILED")
+        syt.add_to_event("SYSTEM: Request Site FAILED <{}>".format(tldextract.extract(url).domain))
         return None
     return page
 
-@syt.timer.counter
+
+@syt.counter(name="SYSTEM: Soupify")
 def soupify(url, params=None, verify=True, bl_check=False):
     """
 
@@ -61,10 +84,9 @@ def soupify(url, params=None, verify=True, bl_check=False):
             syt.log_info("Waiting to continue")
             for n in range(1, syt.int_zero(bold)):
                 sleep(60)
-                # logger.info("{} minutes remaining".format(int_zero(bold) - n))
+                syt.info("{} minutes remaining".format(syt.int_zero(bold) - n))
             return soupify(url)
     return soup
-
 
 
 def read_gzip_csv_from_url(url):
@@ -75,10 +97,17 @@ def read_gzip_csv_from_url(url):
     @return:
     """
     gzip_bytes = gzip.decompress(requests.get(url).content)
+    syt.add_to_event("SYSTEM: Request Page")
+    syt.add_to_event("SYSTEM: Request Site <{}>".format(tldextract.extract(url).domain))
+    # syt.add_to_event("SYSTEM ONE PAGE: {}".format(url))
     return syt.read_csv_in_memory(gzip_bytes.decode("utf-8"), ",")
 
+def read_csv_from_url_post(url, headers, cookies, data, delimiter='\t'):
+    request = requests.post(url=url, headers=headers, cookies=cookies, data=data)
+    if request is None: return None
+    return syt.read_csv_in_memory(html.unescape(request.text), delimiter)
 
-def read_csv_from_url(url, params=None, delimiter='\t', bl_check=False):
+def read_csv_from_url(url, params=None, delimiter='\t', bl_check=False, post=False):
     """
     Wrapper to make syntax simpler
     also handles errors

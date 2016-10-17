@@ -4,6 +4,7 @@ __author__ = 'andrew.sielen'
 import os
 import time
 
+
 # System
 import system as syt
 if __name__ == "__main__": syt.setup_logger()
@@ -24,6 +25,12 @@ def validate_database():
     health.validate_all()
     health.get_basic_database_info()
 
+def validate_connection():
+    """
+        Checks bricklink.com, rebrickable and brickset for connnection
+    @return:
+    """
+    setnum_to_test = ""
 
 
 if __name__ == "__main__":

@@ -1,6 +1,5 @@
 # System
 import system as syt
-
 if __name__ == "__main__": syt.setup_logger()
 
 # Main Menu
@@ -12,8 +11,11 @@ from navigation.M4_system_menu import system_menu
 # Price capture
 from data.update_ternary import daily_data
 
-
+def main_menu_intro():
+    syt.save_todays_events()
+    return "- Lego Brick Evaluator -"
 def main_menu():
+
     def daily_update():
         daily_data.price_capture_menu()
 
@@ -36,7 +38,7 @@ def main_menu():
         ("Update Database", update_database),
         ("System", system)
     )
-    syt.Menu(name="- Lego Brick Evaluator -", choices=options, quit_tag="Exit").run()
+    syt.Menu(name=main_menu_intro, choices=options, quit_tag="Exit").run()
 
 
 

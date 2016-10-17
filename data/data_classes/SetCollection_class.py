@@ -1,6 +1,6 @@
 # External
-import pickle
 import os
+import pickle
 
 # Internal
 import database as db
@@ -69,6 +69,7 @@ class SetCollection(object):
         @param filter_text: Filter Text e.g. "year_released = 2014, theme = city
         @return:
         """
+        syt.add_to_event("SetCollection: Initialize")
         self.name = None
         set_filters = ""
         if set_list is not None and isinstance(set_list, list):
@@ -87,11 +88,13 @@ class SetCollection(object):
         self.recent_query.append(self._query_builder(
             filter_text=set_filters))  # To track the history of filters, may come in handy? time will tell
 
+    @syt.counter("SetCollection: Run Query")
     def _run_query(self, base_text=None, filter_text=None, one=False):
         query = self._query_builder(base_text, filter_text)
         self.recent_query.insert(0, query)
         return db.run_sql(query, one=one)
 
+    @syt.counter("SetCollection: Build Query")
     def _query_builder(self, base_text=None, filter_text=None):
         if base_text is None:
             base_text = 'SELECT * FROM sets'
@@ -147,7 +150,7 @@ class SetCollection(object):
     def _get_num_value(self, field="", type=None):
         """
 
-        Used for any of the fields on a _set record that could contain a value that is worth summing counting etc
+        Used for any of the fields on a set record that could contain a value that is worth summing counting etc
         """
         result = None
         if field is None: return None

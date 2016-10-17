@@ -1,18 +1,11 @@
 # External
-import copy
 import collections
-import random
+import copy
 import os
 import pickle
+import random
 
 import arrow
-
-
-
-
-
-
-
 # Internal
 # from data import update_secondary
 import database.database_support as db
@@ -30,6 +23,7 @@ class SetInfo(object):
         @param set_info: Can either be a string of the set_num or a list
         @return:
         """
+        syt.add_to_event("SetInfo: Initialize")
         set_info_list = None
         s_num = None
         if set_info is not None:
@@ -136,6 +130,7 @@ class SetInfo(object):
         except:
             set_num = set_id
             set_seq = '1'
+        syt.add_to_event("SetInfo: Expand Set Num")
         return set_num, set_seq, set_num + '-' + set_seq
 
     # ###
@@ -640,7 +635,7 @@ class SetInfo(object):
         select_filter = "bs_ratings.{}".format(rating_type)
         where_filter = None
         return self._get_rating_history(desc=filter, select_filter=[select_filter, where_filter, True])
-    
+
     def _get_rating_history(self, desc=None, select_filter=None):
         self.rating_history = HistoricPriceAnalyser().create(select_filter=select_filter, si=self, rating=True, run=True)
         self.rating_history.desc = desc
@@ -671,7 +666,7 @@ class SetInfo(object):
             raise ValueError("{} is not a valid price type".format(price_type))
         if field not in ("avg", "lots", "max", "min", "qty", "qty_avg", "piece_avg"):
             raise ValueError("{} is not a valid field type".format(field))
-        
+
         select_filter = "historic_prices.{}".format(field)
         where_filter = "price_types.price_type = '{}'".format(price_type)
         return self._get_price_history(desc=filter, select_filter=[select_filter, where_filter, False])
@@ -680,7 +675,7 @@ class SetInfo(object):
         self.price_history = HistoricPriceAnalyser().create(select_filter=select_filter, si=self, run=True)
         self.price_history.desc = desc
         return self.price_history
-    
+
     # Todo, this did the dame thing as a syt function so just using that
     # def get_relative_date(self, date, reference_date=None):
     # """
@@ -818,6 +813,7 @@ class SetInfo(object):
     def __missing_data(self):
         return None
 
+    @syt.counter("SetInfo: Set Dump")
     def set_dump(self, inf_year=2015):
         """
         Used to create base reports in this format:
@@ -1075,6 +1071,7 @@ class HistoricPriceAnalyser(object):
         """
             Just to create the shell of the HPA, nothing is defined here except variable defs
         """
+        syt.add_to_event("HPA: Initialize")
         self.name = None
         self.desc = None
 
@@ -1109,7 +1106,7 @@ class HistoricPriceAnalyser(object):
             return self._working_data[item]
         else:
             raise AttributeError('Report has not been run yet')
-    
+
     def about(self):
         syt.log_info("{}: {}".format(self.name, self.desc))
         syt.log_info("FILTER: ".format(self._select_filter))
@@ -1442,7 +1439,7 @@ class HistoricPriceAnalyser(object):
         if si is not None:
             self.si = si
         return self
-  
+
 
     def _build_report_data_sql(self, select_=None, where_=None, group=True):
         """Takes what we got in the starter filter (either a complete filter string or a dict of filter options

@@ -1,7 +1,7 @@
 # External
-from time import sleep
 import sys
 from multiprocessing import Pool as _pool
+from time import sleep
 
 # Internal
 import data
@@ -10,7 +10,7 @@ from database import info
 import system as syt
 if __name__ == "__main__": syt.setup_logger()
 
-
+@syt.counter("Update Secondary: Add Part to DB")
 def add_part_to_database(part_num, type='bl'):
     """
 
@@ -54,6 +54,7 @@ def add_parts_to_database(part_id_list, type="bl"):
     @param part_id_list: list of bl_part numbers to look up and add
     @return:
     """
+    syt.add_to_event("Update Secondary: Add Parts to DB",)
     syt.log_info("$$$ Adding {} parts to the database from {}".format(len(part_id_list), type))
 
     part_database = {}
@@ -76,7 +77,9 @@ def add_parts_to_database(part_id_list, type="bl"):
 
             # Scrape
             if idx > 0 and idx % (syt.RUNNINGPOOL * 3) == 0:
-                parts_to_insert.extend(pool.map(_parse_get_bl_pieceinfo, parts_to_scrape))
+
+                pool_results = syt.pool_skimmer(pool.map(_parse_get_bl_pieceinfo, parts_to_scrape))
+                parts_to_insert.extend(pool_results)
 
                 syt.log_info("@@@ Running Pool {}".format(idx))
 
@@ -91,8 +94,11 @@ def add_parts_to_database(part_id_list, type="bl"):
                 parts_to_insert = _process_categories(parts_to_insert, bl_categories)
                 add_part_data_to_database(parts_to_insert)
                 parts_to_insert = []
+                syt.add_to_event("Update Secondary: Add Parts to DB BL",len(parts_to_insert))
 
-        parts_to_insert.extend(pool.map(_parse_get_bl_pieceinfo, parts_to_scrape))
+        # parts_to_insert.extend(pool.map(_parse_get_bl_pieceinfo, parts_to_scrape))
+        pool_results = syt.pool_skimmer(pool.map(_parse_get_bl_pieceinfo, parts_to_scrape))
+        parts_to_insert.extend(pool_results)
         parts_to_insert = _process_categories(parts_to_insert, bl_categories)
         add_part_data_to_database(parts_to_insert)
 
@@ -111,7 +117,9 @@ def add_parts_to_database(part_id_list, type="bl"):
                 # parts_to_insert.extend(_parse_get_re_pieceinfo(part)) #Todo this is a test just to see where an error is
             if idx > 0 and idx % 75 == 0:
                 syt.log_info("@@@ Running Pool {}".format(idx))
-                parts_to_insert.extend(pool.map(_parse_get_re_pieceinfo, parts_to_scrape))
+                pool_results = syt.pool_skimmer(pool.map(_parse_get_re_pieceinfo, parts_to_scrape))
+                parts_to_insert.extend(pool_results)
+                # parts_to_insert.extend(pool.map(_parse_get_re_pieceinfo, parts_to_scrape))
                 timer.log_time(len(parts_to_scrape), total_ids - idx)
                 parts_to_scrape = []
                 sleep(.5)
@@ -119,8 +127,10 @@ def add_parts_to_database(part_id_list, type="bl"):
                 syt.log_info("@@@ Inserting {} pieces".format(len(parts_to_insert)))
                 parts_to_insert = _process_categories(parts_to_insert, bl_categories)
                 add_part_data_to_database(parts_to_insert)
+                syt.add_to_event("Update Secondary: Add Parts to DB RE",len(parts_to_insert))
                 parts_to_insert = []
-        parts_to_insert.extend(pool.map(_parse_get_re_pieceinfo, parts_to_scrape))
+        # parts_to_insert.extend(pool.map(_parse_get_re_pieceinfo, parts_to_scrape))
+        parts_to_insert.extend(syt.pool_skimmer(pool.map(_parse_get_re_pieceinfo, parts_to_scrape)))
         parts_to_insert = _process_categories(parts_to_insert, bl_categories)
         add_part_data_to_database(parts_to_insert)
 
@@ -148,7 +158,7 @@ def _process_categories(parts_to_insert, bl_categories):
             parts_to_insert_processed.append(part_row)
     return parts_to_insert_processed
 
-
+@syt.counter("Update Secondary: Call Add part data to database")
 def add_part_data_to_database(insert_list, basics=0):
     """
     Way more complicated than it should be because of the multiple IDs
@@ -161,6 +171,7 @@ def add_part_data_to_database(insert_list, basics=0):
     ol_add = []
     lg_add = []
 
+    syt.add_to_event("Update Secondary: Add part data to database",len(insert_list))
     for row in insert_list:
         if row[0] is not None:
             bl_add.append(row)
@@ -191,6 +202,7 @@ def add_part_data_to_database(insert_list, basics=0):
                 db.batch_update(
                     'UPDATE parts SET brickowl_id=?, rebrickable_id=?, lego_id=?, design_name=?, weight=?, bl_type=?, bl_category=? '
                     'WHERE bricklink_id=?', (tuple(p[1:] + [p[0]]) for p in bl_add))
+            syt.add_to_event("Update Secondary: Add part data to database BL",len(bl_add))
         except:
             syt.log_note("ERROR: {}".format(sys.exc_info()[0]))
             syt.log_note("Can't insert BL row: {} / {}".format(len(bl_add), syt.list2string(bl_add)))
@@ -205,6 +217,7 @@ def add_part_data_to_database(insert_list, basics=0):
             db.batch_update(
                 'UPDATE parts SET rebrickable_id=?, lego_id=?, design_name=?, weight=?, bl_type=?, bl_category=? '
                 'WHERE bricklink_id=? AND brickowl_id=?', (tuple(p[2:] + p[0:2]) for p in ol_add))
+            syt.add_to_event("Update Secondary: Add part data to database OL",len(ol_add))
         except:
             syt.log_critical("Add BO failed, check notes")
             syt.log_note("ERROR: {}".format(sys.exc_info()[0]))
@@ -221,6 +234,7 @@ def add_part_data_to_database(insert_list, basics=0):
             db.batch_update(
                 'UPDATE parts SET lego_id=?, design_name=?, weight=?, bl_type=?, bl_category=? '
                 'WHERE bricklink_id=? AND brickowl_id=? AND rebrickable_id=?', (tuple(p[3:] + p[0:3]) for p in re_add))
+            syt.add_to_event("Update Secondary: Add part data to database RE",len(re_add))
         except:
             syt.log_critical("Add RE failed, check notes")
             syt.log_note("ERROR: {}".format(sys.exc_info()[0]))
@@ -238,6 +252,7 @@ def add_part_data_to_database(insert_list, basics=0):
                 'UPDATE parts SET design_name=?, weight=?, bl_type=?, bl_category=? '
                 'WHERE bricklink_id=? AND brickowl_id=? AND rebrickable_id=? AND lego_id=?',
                 (tuple(p[4:] + p[0:4]) for p in lg_add))
+            syt.add_to_event("Update Secondary: Add part data to database LG",len(lg_add))
         except:
             syt.log_critical("Add LG failed, check notes")
             syt.log_note("ERROR: {}".format(sys.exc_info()[0]))
@@ -253,7 +268,7 @@ def _parse_get_bl_pieceinfo(part_num):
     @return:
     """
     syt.log_debug("Getting info on bl part {}".format(part_num))
-    return data.get_piece_info(bl_id=part_num)
+    return data.get_piece_info(bl_id=part_num), syt.get_counts(1)
 
 
 def _parse_get_re_pieceinfo(part_num):
@@ -263,7 +278,7 @@ def _parse_get_re_pieceinfo(part_num):
     @return:
     """
     syt.log_debug("Getting info on re part {}".format(part_num))
-    return data.get_piece_info(re_id=part_num)
+    return data.get_piece_info(re_id=part_num), syt.get_counts(1)
 
 
 if __name__ == "__main__":

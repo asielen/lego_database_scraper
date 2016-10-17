@@ -1,9 +1,9 @@
 # Internal
-import re  # Regular expressions
 import csv
-from io import StringIO
 import os
+import re  # Regular expressions
 import shutil
+from io import StringIO
 
 import arrow
 
@@ -108,10 +108,8 @@ def parse_html_table(table_tags):
     @param table_tags: an html table
     @return: a 2d list (table_array)
     """
-        # Todo: Pretty sure this isn't used at all
     if table_tags is None: return None
     table_array = []  # initiate the array
-    print(table_tags)
     try:
         table_body = table_tags.find("tbody")  # find the table body
         line_tags = table_body.findAll("tr")  # make a list of all the rows
